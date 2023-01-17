@@ -6,7 +6,7 @@
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
+// [[Rcpp::export(name = '.getACGTN_Sites')]]
 List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh) {
   // filter = 0, default in spydrpick
   // filter = 1, relaxed

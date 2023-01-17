@@ -8,8 +8,10 @@ Description:Perform genomewide epistasis analysis by evaluating the LD structure
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.0
 Depends: R (>= 4.0.0),
-Imports: Rcpp (>= 0.11.4) 
+Imports: 
+         Rcpp,
+         Matrix
 LinkingTo: Rcpp
-         
+RoxygenNote: 7.2.3
+License: MIT + file LICENSE

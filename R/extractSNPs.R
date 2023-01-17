@@ -13,12 +13,12 @@
 #' @return R list with SNPs in sparse format and additional parameters
 #'
 #' @examples
-#'
+#' \dontrun{
 #' aln_path <- system.file("extdata", "sample.aln", package = "BacGWESß")
-#' snp.dat <- call_ACGTN_sparse(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
-#'
+#' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
+#' }
 #' @export
-call_ACGTN_sparse <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
+parseFastaAlignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
   # Check inputs
   if(!file.exists(aln_path)) stop(paste("Can't locate file", aln_path))
 
@@ -33,7 +33,7 @@ call_ACGTN_sparse <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method
 
   t0 = Sys.time()
   # snp.data <- getSNP_Sites(aln_path, filter, gap_freq, maf_freq)
-  snp.data <- getACGTN_Sites(aln_path, filter, gap_freq, maf_freq)
+  snp.data <- .getACGTN_Sites(aln_path, filter, gap_freq, maf_freq)
 
   g = snp.data$params$seq.length
   nseq = snp.data$params$num.seqs
