@@ -5,7 +5,7 @@ Version: 1.0
 Author: Sudaraka Mallawa Arachchi <smallawaarachchi@gmail.com>
 Maintainer: Sudaraka Mallawa Arachchi <smallawaarachchi@gmail.com>
 Description:Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
-License: GPL (>=2)
+License: GPL (>=3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.0.0),
@@ -14,4 +14,3 @@ Imports:
          Matrix
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3
-License: MIT + file LICENSE
