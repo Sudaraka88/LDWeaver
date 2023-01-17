@@ -11,6 +11,9 @@ LazyData: true
 Depends: R (>= 4.0.0),
 Imports: 
          Rcpp,
-         Matrix
+         Matrix,
+         GenomicRanges,
+         genbankr,
+         data.table
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

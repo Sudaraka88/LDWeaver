@@ -10,6 +10,18 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// ACGTN2num
+void ACGTN2num(NumericMatrix nv, StringVector cv, int ncores);
+RcppExport SEXP _BacGWES_ACGTN2num(SEXP nvSEXP, SEXP cvSEXP, SEXP ncoresSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type nv(nvSEXP);
+    Rcpp::traits::input_parameter< StringVector >::type cv(cvSEXP);
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    ACGTN2num(nv, cv, ncores);
+    return R_NilValue;
+END_RCPP
+}
 // getACGTN_Sites
 List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh);
 RcppExport SEXP _BacGWES_getACGTN_Sites(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
@@ -26,6 +38,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_BacGWES_ACGTN2num", (DL_FUNC) &_BacGWES_ACGTN2num, 3},
     {"_BacGWES_getACGTN_Sites", (DL_FUNC) &_BacGWES_getACGTN_Sites, 4},
     {NULL, NULL, 0}
 };
