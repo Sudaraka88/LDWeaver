@@ -6,7 +6,7 @@
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
+// [[Rcpp::export(name = '.ACGTN2num')]]
 void ACGTN2num(NumericMatrix nv, StringVector cv, int ncores){
   // This function is used to mask the reference allele of each snp in a []5xnsnp] matrix
   const int len = cv.length();
@@ -31,6 +31,9 @@ void ACGTN2num(NumericMatrix nv, StringVector cv, int ncores){
       nv[c*5 + 3] = 0;
       continue;
     } else if(cc == 'N'){
+      nv[c*5 + 4] = 0;
+      //continue;
+    } else if(cc == '-'){
       nv[c*5 + 4] = 0;
       //continue;
     }

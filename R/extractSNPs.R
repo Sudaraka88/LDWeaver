@@ -3,7 +3,7 @@
 #' Function to extract SNPs from a multi-fasta alignment.
 #'
 #' @importFrom Rcpp sourceCpp
-#' @import Matrix
+#' @importFrom Matrix sparseMatrix t
 #'
 #' @param aln_path path to multi fasta alignment
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
@@ -11,6 +11,7 @@
 #' @param method specify the filtering method 'relaxed' or 'default' (default = 'default')
 #'
 #' @return R list with SNPs in sparse format and additional parameters
+#' @useDynLib BacGWES
 #'
 #' @examples
 #' \dontrun{
@@ -18,7 +19,7 @@
 #' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
 #' }
 #' @export
-parseFastaAlignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
+parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
   # Check inputs
   if(!file.exists(aln_path)) stop(paste("Can't locate file", aln_path))
 

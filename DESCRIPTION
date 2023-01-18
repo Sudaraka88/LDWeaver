@@ -12,8 +12,10 @@ Depends: R (>= 4.0.0),
 Imports: 
          Rcpp,
          Matrix,
+         MatrixExtra,
          GenomicRanges,
          genbankr,
-         data.table
+         data.table,
+         methods
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

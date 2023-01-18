@@ -42,7 +42,7 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
         allele_counts(2, j) += 1;
       } else if((seq.seq[j]=='t') || (seq.seq[j]=='T')){
         allele_counts(3, j) += 1;
-      } else {
+      } else { // 'n', 'N', '-', etc.
         allele_counts(4, j) += 1;
       }
     }

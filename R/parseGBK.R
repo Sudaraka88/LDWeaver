@@ -2,7 +2,7 @@
 #'
 #' Function to parse the genbank file for the fasta alignment.
 #'
-#' @import genbankr
+#' @importFrom genbankr import getSeq
 #'
 #' @param gbk_path path to genbank file
 #' @param g sequence length, reported in the parseFastaAlignment() output
@@ -17,7 +17,7 @@
 #' gbk <- parseGenBankFile(gbk_path, snp.dat$g)
 #' }
 #' @export
-parseGenBankFile = function(gbk_path, g){
+parse_genbank_file = function(gbk_path, g){
   t0 = Sys.time()
   gbk = suppressWarnings(genbankr::import(gbk_path))
   cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
