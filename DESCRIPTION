@@ -8,6 +8,7 @@ Description:Perform genomewide epistasis analysis by evaluating the LD structure
 License: GPL (>=3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
+biocViews: Software
 Depends: R (>= 4.0.0),
 Imports: 
          Rcpp,
