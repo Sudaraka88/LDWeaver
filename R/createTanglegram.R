@@ -1,0 +1,125 @@
+#' create_tanglegram
+#'
+#' Function to generate long and short range GWES plots
+#'
+#' @importFrom htmlwidgets saveWidget
+#' @importFrom stats cutree hclust dist
+#' @importFrom genbankr cds
+#' @importFrom plyr . ddply
+#' @importFrom chromoMap chromoMap
+#'
+#' @param srlinks_tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
+#' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
+#' @param tanglegram_folder folder to save tanglegram(s)
+#' @param break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5)
+#'
+#' @return none
+#'
+#' @examples
+#' \dontrun{
+#' create_tanglegram(srlinks_tophits, gbk, tanglegram_path, break_segments = 5)
+#' }
+#'
+#' @export
+create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segments = 5){
+  p1a = p2a = NULL # avoid plyr NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
+  if(!file.exists(tanglegram_folder)) dir.create(tanglegram_folder)
+  cat("Preparing Tanglegrams ... ")
+  t0 = Sys.time()
+  srlinks_tophits$dummy_chrom = cutree(hclust(dist(srlinks_tophits$pos1)), break_segments); #print(table(srlinks_tophits$dummy_chrom))
+
+  # we should swap labels depending on min
+  clst_brk_ord = order(sapply(1:break_segments, function(x) min(srlinks_tophits$pos1[srlinks_tophits$dummy_chrom == x])))
+  dc_tmp = srlinks_tophits$dummy_chrom
+  change = F
+  for(i in 1:break_segments){
+    if(i == clst_brk_ord[i]) {
+      next
+    } else{ # swap needed
+      dc_tmp[srlinks_tophits$dummy_chrom == i] = clst_brk_ord[i]
+      change = T
+    }
+  }
+  if(change) srlinks_tophits$dummy_chrom = dc_tmp
+
+  gbkv = as.data.frame(genbankr::cds(gbk)) # extract regions from gbk
+
+  chr_view = list()
+  chr_file = list()
+  ann_file = list()
+  link_data = list()
+
+
+  for(clustidx in 1:break_segments){
+    srlinks_tophits_dumchr = srlinks_tophits[which(srlinks_tophits$dummy_chrom == clustidx), ]
+    df = data.frame(p1a = srlinks_tophits_dumchr$pos1_genreg,
+                    p2a = srlinks_tophits_dumchr$pos2_genreg,
+                    w = srlinks_tophits_dumchr$srp)
+
+    df_uq =  plyr::ddply(df, plyr::.(p1a,p2a), nrow)
+    # get the max srp for each link
+    for(i in 1:nrow(df_uq)){
+      df_uq$w[i] = max(df$w[which(df_uq$p1a[i] == df$p1a & df_uq$p2a[i] == df$p2a)])
+      df_uq$p1a[i] = unique(df$p1a[which(df_uq$p1a[i] == df$p1a)])
+      df_uq$p2a[i] = unique(df$p2a[which(df_uq$p2a[i] == df$p2a)])
+    }
+
+    all_locs = unique(c(df_uq$p1a, df_uq$p2a))
+    loc_strt_end = t(unname(sapply(all_locs, function(x) {idx = grep(x, gbkv$locus_tag); return(c(unique(gbkv$start[idx])[1], unique(gbkv$end[idx])[1]))})))
+
+    # let's map back to annotations
+    all_ans = c()
+    for(i in 1:length(all_locs)){
+      pm1 = c()
+      pm2 = c()
+      m1 = which(df_uq$p1a %in% all_locs[i])
+      m2 = which(df_uq$p2a %in% all_locs[i])
+      if(length(m1)>0) pm1 = unique(df_uq$p1a[m1])
+      if(length(m2)>0) pm2 = unique(df_uq$p2a[m2])
+      pm = unique(c(pm1, pm2))
+
+      if(length(pm) == 1){
+        all_ans = c(all_ans, pm)
+      } else {
+        print(paste("Check:", i))
+      }
+    }
+
+    chr_file[[clustidx]] = data.frame(V1 = c("p", "q"),
+                                      V2 = min(loc_strt_end[,1])-1e3,
+                                      V3 = max(loc_strt_end[,2])+1e3)
+
+
+    ann_file[[clustidx]] = data.frame(V1 = c(paste("p_", all_ans, sep = ""), paste("q_", all_ans, sep = "")),
+                                      V2 = c(rep("p", length(all_locs)),  rep("q", length(all_locs))),
+                                      V3 = loc_strt_end[,1],
+                                      V4 = loc_strt_end[,2])
+
+    # unclear what this does (yet)
+    # shrt_links = which(ann_file[[clustidx]]$V3 < chr_file[[clustidx]]$V2)
+
+    # if(length(length(shrt_links) > 0) ann_file$V3 = chr_file$V2
+
+
+    link_data[[clustidx]] = data.frame(V1 = paste("p_", df_uq$p1a, sep = ""), V2 = 1,
+                                       V3 = paste("q_", df_uq$p2a,sep = ""), V4 = 1)
+
+    chr_view[[clustidx]] = chromoMap::chromoMap(ch.files = list(chr_file[[clustidx]]),
+                                                data.files = list(ann_file[[clustidx]]),
+                                                show.links = T,
+                                                loci_links = link_data[[clustidx]],
+                                                links.colors = "red2",
+                                                n_win.factor = 3,
+                                                labels = T,
+                                                ch_gap = 50,
+                                                y_chr_scale = 50,
+                                                top_margin = 100,
+                                                chr_length = 6,
+                                                chr_width = 25)
+
+    chr_plot_path = file.path(tanglegram_folder, paste("tng_", clustidx, ".html", sep = ""))
+    htmlwidgets::saveWidget( widget = chr_view[[clustidx]], file = chr_plot_path, selfcontained = T)
+
+  }
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
+}

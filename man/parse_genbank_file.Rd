@@ -9,7 +9,7 @@ parse_genbank_file(gbk_path, g)
 \arguments{
 \item{gbk_path}{path to genbank file}
 
-\item{g}{sequence length, reported in the parseFastaAlignment() output}
+\item{g}{sequence length, available from the BacGWES::parse_fasta_alignment() output}
 }
 \value{
 GenBankRecord object

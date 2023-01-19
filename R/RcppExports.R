@@ -5,6 +5,18 @@
     invisible(.Call('_BacGWES_ACGTN2num', PACKAGE = 'BacGWES', nv, cv, ncores))
 }
 
+.fastHadamard <- function(MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores) {
+    invisible(.Call('_BacGWES_fastHadamard', PACKAGE = 'BacGWES', MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores))
+}
+
+.compareToRow <- function(x, y) {
+    .Call('_BacGWES_compareToRow', PACKAGE = 'BacGWES', x, y)
+}
+
+.compareTriplet <- function(MI0X, MI0Z, MI0) {
+    .Call('_BacGWES_compareTriplet', PACKAGE = 'BacGWES', MI0X, MI0Z, MI0)
+}
+
 .getACGTN_Sites <- function(file, filter, gap_thresh, maf_thresh) {
     .Call('_BacGWES_getACGTN_Sites', PACKAGE = 'BacGWES', file, filter, gap_thresh, maf_thresh)
 }

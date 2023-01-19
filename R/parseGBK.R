@@ -5,7 +5,7 @@
 #' @importFrom genbankr import getSeq
 #'
 #' @param gbk_path path to genbank file
-#' @param g sequence length, reported in the parseFastaAlignment() output
+#' @param g sequence length, available from the BacGWES::parse_fasta_alignment() output
 #'
 #' @return GenBankRecord object
 #'

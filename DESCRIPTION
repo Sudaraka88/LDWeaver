@@ -11,12 +11,23 @@ LazyData: true
 biocViews: Software
 Depends: R (>= 4.0.0),
 Imports: 
-         Rcpp,
+         chromoMap,
+         data.table,
+         dplyr,
+         fitdistrplus,
+         genbankr,
+         GenomicRanges,
+         ggplot2,
+         htmlwidgets,
          Matrix,
          MatrixExtra,
-         GenomicRanges,
-         genbankr,
-         data.table,
-         methods
+         methods,
+         plyr,
+         RColorBrewer,
+         Rcpp,
+         RcppArmadillo,
+         Rfast2,
+         stats,
+         utils
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

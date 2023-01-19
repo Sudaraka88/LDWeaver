@@ -22,6 +22,49 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// fastHadamard
+void fastHadamard(NumericMatrix MIt, NumericMatrix den, NumericMatrix uq_t, NumericMatrix pxy_t, NumericMatrix pxpy_t, NumericMatrix RXY, NumericMatrix pXrX, NumericMatrix pYrY, int ncores);
+RcppExport SEXP _BacGWES_fastHadamard(SEXP MItSEXP, SEXP denSEXP, SEXP uq_tSEXP, SEXP pxy_tSEXP, SEXP pxpy_tSEXP, SEXP RXYSEXP, SEXP pXrXSEXP, SEXP pYrYSEXP, SEXP ncoresSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type MIt(MItSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type den(denSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type uq_t(uq_tSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type pxy_t(pxy_tSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type pxpy_t(pxpy_tSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type RXY(RXYSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type pXrX(pXrXSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type pYrY(pYrYSEXP);
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    fastHadamard(MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores);
+    return R_NilValue;
+END_RCPP
+}
+// compareToRow
+LogicalVector compareToRow(NumericMatrix x, NumericVector y);
+RcppExport SEXP _BacGWES_compareToRow(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(compareToRow(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compareTriplet
+bool compareTriplet(NumericVector MI0X, NumericVector MI0Z, double MI0);
+RcppExport SEXP _BacGWES_compareTriplet(SEXP MI0XSEXP, SEXP MI0ZSEXP, SEXP MI0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type MI0X(MI0XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type MI0Z(MI0ZSEXP);
+    Rcpp::traits::input_parameter< double >::type MI0(MI0SEXP);
+    rcpp_result_gen = Rcpp::wrap(compareTriplet(MI0X, MI0Z, MI0));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getACGTN_Sites
 List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh);
 RcppExport SEXP _BacGWES_getACGTN_Sites(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
@@ -39,6 +82,9 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BacGWES_ACGTN2num", (DL_FUNC) &_BacGWES_ACGTN2num, 3},
+    {"_BacGWES_fastHadamard", (DL_FUNC) &_BacGWES_fastHadamard, 9},
+    {"_BacGWES_compareToRow", (DL_FUNC) &_BacGWES_compareToRow, 2},
+    {"_BacGWES_compareTriplet", (DL_FUNC) &_BacGWES_compareTriplet, 3},
     {"_BacGWES_getACGTN_Sites", (DL_FUNC) &_BacGWES_getACGTN_Sites, 4},
     {NULL, NULL, 0}
 };
