@@ -11,7 +11,6 @@ LazyData: true
 biocViews: Software
 Depends: R (>= 4.0.0),
 Imports: 
-<<<<<<< HEAD
          chromoMap,
          data.table,
          dplyr,
@@ -29,7 +28,6 @@ Imports:
          RcppArmadillo,
          Rfast2,
          stats,
-=======
          Rcpp,
          RcppArmadillo,
          Matrix,
@@ -44,7 +42,6 @@ Imports:
          dplyr,
          stats,
          Rfast2,
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
          utils
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

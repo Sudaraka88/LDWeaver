@@ -12,7 +12,6 @@ perform_snpEff_annotations(
   gbk_path,
   cds_var,
   sr_links,
-<<<<<<< HEAD
   snp.dat,
   max_tophits = 250
 )
@@ -38,33 +37,14 @@ perform_snpEff_annotations(
 }
 \value{
 R data frame with the top short range GWES links with snpEff annotated embedded
-=======
-  snp.dat
-)
-}
-\arguments{
-\item{sr_links}{data.frame containing sr_links or the path to saved sr_links TSV file. Usually output from perform_MI_computation()}
-
-\item{plt_folder}{specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())}
-
-\item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file. Usually output from perform_MI_computation()}
-}
-\value{
-R data frame with short range GWES links (plots and long range links will be saved)
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
 }
 \description{
 Function to generate long and short range GWES plots
 }
 \examples{
 \dontrun{
-<<<<<<< HEAD
 sr_links_red = perform_snpEff_annotations(dset_name, annotation_folder, snpeff_jar, gbk,
 gbk_path, cds_var, sr_links, snp.dat, max_tophits = 250)
-=======
-sr_links_red = perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = 10,
-lr_save_path = "lr.tsv", plt_folder = "plots")
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
 }
 
 }

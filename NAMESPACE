@@ -8,10 +8,7 @@ export(parse_fasta_alignment)
 export(parse_genbank_file)
 export(perform_MI_computation)
 export(perform_snpEff_annotations)
-<<<<<<< HEAD
 export(write_output_for_gwes_explorer)
-=======
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
 importFrom(GenomicRanges,end)
 importFrom(GenomicRanges,start)
 importFrom(GenomicRanges,width)
@@ -27,10 +24,7 @@ importFrom(RColorBrewer,brewer.pal)
 importFrom(Rcpp,sourceCpp)
 importFrom(RcppArmadillo,fastLm)
 importFrom(Rfast2,Intersect)
-<<<<<<< HEAD
 importFrom(chromoMap,chromoMap)
-=======
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
 importFrom(data.table,"%between%")
 importFrom(data.table,.I)
 importFrom(data.table,as.data.table)
@@ -49,7 +43,6 @@ importFrom(ggplot2,ggplot)
 importFrom(ggplot2,ggsave)
 importFrom(ggplot2,ggtitle)
 importFrom(ggplot2,scale_colour_gradientn)
-<<<<<<< HEAD
 importFrom(htmlwidgets,saveWidget)
 importFrom(methods,as)
 importFrom(plyr,.)
@@ -59,11 +52,6 @@ importFrom(stats,cutree)
 importFrom(stats,dist)
 importFrom(stats,fitted)
 importFrom(stats,hclust)
-=======
-importFrom(methods,as)
-importFrom(stats,coef)
-importFrom(stats,fitted)
->>>>>>> 90e835452b69a8447074fc3659161cfb69a215b8
 importFrom(stats,kmeans)
 importFrom(stats,pbeta)
 importFrom(stats,quantile)
