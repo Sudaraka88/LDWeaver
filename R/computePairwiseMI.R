@@ -375,6 +375,7 @@ mergeNsort_sr_links = function(cds_var, sr_links, plt_path){
   # row.names(sr_links_red) = NULL
   cat(paste("Done in", round(difftime(Sys.time(), t00, units = "secs"), 2), "s \n"))
   return(sr_links_df)
+
 }
 
 runAracne = function(links_red, sr_links_df, POS){
