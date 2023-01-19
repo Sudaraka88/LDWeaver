@@ -28,20 +28,6 @@ Imports:
          RcppArmadillo,
          Rfast2,
          stats,
-         Rcpp,
-         RcppArmadillo,
-         Matrix,
-         MatrixExtra,
-         GenomicRanges,
-         genbankr,
-         data.table,
-         methods,
-         fitdistrplus,
-         ggplot2,
-         RColorBrewer,
-         dplyr,
-         stats,
-         Rfast2,
          utils
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

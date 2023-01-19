@@ -42,7 +42,7 @@ create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segm
   }
   if(change) srlinks_tophits$dummy_chrom = dc_tmp
 
-  gbkv = as.data.frame(genbankr::cds(gbk)) # extract regions from gbk
+  # gbkv = as.data.frame(genbankr::cds(gbk)) # extract regions from gbk
 
   chr_view = list()
   chr_file = list()
@@ -65,7 +65,119 @@ create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segm
     }
 
     all_locs = unique(c(df_uq$p1a, df_uq$p2a))
-    loc_strt_end = t(unname(sapply(all_locs, function(x) {idx = grep(x, gbkv$locus_tag); return(c(unique(gbkv$start[idx])[1], unique(gbkv$end[idx])[1]))})))
+    # loc_strt_end = t(unname(sapply(all_locs, function(x) {idx = grep(x, gbkv$locus_tag); return(c(unique(gbkv$start[idx])[1], unique(gbkv$end[idx])[1]))})))
+    loc_strt_end = matrix(rep(NA, length(all_locs)*2), ncol = 2)
+
+    all_locs_notfound = c()
+    for(loc_idx in 1:length(all_locs)){
+      idx = c()
+      # Let's search through the gbk file for the locus
+      if(length(gbk@genes@elementMetadata$locus_tag)){
+        idx = grep(all_locs[loc_idx], gbk@genes@elementMetadata@listData$locus_tag)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+          next
+        }
+      }
+      if(length(gbk@cds@elementMetadata$locus_tag)){
+        idx = grep(all_locs[loc_idx], gbk@cds@elementMetadata@listData$locus_tag)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+          next
+        }
+      }
+      if(length(gbk@exons@elementMetadata$locus_tag)){
+        idx = grep(all_locs[loc_idx], gbk@exons@elementMetadata@listData$locus_tag)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+          next
+        }
+      }
+      if(length(gbk@transcripts@elementMetadata$locus_tag)){
+        idx = grep(all_locs[loc_idx], gbk@transcripts@elementMetadata@listData$locus_tag)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+          next
+        }
+      }
+      if(length(gbk@other_features@elementMetadata$locus_tag)){
+        idx = grep(all_locs[loc_idx], gbk@other_features@elementMetadata@listData$locus_tag)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+          next
+        }
+      }
+
+      if(length(idx) == 0) {
+        warning(paste("Could not locate", all_locs[loc_idx], 'in the genbankr parsed gbk file, these link will be dropped from the tanglegram...'))
+        all_locs_notfound = c(all_locs_notfound, all_locs[loc_idx])
+      }
+    }
+
+    # prune df_uq if any locs are missing
+    if(length(all_locs_notfound) > 0){
+      prune_rows = c()
+      for(rmidx in 1:length(all_locs_notfound)){
+        prune_rows = c(prune_rows, c(grep(all_locs_notfound[rmidx], df_uq$p1a), grep(all_locs_notfound[rmidx], df_uq$p2a)))
+      }
+      prune_rows = sort(unique(prune_rows))
+      df_uq = df_uq[-prune_rows, ]
+
+      # prune all_locs
+      # This is a quick hack, redo the loc_strt_end if any items end up missing in the data
+      all_locs = unique(c(df_uq$p1a, df_uq$p2a))
+
+      loc_strt_end = matrix(rep(NA, length(all_locs)*2), ncol = 2)
+      for(loc_idx in 1:length(all_locs)){
+        idx = c()
+        # Let's search through the gbk file for the locus
+        if(length(gbk@genes@elementMetadata$locus_tag)){
+          idx = grep(all_locs[loc_idx], gbk@genes@elementMetadata@listData$locus_tag)
+          if(length(idx) > 0) {
+            loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+            loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+            next
+          }
+        }
+        if(length(gbk@cds@elementMetadata$locus_tag)){
+          idx = grep(all_locs[loc_idx], gbk@cds@elementMetadata@listData$locus_tag)
+          if(length(idx) > 0) {
+            loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+            loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+            next
+          }
+        }
+        if(length(gbk@exons@elementMetadata$locus_tag)){
+          idx = grep(all_locs[loc_idx], gbk@exons@elementMetadata@listData$locus_tag)
+          if(length(idx) > 0) {
+            loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+            loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+            next
+          }
+        }
+        if(length(gbk@transcripts@elementMetadata$locus_tag)){
+          idx = grep(all_locs[loc_idx], gbk@transcripts@elementMetadata@listData$locus_tag)
+          if(length(idx) > 0) {
+            loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+            loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+            next
+          }
+        }
+        if(length(gbk@other_features@elementMetadata$locus_tag)){
+          idx = grep(all_locs[loc_idx], gbk@other_features@elementMetadata@listData$locus_tag)
+          if(length(idx) > 0) {
+            loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+            loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+            next
+          }
+        }
+      }
+    }
 
     # let's map back to annotations
     all_ans = c()

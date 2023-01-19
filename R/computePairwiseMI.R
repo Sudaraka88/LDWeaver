@@ -375,21 +375,22 @@ mergeNsort_sr_links = function(cds_var, sr_links, plt_path){
   # row.names(sr_links_red) = NULL
   cat(paste("Done in", round(difftime(Sys.time(), t00, units = "secs"), 2), "s \n"))
   return(sr_links_df)
+
 }
 
-runAracne = function(links_red, sr_links_df, POS){
+runAracne = function(sr_links_red, sr_links_df, POS){
   t0 = Sys.time()
   # TODO: make this function faster using openMP
   # links red is the reduced set of links
-  pos_mat = matrix(c(links_red$pos1, links_red$pos2), nrow = nrow(links_red)) # for the reduced link set
+  pos_mat = matrix(c(sr_links_red$pos1, sr_links_red$pos2), nrow = nrow(sr_links_red)) # for the reduced link set
   POS = matrix(POS, nrow = length(POS)) # convert to mx for fast searching
-  ARACNE = rep(NA, nrow(POS))
+  ARACNE = rep(NA, nrow(sr_links_red))
   t0 = Sys.time()
-  pb = utils::txtProgressBar(min = 1, max = nrow(links_red), initial = 1)
-  for(i in 1:nrow(links_red)){
+  pb = utils::txtProgressBar(min = 1, max = nrow(sr_links_red), initial = 1)
+  for(i in 1:nrow(sr_links_red)){
     utils::setTxtProgressBar(pb,i)
-    pX = links_red$pos1[i]; X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
-    pZ = links_red$pos2[i]; Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
+    pX = sr_links_red$pos1[i]; X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
+    pZ = sr_links_red$pos2[i]; Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
     idX = which(.compareToRow(pos_mat, pX)) #decodeIndex(index[[X]])
     idZ = which(.compareToRow(pos_mat, pZ)) #decodeIndex(index[[Z]])
 
