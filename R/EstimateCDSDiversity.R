@@ -9,8 +9,8 @@
 #' @importFrom data.table data.table setattr %between% .I
 #' @importFrom stats kmeans
 #'
-#' @param gbk output from parsing the genbank file using BacGWES::parseGenBankFile()
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parseFastaAlignment()
+#' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
+#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3)
 #' @param ncores specify the number of cores to use
 #'
@@ -21,7 +21,7 @@
 #' cds_var <- estimate_variation_in_CDS(gbk, snp.dat, num_clusts_CDS = 3, ncores=10)
 #' }
 #' @export
-estimate_variation_in_CDS = function(gbk, snp.dat, num_clusts_CDS = 3, ncores){
+estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3){
   # This method is only approximate, but much MUCH faster and easier on resources
   # TODO: Include the higher accuracy function
   t0 = Sys.time()
@@ -73,7 +73,8 @@ estimate_variation_in_CDS = function(gbk, snp.dat, num_clusts_CDS = 3, ncores){
 
   print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
   return(list(var_estimate = var_estimate, cds_start = cds_start, cds_end = cds_end,
-              clusts = clusts, paint = paint, ref = ref, alt = alt, allele_table = variation))
+              clusts = clusts, paint = paint, ref = ref, alt = alt, allele_table = variation,
+              nclust = num_clusts_CDS))
 }
 
 # wrapper around k-means to perform clustering

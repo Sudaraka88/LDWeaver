@@ -12,11 +12,19 @@ biocViews: Software
 Depends: R (>= 4.0.0),
 Imports: 
          Rcpp,
+         RcppArmadillo,
          Matrix,
          MatrixExtra,
          GenomicRanges,
          genbankr,
          data.table,
-         methods
+         methods,
+         fitdistrplus,
+         ggplot2,
+         RColorBrewer,
+         dplyr,
+         stats,
+         Rfast2,
+         utils
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

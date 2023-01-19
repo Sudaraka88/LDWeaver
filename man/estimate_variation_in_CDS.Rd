@@ -4,16 +4,16 @@
 \alias{estimate_variation_in_CDS}
 \title{estimate_variation_in_CDS}
 \usage{
-estimate_variation_in_CDS(gbk, snp.dat, num_clusts_CDS = 3, ncores)
+estimate_variation_in_CDS(gbk, snp.dat, ncores, num_clusts_CDS = 3)
 }
 \arguments{
-\item{gbk}{output from parsing the genbank file using BacGWES::parseGenBankFile()}
+\item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
 
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parseFastaAlignment()}
-
-\item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3)}
+\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
 
 \item{ncores}{specify the number of cores to use}
+
+\item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3)}
 }
 \value{
 R list with CDS variation and allele distribution details
