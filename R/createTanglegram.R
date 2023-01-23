@@ -193,7 +193,7 @@ create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segm
       if(length(pm) == 1){
         all_ans = c(all_ans, pm)
       } else {
-        print(paste("Check:", i))
+        cat(paste("Check:", i, "\n"))
       }
     }
 

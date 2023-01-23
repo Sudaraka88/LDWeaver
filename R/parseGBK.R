@@ -26,11 +26,11 @@ parse_genbank_file = function(gbk_path, g){
   cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
   refseq = genbankr::getSeq(gbk)
   if(length(refseq) != 1){
-    print("The GBK file should contain the reference sequence")
+    cat("The GBK file should contain the reference sequence!\n")
     return(-1)
   }
   if(length(refseq[[1]]) != g){
-    print("Reference sequence length does not match with fasta file length")
+    cat("Reference sequence length does not match with fasta file length\n")
     return(-1)
   }
   # genbankr::seqinfo(gbk)

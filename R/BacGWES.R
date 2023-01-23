@@ -125,7 +125,9 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   if(!file.exists(ACGTN_snp_path)) {
     cat("Performing snp extraction from the alignment \n")
     snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method)
+    cat("Savings snp.dat...")
     saveRDS(snp.dat, ACGTN_snp_path)
+    cat("Done!\n")
   }else{
     cat("Loading previous snp matrix \n")
     snp.dat = readRDS(ACGTN_snp_path)
@@ -220,9 +222,6 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   cat("\n\n #################### BLOCK 7 #################### \n\n")
   BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
-  if(SnpEff_Annotate == F){
-    cat("\n\n ** All done ** \n")
-    return(0)
-  }
+  cat("\n\n ** All done ** \n")
 
 }

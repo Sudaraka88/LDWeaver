@@ -37,6 +37,6 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1){
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
   hdw = 1/Matrix::colSums((snp.dat$nsnp - shared.snps) < thresh)
-  print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
   return(hdw)
 }

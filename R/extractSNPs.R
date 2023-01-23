@@ -80,7 +80,7 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
   uqe = apply(snp.data$ACGTN_table>0, 1, function(x) as.numeric(x>0))
   r = rowSums(uqe)
 
-  print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
 
   return(list(snp.matrix_A=Matrix::t(snp.matrix_A), snp.matrix_C=Matrix::t(snp.matrix_C),
               snp.matrix_G=Matrix::t(snp.matrix_G), snp.matrix_T=Matrix::t(snp.matrix_T),

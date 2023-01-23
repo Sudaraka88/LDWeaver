@@ -81,8 +81,8 @@ estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3, c
 
   prepare_cluster_plot(cds_var, clust_plt_path)
 
-  print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
-  return()
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
+  return(cds_var)
 }
 
 # wrapper around k-means to perform clustering
