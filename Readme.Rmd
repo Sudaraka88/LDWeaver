@@ -23,3 +23,5 @@ knitr::opts_chunk$set(echo = TRUE)
 install.packages("devtools")
 devtools::install_github("Sudaraka88/BacGWES")
 ```
+
+## Quick Start
