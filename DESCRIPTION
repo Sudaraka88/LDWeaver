@@ -23,6 +23,7 @@ Imports:
          MatrixExtra,
          methods,
          plyr,
+         parallel,
          RColorBrewer,
          Rcpp,
          RcppArmadillo,

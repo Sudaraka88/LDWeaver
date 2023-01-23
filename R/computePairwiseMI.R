@@ -53,6 +53,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
 
   cat("Begin MI computation... \n")
   # Break down the computation into blocks
+  max_blk_sz = round(max_blk_sz, -3) # rounding to 1000s
   MI_cmp_blks = make_blocks(snp.dat$nsnp, max_blk_sz)
   nblcks = nrow(MI_cmp_blks)
 

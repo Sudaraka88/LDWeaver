@@ -13,6 +13,7 @@ perform_snpEff_annotations(
   cds_var,
   sr_links,
   snp.dat,
+  tophits_path = NULL,
   max_tophits = 250
 )
 }
@@ -32,6 +33,8 @@ perform_snpEff_annotations(
 \item{sr_links}{data.frame containing sr_links output from perform_MI_computation()}
 
 \item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+
+\item{tophits_path}{specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv}
 
 \item{max_tophits}{specify the number of top hits to return (all links will be annotated and saved to the annotations_folder)}
 }

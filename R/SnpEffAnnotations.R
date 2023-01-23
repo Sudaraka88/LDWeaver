@@ -13,6 +13,7 @@
 #' @param sr_links data.frame containing sr_links output from perform_MI_computation()
 #' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
 #' @param max_tophits specify the number of top hits to return (all links will be annotated and saved to the annotations_folder)
+#' @param tophits_path specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv
 #'
 #' @return R data frame with the top short range GWES links with snpEff annotated embedded
 #'
@@ -23,7 +24,7 @@
 #' }
 #'
 #' @export
-perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links, snp.dat, max_tophits = 250){
+perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links, snp.dat, tophits_path = NULL, max_tophits = 250){
   genome_name = gbk@genes@seqinfo@genome
   snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
 
@@ -60,7 +61,8 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   srlinks_annotated_path = file.path(annotation_folder,  "sr_links_annotated.tsv")
   srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
 
-  tophits_path = file.path(annotation_folder, "tophits.tsv")
+  if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "tophits.tsv")
+
   top_srlinks_annotated = detect_top_hits(l1_a1_d = srlinks_annotated, max_tophits = max_tophits, tophits_path = tophits_path)
   return(top_srlinks_annotated)
 }

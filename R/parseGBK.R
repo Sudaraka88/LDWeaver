@@ -19,6 +19,9 @@
 #' @export
 parse_genbank_file = function(gbk_path, g){
   t0 = Sys.time()
+  # Check inputs
+  if(!file.exists(gbk_path)) stop(paste("Can't locate file", gbk_path))
+
   gbk = suppressWarnings(genbankr::import(gbk_path))
   cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
   refseq = genbankr::getSeq(gbk)
