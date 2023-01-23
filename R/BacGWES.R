@@ -118,6 +118,7 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   lr_save_path = file.path(dset, "lr_links.tsv")
   sr_save_path = file.path(dset, "sr_links.tsv")
   tophits_path = file.path(dset, "tophits.tsv")
+  clust_plt_path = file.path(dset, "CDS_clustering.png")
 
   # BLK1
   cat("\n\n #################### BLOCK 1 #################### \n\n")
@@ -145,7 +146,7 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   cat("\n\n #################### BLOCK 3 #################### \n\n")
   if(!file.exists(cds_var_path)) {
     cat("Estimating the variation in CDS \n")
-    cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS)
+    cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path)
     saveRDS(cds_var, cds_var_path)
   } else {
     cat("Loading previous CDS variation estimates \n")
@@ -202,12 +203,13 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
 
   if(!file.exists(tophits_path)){
-    tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = dset, snpeff_jar = snpeff_jar_path,
-                                                  gbk = gbk, gbk_path = gbk_path, cds_var = cds_var, sr_links = sr_links,
-                                                  snp.dat = snp.dat, tophits_path = tophits_path, max_tophits = max_tophits)
+    tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
+                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
+                                                  cds_var = cds_var, sr_links = sr_links, snp.dat = snp.dat,
+                                                  tophits_path = tophits_path, max_tophits = max_tophits)
   } else {
     cat("Loading previous top hits \n")
-    tophits = read.table(tophits_path, sep = '\t')
+    tophits = read.table(tophits_path, sep = '\t', header = T)
   }
 
   # BLK8

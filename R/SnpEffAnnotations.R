@@ -28,8 +28,10 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   genome_name = gbk@genes@seqinfo@genome
   snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
 
+
   if(snpeff_ready==1){ # ready for annotation?
     # Write the interested sites to a VCF file
+    cat("Preparing VCF files ... ")
     snps_to_ann = sort(unique(c(sr_links$pos1, sr_links$pos2))) # These are the SNPs that need annotation
     snps_to_ann_idx = sapply(snps_to_ann, function(x) which(snp.dat$POS %in% x)) # These are their original positions
 
@@ -37,6 +39,7 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
 
     append_vcf_header(vcf_sr_path, snp.dat$g) # This creates a fresh VCF file
     create_vcf_file(genome_name, snps_to_ann, cds_var$ref[snps_to_ann_idx], cds_var$alt[snps_to_ann_idx], vcf_sr_path)
+    cat(" Done!\n")
 
     # write.table(x = vcf, file = vcf_sr_path, append = T, row.names = F, col.names = F, quote = F, sep = '\t')
   } else {
@@ -52,18 +55,22 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
                                stat_sr_path = stat_sr_path, vcf_sr_path = vcf_sr_path, vcf_annotated_path = vcf_annotated_path)
 
   if(snpeff_complete == 1){
+    cat("Convert VCF to table ...")
     ann = convert_vcfann_to_table(vcf_annotated_path, annotations_path, snps_to_ann_idx, cds_var$allele_table, snp.dat$nseq)
+    cat("Done!\n")
   } else {
     # Return with snpeff error
     warning("snpEff error!")
     return(-1)
   }
+  cat("Adding annotations to links ...")
   srlinks_annotated_path = file.path(annotation_folder,  "sr_links_annotated.tsv")
   srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
 
   if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "tophits.tsv")
 
   top_srlinks_annotated = detect_top_hits(l1_a1_d = srlinks_annotated, max_tophits = max_tophits, tophits_path = tophits_path)
+  cat("Done! \n")
   return(top_srlinks_annotated)
 }
 
@@ -75,7 +82,7 @@ prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_di
   # Enterococcus_faecalis_gcf_000007785.1.NC_004668.1.codonTable : Bacterial_and_Plant_Plastid
 
   if(!RUN_SNPEFF) return(0) else status = 1 # run snpeff?
-  print(paste("Setting up snpeff for:", dset))
+  cat(paste("Setting up snpeff for:", dset, "\n"))
   t0 = Sys.time()
 
   if(!file.exists(snpeff_jar)){ # does it point to <snpEff.jar>
@@ -111,10 +118,12 @@ prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_di
     dir.create(file.path(snpeff_data, dset))
     file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk"))
 
+    cat(snpeff_data)
+
 
     system(paste('java -jar', snpeff_jar, 'build -genbank -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
   }
-  print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
   return(status)
 }
 

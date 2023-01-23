@@ -4,7 +4,13 @@
 \alias{estimate_variation_in_CDS}
 \title{estimate_variation_in_CDS}
 \usage{
-estimate_variation_in_CDS(gbk, snp.dat, ncores, num_clusts_CDS = 3)
+estimate_variation_in_CDS(
+  gbk,
+  snp.dat,
+  ncores,
+  num_clusts_CDS = 3,
+  clust_plt_path = NULL
+)
 }
 \arguments{
 \item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
@@ -14,6 +20,8 @@ estimate_variation_in_CDS(gbk, snp.dat, ncores, num_clusts_CDS = 3)
 \item{ncores}{specify the number of cores to use}
 
 \item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3)}
+
+\item{clust_plt_path}{specify path to save CDS variation plot}
 }
 \value{
 R list with CDS variation and allele distribution details
@@ -24,6 +32,6 @@ can be used to segment the genome into diversity-based clusters.
 }
 \examples{
 \dontrun{
-cds_var <- estimate_variation_in_CDS(gbk, snp.dat, num_clusts_CDS = 3, ncores=10)
+cds_var <- estimate_variation_in_CDS(gbk, snp.dat, ncores = 10)
 }
 }

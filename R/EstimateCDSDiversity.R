@@ -8,20 +8,22 @@
 #' @importFrom Matrix rowSums colSums
 #' @importFrom data.table data.table setattr %between% .I
 #' @importFrom stats kmeans
+#' @importFrom ggplot2 ggplot geom_point aes ggsave
 #'
 #' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
 #' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3)
 #' @param ncores specify the number of cores to use
+#' @param clust_plt_path specify path to save CDS variation plot
 #'
 #' @return R list with CDS variation and allele distribution details
 #'
 #' @examples
 #' \dontrun{
-#' cds_var <- estimate_variation_in_CDS(gbk, snp.dat, num_clusts_CDS = 3, ncores=10)
+#' cds_var <- estimate_variation_in_CDS(gbk, snp.dat, ncores = 10)
 #' }
 #' @export
-estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3){
+estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3, clust_plt_path = NULL){
   # This method is only approximate, but much MUCH faster and easier on resources
   # TODO: Include the higher accuracy function
   t0 = Sys.time()
@@ -71,10 +73,16 @@ estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3){
   clusts = perform_clustering(var_estimate, nclust = num_clusts_CDS) # perform clustering
   paint = painter(snp.dat$POS, clusts, cds_start, cds_end) # apply paint to intergenic regions
 
+  cds_var = list(var_estimate = var_estimate, cds_start = cds_start, cds_end = cds_end,
+                 clusts = clusts, paint = paint, ref = ref, alt = alt, allele_table = variation,
+                 nclust = num_clusts_CDS)
+
+  if(is.null(clust_plt_path)) clust_plt_path = "clust_plt.png"
+
+  prepare_cluster_plot(cds_var, clust_plt_path)
+
   print(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
-  return(list(var_estimate = var_estimate, cds_start = cds_start, cds_end = cds_end,
-              clusts = clusts, paint = paint, ref = ref, alt = alt, allele_table = variation,
-              nclust = num_clusts_CDS))
+  return()
 }
 
 # wrapper around k-means to perform clustering
@@ -161,4 +169,13 @@ painter = function(POS, clusts, cds_start, cds_end){
     }
   }
   return(paint)
+}
+
+prepare_cluster_plot = function(cds_var, clust_plt_path){
+  POS = Variation = Cluster = NULL
+  clust_df = data.frame(POS = cds_var$cds_start, Variation = cds_var$var_estimate,
+                        Cluster = factor(cds_var$clusts$km_clst_ord))
+  p_clust = ggplot2::ggplot(data = clust_df) + ggplot2::geom_point(ggplot2::aes(x = POS, y = Variation, col = Cluster))
+  ggplot2::ggsave(plot = p_clust, filename = clust_plt_path, width = 2200, height = 1200, units = "px")
+
 }
