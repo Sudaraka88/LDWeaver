@@ -1,2 +1,6 @@
+Readme
+================
+
 # BacGWES
-Genomewide Epistasis Analysis on Bacteria
+
+## Genomewide Epistasis Analysis on Bacteria
