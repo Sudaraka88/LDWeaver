@@ -1,4 +1,9 @@
 
+<!-- badges: start -->
+
+[![R](https://github.com/Sudaraka88/BacGWES/workflows/r.yml/badge.svg)](https://github.com/Sudaraka88/BacGWES/actions)
+<!-- badges: end -->
+
 # BacGWES
 
 ## Genomewide Epistasis Analysis on Bacteria
