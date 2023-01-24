@@ -25,12 +25,20 @@ devtools::install_github("Sudaraka88/BacGWES")
 ```
 
 ## Quick Start
-To run BacGWES, all you need is the fasta alignment and the corresponding genbank annotation file. 
+To run BacGWES, all you need is a fasta alignment and the corresponding genbank annotation file. A toy dataset is provided in the package itself to confirm that everything is setup correctly.
+
+>**Note** For GWES analysis, it is recommended to use an alignment with a large number of sequences (at least >500). Such alignments can be several gigabytes in size and not suitable to bundle into an R package. 
+
+The toy alignment comprises the first 50kb of 400 *S. pnuemoniae* isolates (randomy selected from the 616 reported <a href="https://www.nature.com/articles/ng.2625" target="_blank">here</a>). The reads were aligned against the <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1" target="_blank">ATCC 700669 reference genome</a> using <a href="https://github.com/tseemann/snippy" target="_blank">snippy</a>. Since this is only a part of an alignment, set <check_gbk_fasta_lengths = F>, forcing BacGWES to ignore the mismatch in sequence lengths between the genbank reference and the fasta alignment.
+
 ```{r, eval = FALSE}
 # devtools::install_github("Sudaraka88/BacGWES")
 library(BacGWES)
-dset <- "spn23f_sample"
-aln_path <- system.file("extdata", "sample_spn23f.aln", package = "BacGWES")
-gbk_path <- system.file("extdata", "spn23f.gbk", package = "BacGWES")
-BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, SnpEff_Annotate = F)
+dset <- "sample"
+aln_path <- system.file("extdata", "sample.aln.gz", package = "BacGWES")
+gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
+snp_filt_method = "relaxed"
+BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, check_gbk_fasta_lengths = F,
+        num_clusts_cds = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method, 
+        tanglegram_break_segments = 1)
 ```

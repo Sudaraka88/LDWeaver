@@ -184,8 +184,17 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T)
   }
 
-  lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
-  colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
+  if(file.exists(lr_save_path)){
+    lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
+    colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
+  } else {
+    lr_links = NULL # in case lr_links are not available
+  }
+
+  if(nrow(sr_links) == 0){
+    stop("No potentially important sr_links were identified! Cannot continue analysis...")
+  }
+
 
   # BLK6
   cat("\n\n #################### BLOCK 6 #################### \n\n")

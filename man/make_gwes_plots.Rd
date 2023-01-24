@@ -4,12 +4,14 @@
 \alias{make_gwes_plots}
 \title{make_gwes_plots}
 \usage{
-make_gwes_plots(lr_links, sr_links, plt_folder = NULL)
+make_gwes_plots(lr_links = NULL, sr_links = NULL, plt_folder = NULL)
 }
 \arguments{
-\item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file. Usually output from perform_MI_computation()}
+\item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file.
+Usually output from perform_MI_computation(), (default = NULL)}
 
-\item{sr_links}{data.frame containing sr_links or the path to saved sr_links TSV file. Usually output from perform_MI_computation()}
+\item{sr_links}{data.frame containing sr_links or the path to saved sr_links TSV file.
+Usually output from perform_MI_computation(), (default = NULL)}
 
 \item{plt_folder}{specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())}
 }
