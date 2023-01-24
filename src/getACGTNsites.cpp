@@ -1,10 +1,13 @@
 #include <Rcpp.h>
-#include "kseq.h"
+//#include "kseq.h"
+#include "kseq2.h" //with gz reading
 #include <iostream>
 #include <fcntl.h>
 #include <stdio.h>
+#include <zlib.h>
+KSEQ_INIT(gzFile, gzread)
 
-using namespace Rcpp;
+  using namespace Rcpp;
 
 // [[Rcpp::export(name = '.getACGTN_Sites')]]
 List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh) {
@@ -14,19 +17,32 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   Rcout << "Step 1: Extracting 'g' (seq_length): ";
   int n = 0;
   int l = 0;
-  kseq seq;
+  // kseq seq;
+
+  gzFile fp_, fp, fp2;
+  kseq_t *seq;
+
   const char * f = file.c_str();
-  int fp_ = open(f, O_RDONLY);
-  FunctorRead r;
-  kstream<int, FunctorRead> ks_(fp_, r);
-  l = ks_.read(seq);
-  int seq_length = seq.seq.length(); // This is the first sequence, while loop reads from the second, re-run below?
-  close(fp_);
+  // int fp_ = open(f, O_RDONLY);
+  // FunctorRead r;
+  // kstream<int, FunctorRead> ks_(fp_, r);
+  // l = ks_.read(seq);
+  // int seq_length = seq.seq.length(); // This is the first sequence, while loop reads from the second, re-run below?
+  // close(fp_);
+
+  fp_ = gzopen(f, "r");
+  seq = kseq_init(fp_);
+  l = kseq_read(seq);
+  int seq_length = strlen(seq->seq.s); // This is the first sequence, while loop reads from the second, re-run below?
   Rcout << seq_length << " bases \n";
+  gzclose(fp_);
 
   Rcout << "Step 2: Getting allele counts \n";
-  int fp = open(f, O_RDONLY);
-  kstream<int, FunctorRead> ks(fp, r);
+  // int fp = open(f, O_RDONLY);
+  // kstream<int, FunctorRead> ks(fp, r);
+  fp = gzopen(f, "r");
+  seq = kseq_init(fp);
+
   NumericMatrix allele_counts(5, seq_length);
   while((l = ks.read(seq)) >= 0) {
     if(seq.seq.length()!=seq_length) {
@@ -34,21 +50,35 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
       break;
     }
     for(int j=0; j<seq_length; j++){
-      if((seq.seq[j]=='a') || (seq.seq[j]=='A')){
+      if((seq->seq.s[j]=='a') || (seq->seq.s[j]=='A')){
         allele_counts(0, j) += 1;
-      } else if((seq.seq[j]=='c') || (seq.seq[j]=='C')){
+      } else if((seq->seq.s[j]=='c') || (seq->seq.s[j]=='C')){
         allele_counts(1, j) += 1;
-      } else if((seq.seq[j]=='g') || (seq.seq[j]=='G')){
+      } else if((seq->seq.s[j]=='g') || (seq->seq.s[j]=='G')){
         allele_counts(2, j) += 1;
-      } else if((seq.seq[j]=='t') || (seq.seq[j]=='T')){
+      } else if((seq->seq.s[j]=='t') || (seq->seq.s[j]=='T')){
         allele_counts(3, j) += 1;
-      } else { // 'n', 'N', '-', etc.
+      } else {
         allele_counts(4, j) += 1;
       }
     }
+    // for(int j=0; j<seq_length; j++){
+    //   if((seq.seq[j]=='a') || (seq.seq[j]=='A')){
+    //     allele_counts(0, j) += 1;
+    //   } else if((seq.seq[j]=='c') || (seq.seq[j]=='C')){
+    //     allele_counts(1, j) += 1;
+    //   } else if((seq.seq[j]=='g') || (seq.seq[j]=='G')){
+    //     allele_counts(2, j) += 1;
+    //   } else if((seq.seq[j]=='t') || (seq.seq[j]=='T')){
+    //     allele_counts(3, j) += 1;
+    //   } else { // 'n', 'N', '-', etc.
+    //     allele_counts(4, j) += 1;
+    //   }
+    // }
     n++;
   }
-  close(fp);
+  // close(fp);
+  gzclose(fp);
 
   Rcout << "Step 3: Performing SNP filtering: ";
   // Rcout << n  << '\n';
@@ -156,21 +186,26 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
 
   NumericMatrix ACGTN_table(5,n_snp);
 
-  int fp2 = open(f, O_RDONLY);
-  kstream<int, FunctorRead> ks2(fp2, r);
+  // int fp2 = open(f, O_RDONLY);
+  // kstream<int, FunctorRead> ks2(fp2, r);
+  fp2 = gzopen(f, "r");
+  seq = kseq_init(fp2);
   char temp_char;
 
   // std::string nt ("AaCcGgTt");
   // we need to add the functionality to find *R* and *UQE* required for MI computation
 
-  while((l = ks2.read(seq)) >= 0) {
+  // while((l = ks2.read(seq)) >= 0) {
+  while((l = kseq_read(seq)) >= 0) {
     // Record sequence names
-    seq_names[n] = seq.name;
+    // seq_names[n] = seq.name;
+    seq_names[n] = seq->name.s;
     k = 1;
     // Rcout << seq_names[n]   << '\n';
 
     for(int j : POS){
-      temp_char = seq.seq[j-1];
+      // temp_char = seq.seq[j-1];
+      temp_char = seq->seq.s[j-1];
       // Rcout << j << ':' << temp_char << ' ';
       if((temp_char=='A') || (temp_char=='a')) { // && (consensus[k-1]!=0))){ // A = 0
         m_i_A.push_back(n+1); // n+1 for base 1 indexing in R
@@ -207,7 +242,8 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
     }
     n += 1;
   }
-  close(fp2);
+  // close(fp2);
+  gzclose(fp2);
   // Rcout << n  << '\n';
 
   List params = List::create(_["num.seqs"] = n,
