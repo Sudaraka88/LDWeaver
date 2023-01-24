@@ -20,9 +20,10 @@ devtools::install_github("Sudaraka88/BacGWES")
 
 ## Quick Start
 
-To run BacGWES, all you need is a fasta alignment and the corresponding
-genbank annotation file. A toy dataset is provided in the package itself
-to confirm that everything is setup correctly.
+To run BacGWES, all you need is a fasta alignment (can be gz compressed)
+and the corresponding genbank annotation file with the reference
+sequence. A toy dataset is provided in the package itself to confirm
+that everything is setup correctly.
 
 > **Note** For GWES analysis, it is recommended to use an alignment with
 > a large number of sequences (at least \>500). Such alignments can be
