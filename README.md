@@ -49,6 +49,15 @@ aln_path <- system.file("extdata", "sample.aln.gz", package = "BacGWES")
 gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
 snp_filt_method = "relaxed"
 BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, check_gbk_fasta_lengths = F,
-        num_clusts_cds = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method, 
+        num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method, 
         tanglegram_break_segments = 1)
 ```
+
+BacGWES has an interface to perform detailed annotations using
+<a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff</a>.
+Once downloaded, set the two options: \<SnpEff_Annotate = T\> and
+\<snpeff_jar_path = path_to\_\[snpEff.jar\]\_file\>.
+
+> **Note** Since the genbank annotation file is provided, it is
+> unnecessary to download and setup any snpEff databases, only the
+> snpEff.jar file is required by BacGWES to perform annotations.
