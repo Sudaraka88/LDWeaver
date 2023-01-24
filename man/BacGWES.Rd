@@ -8,6 +8,7 @@ BacGWES(
   dset,
   aln_path,
   gbk_path,
+  check_gbk_fasta_lengths = T,
   snp_filt_method = "default",
   snpeff_jar_path = NULL,
   SnpEff_Annotate = T,
@@ -28,6 +29,8 @@ BacGWES(
 \item{aln_path}{path to the multi fasta alignment}
 
 \item{gbk_path}{path to genbank file}
+
+\item{check_gbk_fasta_lengths}{check if the gbk reference sequence length matches the with fasta alignment (default = T)}
 
 \item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')}
 

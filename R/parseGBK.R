@@ -5,7 +5,9 @@
 #' @importFrom genbankr import getSeq
 #'
 #' @param gbk_path path to genbank file
-#' @param g sequence length, available from the BacGWES::parse_fasta_alignment() output
+#' @param g sequence length, available from the BacGWES::parse_fasta_alignment() output (default = NULL),
+#' required if <length_check = T>
+#' @param length_check specify whether to check if fasta and gbk sequence lengths are equal (default = T)
 #'
 #' @return GenBankRecord object
 #'
@@ -17,22 +19,44 @@
 #' gbk <- parseGenBankFile(gbk_path, snp.dat$g)
 #' }
 #' @export
-parse_genbank_file = function(gbk_path, g){
+parse_genbank_file = function(gbk_path, g = NULL, length_check = T){
   t0 = Sys.time()
   # Check inputs
+  if(length_check){ # perform the length check
+    if(is.null(g)){
+      # then g cannot be null
+      stop("g must be provided to perform length check!\n")
+      # return(-1)
+    }
+  }
+
   if(!file.exists(gbk_path)) stop(paste("Can't locate file", gbk_path))
 
   gbk = suppressWarnings(genbankr::import(gbk_path))
-  cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
   refseq = genbankr::getSeq(gbk)
   if(length(refseq) != 1){
-    cat("The GBK file should contain the reference sequence!\n")
-    return(-1)
+    stop("The GBK file should contain the reference sequence!\n")
+    # return(-1)
   }
-  if(length(refseq[[1]]) != g){
-    cat("Reference sequence length does not match with fasta file length\n")
-    return(-1)
+  # the length check is good to check if the alignment matches with the gbk, setting it to F will stop it
+
+  if(length_check){ # perform the length check
+    if(length(refseq[[1]]) != g){ # perform check
+      stop("Genbank reference sequence length mismatches with the fasta alignment!\n")
+      # return(-1)
+    }
+
+  } else {
+    if(!is.null(g)){
+      if(length(refseq[[1]]) != g){
+        warning("Fasta length does not match the genbank reference sequence length!\n")
+      }
+    } else {
+      warning("Similarity between the genbank reference and fasta sequences NOT checked!\n")
+    }
   }
+  cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
+
   # genbankr::seqinfo(gbk)
   return(gbk)
 }

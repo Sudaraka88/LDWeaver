@@ -8,6 +8,7 @@
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>
 #' @param aln_path path to the multi fasta alignment
 #' @param gbk_path path to genbank file
+#' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
@@ -32,9 +33,10 @@
 #' }
 #'
 #' @export
-BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff_jar_path = NULL, SnpEff_Annotate = T,
-                   sr_dist = 20000, discard_MI_threshold_lr = 0.25, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
-                   tanglegram_break_segments = 5, multicore = T, max_blk_sz = 10000, ncores = NULL){
+BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
+                   snpeff_jar_path = NULL, SnpEff_Annotate = T, sr_dist = 20000, discard_MI_threshold_lr = 0.25,
+                   max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
+                   multicore = T, max_blk_sz = 10000, ncores = NULL){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK
@@ -137,7 +139,7 @@ BacGWES = function(dset, aln_path, gbk_path, snp_filt_method = "default", snpeff
   cat("\n\n #################### BLOCK 2 #################### \n\n")
   if(!file.exists(parsed_gbk_path)) {
     cat("Reading the GBK file \n")
-    gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g) # will return 1 if fails
+    gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = check_gbk_fasta_lengths) # will return 1 if fails
     saveRDS(gbk, parsed_gbk_path)
   } else {
     cat("Loading parsed gbk file \n")

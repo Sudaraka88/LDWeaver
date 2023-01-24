@@ -4,12 +4,15 @@
 \alias{parse_genbank_file}
 \title{parseGenBankFile}
 \usage{
-parse_genbank_file(gbk_path, g)
+parse_genbank_file(gbk_path, g = NULL, length_check = T)
 }
 \arguments{
 \item{gbk_path}{path to genbank file}
 
-\item{g}{sequence length, available from the BacGWES::parse_fasta_alignment() output}
+\item{g}{sequence length, available from the BacGWES::parse_fasta_alignment() output (default = NULL),
+required if <length_check = T>}
+
+\item{length_check}{specify whether to check if fasta and gbk sequence lengths are equal (default = T)}
 }
 \value{
 GenBankRecord object
