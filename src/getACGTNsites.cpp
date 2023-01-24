@@ -44,8 +44,11 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   seq = kseq_init(fp);
 
   NumericMatrix allele_counts(5, seq_length);
-  while((l = ks.read(seq)) >= 0) {
-    if(seq.seq.length()!=seq_length) {
+  // while((l = ks.read(seq)) >= 0) {
+  while((l = kseq_read(seq)) >= 0) {
+    int s_len_t = strlen(seq->seq.s);
+    // if(seq.seq.length()!=seq_length) {
+    if(s_len_t!=seq_length) {
       return List::create(Named("seq.length") = -1); // failed due to mismatching seq. lengths
       break;
     }
