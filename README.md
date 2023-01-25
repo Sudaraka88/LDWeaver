@@ -148,6 +148,49 @@ This will create additional outputs in the \<dset\> folder.
 While `BacGWES::BacGWES()` one-liner should work for most analyses, it
 is possible to write a customised pipeline using the functions available
 in the package. For a full list of available functions, run:
-`help(package="BacGWES")`.
+`help(package="BacGWES")`. See below for more details.
 
 ## Detailed Workthrough using Real Data
+
+The following analysis demonstrates all the current options available in
+BacGWES. The alignment with 616 *S. pnuemoniae* isolates is available
+<a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">here</a>.
+The sample.gbk annotation is the requirement for this alignment, it is
+also available
+<a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>.
+
+For this example, the work directory is set to `~/BacGWES_run` and the
+<a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">alignment</a>
+and the \<snpEff.jar\> file are available in the same folder. The
+following one-liner should work:
+
+``` r
+library(BacGWES)
+dset <- "msch"
+aln_path <- "~/BacGWES_run/spn23f_msch.aln.gz"
+gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
+snpeff_jar_path <- "~/BacGWES_run/snpEff.jar"
+BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, snpeff_jar_path = snpeff_jar_path)
+```
+
+Using the available functions in BacGWES, following is an equivalent
+template pipeline:
+
+``` r
+library(BacGWES)
+dset <- "msch"
+dir.create(dset) # folder to save outputs
+
+aln_path <- "~/BacGWES_run/spn23f_msch.aln.gz"
+gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
+snpeff_jar_path <- "~/BacGWES_run/snpEff.jar"
+
+snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path) # parse the alignment and extract SNPs
+gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g) # parse the annotation
+cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, 
+                                             ncores = parallel::detectCores(), 
+                                             num_clusts_CDS = num_clusts_CDS, 
+                                             clust_plt_path = file.path(dset, "cds_"))
+```
+
+![](inst/sup/CDS_clustering.png)
