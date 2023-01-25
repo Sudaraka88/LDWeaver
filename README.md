@@ -39,8 +39,8 @@ The reads were aligned against the
 Since this is only a part of an alignment, set \<check_gbk_fasta_lengths
 = F\>, forcing BacGWES to ignore the mismatch in sequence lengths
 between the genbank reference and the fasta alignment. Several
-additional options are also used, for information on all available
-options run: `help(package="BacGWES")`.
+additional options are also used, see `help(package="BacGWES")` for
+details.
 
 ``` r
 # devtools::install_github("Sudaraka88/BacGWES")
@@ -64,11 +64,10 @@ generated in “sample”:
 
   1.  cX_fit.png - shows the distribution and modelling of the
       background linkage disequilibrium (estimated using weighted Mutual
-      Information) vs. bp-separation within each cluster (two clusters
-      in this example because \<num_clust_CDS=2\>)
-  2.  CDS_clustering.png - shows the genome partitioning (2 clusters in
-      this case), based on the CDS diversity (compared to the reference
-      sequence)
+      Information) vs. bp-separation within each cluster (X = 1,2 in the
+      example)
+  2.  CDS_clustering.png - shows the genome partitioning, based on the
+      CDS diversity (compared to the reference sequence)
   3.  sr_gwes_clust.png - short-range GWES plot for each cluster (2 in
       this case)
   4.  sr_gwes_combi.png - combined short-range GWES plot (for links with
@@ -125,7 +124,7 @@ This will create additional outputs in the \<dset\> folder.
       visualise links and the corresponding genomic regions
   13. GWESExplorer - folder containing the outputs necessary to explore
       short-range GWES links using
-      <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a>)
+      <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a>
 
 > **Note** The default srp_cutoff is 3 (i.e. p=0.001). Short-range links
 > with p\>0.001 are automatically discarded, this can be modified using
@@ -143,13 +142,6 @@ This will create additional outputs in the \<dset\> folder.
   18. sr_snps.vcf, sr_snps_ann.vcf - input and output from the snpEff
       annotation pipeline
 
-## Advanced Options
-
-While `BacGWES::BacGWES()` one-liner should work for most analyses, it
-is possible to write a customised pipeline using the functions available
-in the package. For a full list of available functions, run:
-`help(package="BacGWES")`. See below for more details.
-
 ## Detailed Workthrough using Real Data
 
 The following analysis demonstrates all the current options available in
@@ -162,7 +154,7 @@ also available
 For this example, the work directory is set to `~/BacGWES_run` and the
 <a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">alignment</a>
 and the \<snpEff.jar\> file are available in the same folder. The
-following one-liner should work:
+following should work:
 
 ``` r
 library(BacGWES)
@@ -170,11 +162,13 @@ dset <- "msch"
 aln_path <- "~/BacGWES_run/spn23f_msch.aln.gz"
 gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
 snpeff_jar_path <- "~/BacGWES_run/snpEff.jar"
-BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, snpeff_jar_path = snpeff_jar_path)
+BacGWES::BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, snpeff_jar_path = snpeff_jar_path)
 ```
 
-Using the available functions in BacGWES, following is an equivalent
-template pipeline:
+While the `BacGWES::BacGWES()` one-liner function is generally versatile
+for most analyses, it is possible to write a customised pipeline using
+package functions. For a full list of available functions and options,
+see: `help(package="BacGWES")`.
 
 ``` r
 library(BacGWES)
@@ -184,13 +178,68 @@ dir.create(dset) # folder to save outputs
 aln_path <- "~/BacGWES_run/spn23f_msch.aln.gz"
 gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
 snpeff_jar_path <- "~/BacGWES_run/snpEff.jar"
+ncores = parallel::detectCores()
 
 snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path) # parse the alignment and extract SNPs
 gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g) # parse the annotation
 cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, 
-                                             ncores = parallel::detectCores(), 
-                                             num_clusts_CDS = num_clusts_CDS, 
-                                             clust_plt_path = file.path(dset, "cds_"))
+                                             ncores = ncores, 
+                                             num_clusts_CDS = 3, 
+                                             clust_plt_path = file.path(dset, "CDS_clustering.png"))
 ```
 
 ![](inst/sup/CDS_clustering.png)
+
+``` r
+hdw = BacGWES::estimate_Hamming_distance_weights(snp.dat = snp.dat) # Hamming distance weights
+# Perform MI computation model fitting and ARACNE - this will take some time...
+max_blk_sz = 10000 # This is the default value, reduce as required depending on RAM availability...
+sr_links = BacGWES::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
+                                           lr_save_path = file.path(dset, "lr_links.tsv"), sr_save_path = file.path(dset, "sr_links.tsv"),
+                                           plt_folder = dset, max_blk_sz = max_blk_sz)
+```
+
+![](inst/sup/c1_fit.png) ![](inst/sup/c2_fit.png)
+![](inst/sup/c3_fit.png)
+
+``` r
+# Read in the saved lr_links
+lr_links = read.table(file.path(dset, "lr_links.tsv"), sep = '\t') # This is written as a tsv file, need to load for plotting
+colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
+
+BacGWES::make_gwes_plots(lr_links = lr_links, sr_links = sr_links, plt_folder = dset)
+```
+
+![](inst/sup/sr_gwes_clust.png) ![](inst/sup/sr_gwes_combi.png)
+
+``` r
+# Identify the top hits by performing snpEff annotations
+tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
+                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
+                                                  cds_var = cds_var, sr_links = sr_links, snp.dat = snp.dat,
+                                                  tophits_path = file.path(dset, "tophits.tsv"))
+```
+
+This will generate several outputs comprising annotations into the
+\<msch\> folder, please refere to Performing Annotations section above.
+
+``` r
+# Generate tanglegram
+BacGWES::create_tanglegram(srlinks_tophits = tophits, gbk = gbk, tanglegram_folder = file.path(dset, "Tanglegram"))
+```
+
+Above line will create 5 tanglegrams in html format, the first one
+should look like this: ![](inst/sup/Tanglegram_screenshot.png)
+
+``` r
+# Generate output required for GWESExplorer
+BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = file.path(dset, "GWESExplorer"))
+```
+
+Above line will create three files in \<msch/GWESExplorer\> that can be
+used as inputs for
+<a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a>.
+In addition to these, it is possible to provide a GFF3 annotation file,
+phenotype data and a sequence tree into GWESExplorer for enhanced
+visualisation. The circular GWESExplorer plot should look like this:
+![](inst/sup/GWESExplorer_screenshot.png)
