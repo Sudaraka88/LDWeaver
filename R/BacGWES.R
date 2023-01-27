@@ -108,7 +108,10 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     max_blk_sz = 10000
   }
 
-
+  # normalise_input_paths
+  aln_path = normalizePath(aln_path)
+  gbk_path = normalizePath(gbk_path)
+  if(!is.null(snpeff_jar_path)) snpeff_jar_path = normalizePath(snpeff_jar_path)
 
 
   # setup paths
