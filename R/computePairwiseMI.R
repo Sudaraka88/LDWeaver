@@ -25,7 +25,7 @@
 #' @param sr_save_path specify the location to save short range MI links as a tsv file (default = NULL, will be auto set), links below srp_cutoff will not be saved
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param sr_dist specify the short-range basepair separation (default = 20000)
-#' @param discard_MI_threshold_lr specify minimum MI value to retain long range links (default = 0.25)
+#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20% of MI links will be retained
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
@@ -42,7 +42,7 @@
 #'
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
-                                  sr_dist = 20000, discard_MI_threshold_lr = 0.25, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE){
+                                  sr_dist = 20000, lr_retain_quantile = 0.8, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -64,9 +64,9 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     t0 = Sys.time()
     cat(paste("Block", i, "of", nblcks, "..."))
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
-                                 to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
-                                 nclust = cds_var$nclust, sr_dist = sr_dist, discard_MI_threshold = discard_MI_threshold_lr,
-                                 lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
+                                            to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
+                                            nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_quantile = lr_retain_quantile,
+                                            lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
@@ -109,7 +109,7 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, sr_dist = 20000, discard_MI_threshold = 0.25, lr_save_path, ncores, sr_links){
+perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, sr_dist = 20000, lr_retain_quantile = 0.8, lr_save_path, ncores, sr_links){
 
   # These are static, best passed in here <potential inputs>
   neff = sum(hdw)
@@ -235,7 +235,8 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
 
   # Discard MI values w len > sr_dist using discard_MI_threshold
   if(lr_present){
-    len_filt = MI_df_lr$MI >= discard_MI_threshold
+    disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_quantile)
+    len_filt = MI_df_lr$MI >= disc_thresh
     if(!all(len_filt == FALSE)){
       MI_df_lr = MI_df_lr[len_filt, ]
       write.table(x = MI_df_lr, file = lr_save_path, append = T, quote = F, row.names = F, col.names = F, sep = '\t')
@@ -339,29 +340,38 @@ mergeNsort_sr_links = function(cds_var, sr_links, plt_path){
     sr_links_t = sr_links_t[!is.na(sr_links_t$srp_max), ]
     # let's have a separate DF for duplicated links
     dup_links = sr_links_t$clust1 != sr_links_t$clust2
+    if(any(dup_links))any_dup_links = T else any_dup_links = F
 
-    sr_links_df = rbind(sr_links_df, data.frame(clust_c = i, sr_links_t[!dup_links, ]))
-    duplink_df = rbind(duplink_df, data.frame(clust_c = i, sr_links_t[dup_links, ]))
+    if(any_dup_links){
+      sr_links_df = rbind(sr_links_df, data.frame(clust_c = i, sr_links_t[!dup_links, ]))
+      duplink_df = rbind(duplink_df, data.frame(clust_c = i, sr_links_t[dup_links, ]))
+    } else {
+      sr_links_df = rbind(sr_links_df, data.frame(clust_c = i, sr_links_t))
+    }
 
     cat("Done in", difftime(time1 = Sys.time(), time2 = t0, units = "secs"), "s\n")
 
   }
   cat("Cleaning up links ... ")
 
-  duplink_dt = data.table::as.data.table(duplink_df)
-  keys = colnames(duplink_dt)[!grepl('srp_max', colnames(duplink_dt))]
-  keys = keys[!grepl('clust_c', keys)]
-
-  # duplink_dt_red = duplink_dt[, list(srp_max = max(srp_max), idx = .I), keys]
-
-  duplink_dt_red = duplink_dt[, .I[which.max(srp_max)], by = keys]$V1
+  if(nrow(duplink_df) > 0){
 
 
-  # duplink_dt_red = duplink_dt[, lapply(.SD, max), by = .(srp_max)]
-  # duplink_df_red = duplink_df %>% group_by(keys) %>% summarize(max_srp = max(max_srp))
+    duplink_dt = data.table::as.data.table(duplink_df)
+    keys = colnames(duplink_dt)[!grepl('srp_max', colnames(duplink_dt))]
+    keys = keys[!grepl('clust_c', keys)]
 
-  sr_links_df = rbind(sr_links_df,
-                      duplink_df[duplink_dt_red, ])
+    # duplink_dt_red = duplink_dt[, list(srp_max = max(srp_max), idx = .I), keys]
+
+    duplink_dt_red = duplink_dt[, .I[which.max(srp_max)], by = keys]$V1
+
+
+    # duplink_dt_red = duplink_dt[, lapply(.SD, max), by = .(srp_max)]
+    # duplink_df_red = duplink_df %>% group_by(keys) %>% summarize(max_srp = max(max_srp))
+
+    sr_links_df = rbind(sr_links_df,
+                        duplink_df[duplink_dt_red, ])
+  }
 
   sr_links_df = sr_links_df[order(sr_links_df$srp_max, decreasing = T), ]
   rownames(sr_links_df) = NULL

@@ -11,9 +11,10 @@ BacGWES(
   check_gbk_fasta_lengths = T,
   snp_filt_method = "default",
   snpeff_jar_path = NULL,
+  hdw_threshold = 0.1,
   SnpEff_Annotate = T,
   sr_dist = 20000,
-  discard_MI_threshold_lr = 0.25,
+  discard_MI_threshold_lr = 0.2,
   max_tophits = 250,
   num_clusts_CDS = 3,
   srp_cutoff = 3,
@@ -35,6 +36,8 @@ BacGWES(
 \item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')}
 
 \item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F}
+
+\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) <add more>}
 
 \item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff}
 

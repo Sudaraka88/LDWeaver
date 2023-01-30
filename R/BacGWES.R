@@ -11,9 +11,10 @@
 #' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
+#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) <add more>
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
-#' @param discard_MI_threshold_lr specify minimum MI value to retain long range links (default = 0.25), range 0-1 (excluding both). Values closer to 0 will retain more values
+#' @param discard_MI_threshold_lr specify minimum MI value to retain long range links (default = 0.2), range 0-1 (excluding both). Values closer to 0 will retain more values
 #' @param max_tophits specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10
@@ -34,9 +35,9 @@
 #'
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
-                   snpeff_jar_path = NULL, SnpEff_Annotate = T, sr_dist = 20000, discard_MI_threshold_lr = 0.25,
-                   max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
-                   multicore = T, max_blk_sz = 10000, ncores = NULL){
+                   snpeff_jar_path = NULL, hdw_threshold = 0.1, SnpEff_Annotate = T, sr_dist = 20000,
+                   discard_MI_threshold_lr = 0.2, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
+                   tanglegram_break_segments = 5, multicore = T, max_blk_sz = 10000, ncores = NULL){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK
@@ -51,6 +52,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # Welcome message
   timestamp()
   cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
+  #TODO: show a set of parameters before starting the run (save paths, file sizes, etc.)
+  #TODO: Bug fix from pnuemo SA dataset (output in Linux)
 
   # Sanity checks
   # annotations
@@ -79,8 +82,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   }
 
   if(discard_MI_threshold_lr <= 0 | discard_MI_threshold_lr >= 1) {
-    warning(paste("Unable to use the provided value for <num_clusts_CDS>, using", 0.25))
-    discard_MI_threshold_lr = 0.25
+    warning(paste("Unable to use the provided value for <num_clusts_CDS>, using", 0.2))
+    discard_MI_threshold_lr = 0.2
   }
 
   if(max_tophits < 50 | max_tophits > 1000) {
@@ -165,7 +168,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(!file.exists(hdw_path)) {
     cat("Estimating per sequence Hamming distance \n")
     # hdw = perform_pop_struct_correction_sparse(snp.matrix = snp.dat$snp.matrix, nsnp = snp.dat$nsnp)
-    hdw = BacGWES::estimate_Hamming_distance_weights(snp.dat = snp.dat)
+    hdw = BacGWES::estimate_Hamming_distance_weights(snp.dat = snp.dat, threshold = hdw_threshold)
     saveRDS(hdw, hdw_path)
   } else {
     cat("Loading previous Hamming distance estimates \n")
