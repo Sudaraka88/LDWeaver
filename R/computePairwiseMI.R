@@ -65,7 +65,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     cat(paste("Block", i, "of", nblcks, "..."))
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
                                             to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
-                                            nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_quantile = lr_retain_quantile,
+                                            nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
                                             lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
