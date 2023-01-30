@@ -25,7 +25,7 @@
 #' @param sr_save_path specify the location to save short range MI links as a tsv file (default = NULL, will be auto set), links below srp_cutoff will not be saved
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param sr_dist specify the short-range basepair separation (default = 20000)
-#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20\% of MI links will be retained
+#' @param lr_retain_level specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
@@ -42,7 +42,7 @@
 #'
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
-                                  sr_dist = 20000, lr_retain_quantile = 0.8, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE){
+                                  sr_dist = 20000, lr_retain_level = 0.99, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -70,7 +70,8 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
-  sr_links_df = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, plt_path = plt_folder)
+  # In case a link gets through with len > sr_dist, we should filter that out in <mergeNsort_sr_links()>
+  sr_links_df = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, sr_dist = sr_dist, plt_path = plt_folder)
   sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
 
   if(runARACNE){
@@ -109,7 +110,7 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, sr_dist = 20000, lr_retain_quantile = 0.8, lr_save_path, ncores, sr_links){
+perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, sr_dist = 20000, lr_retain_level = 0.99, lr_save_path, ncores, sr_links){
 
   # These are static, best passed in here <potential inputs>
   neff = sum(hdw)
@@ -236,7 +237,8 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
 
   # Discard MI values w len > sr_dist using discard_MI_threshold
   if(lr_present){
-    disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_quantile)
+    # WARNING! setting a low quantile will create a HUGE lr_links.tsv file!
+    disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
     len_filt = MI_df_lr$MI >= disc_thresh
     if(!all(len_filt == FALSE)){
       MI_df_lr = MI_df_lr[len_filt, ]
@@ -288,7 +290,7 @@ computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, nc
   # return(MI_t)
 }
 
-mergeNsort_sr_links = function(cds_var, sr_links, plt_path){
+mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
   sr_links_df = data.frame()
   duplink_df = data.frame()
 
@@ -304,6 +306,11 @@ mergeNsort_sr_links = function(cds_var, sr_links, plt_path){
     t0 = Sys.time()
 
     sr_links_t = sr_links[[i]]
+    # Add a filter in case there is a long range link here
+    sr_links_t = sr_links_t[!is.na(sr_links_t$len), ];
+    sr_links_t = sr_links_t[(sr_links_t$len < sr_dist), ]
+    sr_links_t = sr_links_t[(sr_links_t$len > 0), ]
+
     # colnames(sr_links_t) = c("len", "MI")
     maxvls = sr_links_t %>% dplyr::group_by(len) %>% dplyr::summarise(max = quantile(MI, 0.95))
 

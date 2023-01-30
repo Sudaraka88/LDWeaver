@@ -14,7 +14,7 @@ BacGWES(
   hdw_threshold = 0.1,
   SnpEff_Annotate = T,
   sr_dist = 20000,
-  lr_retain_quantile = 0.8,
+  lr_retain_level = 0.99,
   max_tophits = 250,
   num_clusts_CDS = 3,
   srp_cutoff = 3,
@@ -43,7 +43,7 @@ BacGWES(
 
 \item{sr_dist}{links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.}
 
-\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20\% of links will be saved), range 0-1, values closer to 0 will retain more values}
+\item{lr_retain_level}{specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained, range 0.1-0.999. WARNING! Low values will results in a HUGE lr_links.tsv file!}
 
 \item{max_tophits}{specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000}

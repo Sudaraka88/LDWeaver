@@ -14,7 +14,7 @@
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
-#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20\% of links will be saved), range 0-1, values closer to 0 will retain more values
+#' @param lr_retain_level specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained, range 0.1-0.999. WARNING! Low values will results in a HUGE lr_links.tsv file!
 #' @param max_tophits specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10
@@ -35,7 +35,7 @@
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
                    snpeff_jar_path = NULL, hdw_threshold = 0.1, SnpEff_Annotate = T, sr_dist = 20000,
-                   lr_retain_quantile = 0.8, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
+                   lr_retain_level = 0.99, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
                    tanglegram_break_segments = 5, multicore = T, max_blk_sz = 10000, ncores = NULL){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
@@ -80,10 +80,12 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     sr_dist = 20000
   }
 
-  if(lr_retain_quantile <= 0 | lr_retain_quantile >= 1) {
-    warning(paste("Unable to use the provided value for <lr_retain_quantile>, using", 0.8))
-    lr_retain_quantile = 0.2
+  if(lr_retain_level <= 0.1 | lr_retain_level >= 0.9999) {
+    warning(paste("Unable to use the provided value for <lr_retain_level>, using", 0.99))
+    lr_retain_level = 0.99
   }
+
+  if(lr_retain_level < 0.8) warning("The given lr_retain_level can results in a large lr_links.tsv file!")
 
   if(max_tophits < 50 | max_tophits > 1000) {
     warning(paste("Unable to use the provided value for <max_tophits>, using", 250))
