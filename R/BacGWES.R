@@ -187,7 +187,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     cat("Commencing MI computation \n")
     sr_links = BacGWES::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
-                                               plt_folder = dset, sr_dist = sr_dist, lr_retain_quantile = lr_retain_quantile,
+                                               plt_folder = dset, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T)
   }
 
