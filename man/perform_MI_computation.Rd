@@ -13,7 +13,7 @@ perform_MI_computation(
   sr_save_path = NULL,
   plt_folder = NULL,
   sr_dist = 20000,
-  discard_MI_threshold_lr = 0.25,
+  lr_retain_quantile = 0.8,
   max_blk_sz = 10000,
   srp_cutoff = 3,
   runARACNE = TRUE
@@ -36,7 +36,7 @@ perform_MI_computation(
 
 \item{sr_dist}{specify the short-range basepair separation (default = 20000)}
 
-\item{discard_MI_threshold_lr}{specify minimum MI value to retain long range links (default = 0.25)}
+\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20% of MI links will be retained}
 
 \item{max_blk_sz}{specify maximum block size for MI computation (default = 10000), larger sizes require more RAM}
 
