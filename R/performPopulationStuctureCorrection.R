@@ -21,19 +21,20 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1){
   t0 = Sys.time()
   thresh =  as.integer(snp.dat$nsnp*threshold)
 
-  snpmat_t = as(snp.dat$snp.matrix_A, 'unpackedMatrix')
+  # snpmat_t = as(snp.dat$snp.matrix_A, 'unpackedMatrix') # This crashes in linuxMint for some reason!
+  snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
   shared.snps = MatrixExtra::crossprod((snpmat_t))
 
-  snpmat_t = as(snp.dat$snp.matrix_C, 'unpackedMatrix')
+  snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
-  snpmat_t = as(snp.dat$snp.matrix_G, 'unpackedMatrix')
+  snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
-  snpmat_t = as(snp.dat$snp.matrix_T, 'unpackedMatrix')
+  snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
-  snpmat_t = as(snp.dat$snp.matrix_N, 'unpackedMatrix')
+  snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
   hdw = 1/Matrix::colSums((snp.dat$nsnp - shared.snps) < thresh)

@@ -130,11 +130,12 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
 
   # from
   {
-    tAf = as(snp.dat$snp.matrix_A[from, ], 'unpackedMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
-    tCf = as(snp.dat$snp.matrix_C[from, ], 'unpackedMatrix'); tCfh = MatrixExtra::tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
-    tGf = as(snp.dat$snp.matrix_G[from, ], 'unpackedMatrix'); tGfh = MatrixExtra::tcrossprod(tGf, hsq); pGf = Matrix::rowSums(tGfh^2)
-    tTf = as(snp.dat$snp.matrix_T[from, ], 'unpackedMatrix'); tTfh = MatrixExtra::tcrossprod(tTf, hsq); pTf = Matrix::rowSums(tTfh^2)
-    tNf = as(snp.dat$snp.matrix_N[from, ], 'unpackedMatrix'); tNfh = MatrixExtra::tcrossprod(tNf, hsq); pNf = Matrix::rowSums(tNfh^2)
+    # tAf = as(snp.dat$snp.matrix_A[from, ], 'unpackedMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2) # crashes in linuxMint
+    tAf = as(snp.dat$snp.matrix_A[from, ], 'lgeMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
+    tCf = as(snp.dat$snp.matrix_C[from, ], 'lgeMatrix'); tCfh = MatrixExtra::tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
+    tGf = as(snp.dat$snp.matrix_G[from, ], 'lgeMatrix'); tGfh = MatrixExtra::tcrossprod(tGf, hsq); pGf = Matrix::rowSums(tGfh^2)
+    tTf = as(snp.dat$snp.matrix_T[from, ], 'lgeMatrix'); tTfh = MatrixExtra::tcrossprod(tTf, hsq); pTf = Matrix::rowSums(tTfh^2)
+    tNf = as(snp.dat$snp.matrix_N[from, ], 'lgeMatrix'); tNfh = MatrixExtra::tcrossprod(tNf, hsq); pNf = Matrix::rowSums(tNfh^2)
   }
 
   if(fromISto){
@@ -145,11 +146,11 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
     tNt = tNf; tNth = tNfh; pNt = pNf
   } else {
     # to
-    tAt = as(snp.dat$snp.matrix_A[to, ], 'unpackedMatrix'); tAth = MatrixExtra::tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
-    tCt = as(snp.dat$snp.matrix_C[to, ], 'unpackedMatrix'); tCth = MatrixExtra::tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
-    tGt = as(snp.dat$snp.matrix_G[to, ], 'unpackedMatrix'); tGth = MatrixExtra::tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
-    tTt = as(snp.dat$snp.matrix_T[to, ], 'unpackedMatrix'); tTth = MatrixExtra::tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
-    tNt = as(snp.dat$snp.matrix_N[to, ], 'unpackedMatrix'); tNth = MatrixExtra::tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
+    tAt = as(snp.dat$snp.matrix_A[to, ], 'lgeMatrix'); tAth = MatrixExtra::tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
+    tCt = as(snp.dat$snp.matrix_C[to, ], 'lgeMatrix'); tCth = MatrixExtra::tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
+    tGt = as(snp.dat$snp.matrix_G[to, ], 'lgeMatrix'); tGth = MatrixExtra::tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
+    tTt = as(snp.dat$snp.matrix_T[to, ], 'lgeMatrix'); tTth = MatrixExtra::tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
+    tNt = as(snp.dat$snp.matrix_N[to, ], 'lgeMatrix'); tNth = MatrixExtra::tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
   }
 
   den = neff + MatrixExtra::tcrossprod(snp.dat$r[from], snp.dat$r[to]) * 0.5
