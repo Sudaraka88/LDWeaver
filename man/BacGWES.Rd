@@ -37,13 +37,13 @@ BacGWES(
 
 \item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F}
 
-\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) <add more>}
+\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more}
 
 \item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff}
 
 \item{sr_dist}{links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.}
 
-\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20% of links will be saved), range 0-1 (excluding both) - values closer to 0 will retain more values}
+\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20\% of links will be saved), range 0-1, values closer to 0 will retain more values}
 
 \item{max_tophits}{specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000}
@@ -72,5 +72,4 @@ Function to run the BacGWES pipeline
 \dontrun{
 sr_links_red = BacGWES(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
 }
-
 }

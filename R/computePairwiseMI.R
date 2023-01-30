@@ -25,7 +25,7 @@
 #' @param sr_save_path specify the location to save short range MI links as a tsv file (default = NULL, will be auto set), links below srp_cutoff will not be saved
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param sr_dist specify the short-range basepair separation (default = 20000)
-#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20% of MI links will be retained
+#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20\% of MI links will be retained
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),

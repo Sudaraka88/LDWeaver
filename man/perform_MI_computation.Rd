@@ -36,7 +36,7 @@ perform_MI_computation(
 
 \item{sr_dist}{specify the short-range basepair separation (default = 20000)}
 
-\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20% of MI links will be retained}
+\item{lr_retain_quantile}{specify the long-range MI retaining percentile (default = 0.8) - in each block, top 20\% of MI links will be retained}
 
 \item{max_blk_sz}{specify maximum block size for MI computation (default = 10000), larger sizes require more RAM}
 

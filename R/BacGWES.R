@@ -11,10 +11,10 @@
 #' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
-#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) <add more>
+#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
-#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20% of links will be saved), range 0-1 (excluding both) - values closer to 0 will retain more values
+#' @param lr_retain_quantile specify the long-range MI retaining percentile (default = 0.8 - in each block, top 20\% of links will be saved), range 0-1, values closer to 0 will retain more values
 #' @param max_tophits specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10
@@ -32,7 +32,6 @@
 #' \dontrun{
 #' sr_links_red = BacGWES(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
 #' }
-#'
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
                    snpeff_jar_path = NULL, hdw_threshold = 0.1, SnpEff_Annotate = T, sr_dist = 20000,
