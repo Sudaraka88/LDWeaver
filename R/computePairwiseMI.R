@@ -49,7 +49,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   if(is.null(sr_save_path)) sr_save_path = file.path(getwd(), "sr_links.tsv")
   if(is.null(plt_folder)) plt_folder = file.path(getwd(), "PLOTS");
 
-  if(!exists(plt_folder)) dir.create(plt_folder)
+  if(!file.exists(plt_folder)) dir.create(plt_folder)
 
   cat("Begin MI computation... \n")
   # Break down the computation into blocks
@@ -60,13 +60,21 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   sr_links = list() # list to hold short-range links (fast computation and avoid indexing)
   for(i in 1:cds_var$nclust) sr_links[[i]] = data.frame()
 
+  # pre-computed parameters
+  neff = sum(hdw)
+  hsq = diag(sqrt(hdw))
+
+
   for(i in 1:nblcks){
     t0 = Sys.time()
     cat(paste("Block", i, "of", nblcks, "..."))
-    sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
-                                            to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
-                                            nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
-                                            lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
+    # sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
+    #                                         to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
+    #                                         nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
+    #                                         lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
+    sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var, lr_save_path = lr_save_path,
+                                            from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i], sr_dist = 20000, lr_retain_level = 0.99,
+                                            to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], ncores = ncores, sr_links = sr_links)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
@@ -110,15 +118,19 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, sr_dist = 20000, lr_retain_level = 0.99, lr_save_path, ncores, sr_links){
+perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_level = 0.99){
+  # from, to are vectors
 
   # These are static, best passed in here <potential inputs>
-  neff = sum(hdw)
-  hsq = diag(sqrt(hdw))
+  # neff = sum(hdw)
+  # hsq = diag(sqrt(hdw))
   POS_f = as.numeric(snp.dat$POS[from])
   POS_t = as.numeric(snp.dat$POS[to])
-  paint_f = paint[from]
-  paint_t = paint[to]
+  # paint_f = paint[from]
+  # paint_t = paint[to]
+  paint_f = cds_var$paint[from]
+  paint_t = cds_var$paint[to]
+
 
   if(length(from) == length(to)){
     fromISto = all(from == to) # center square mx, no need to repeat certain calculations
@@ -197,6 +209,9 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
 
   }
 
+  cat("\n")
+  cat(str(MI))
+  cat("\n")
   # Once MI is computed, we need to save it to a text file
   # Diagnoal blocks of the big matrix should only use upper.tri entries
   # Can we also get the clustering done?
@@ -205,6 +220,11 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
   } else {
     ind <- rbind(which( upper.tri(MI, diag=FALSE) , arr.ind = TRUE), which( lower.tri(MI, diag=FALSE) , arr.ind = TRUE))
   }
+
+  cat("\n")
+  cat(paste("r:", min(ind[,1]), ",R:", max(ind[,1]), ",c:", min(ind[,2]), ",C:", max(ind[,2]), sep = ""))
+  cat("\n")
+
 
   lr_present = sr_present = F
 
@@ -222,7 +242,7 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
                      len = 0.5*snp.dat$g - abs((pos1 - pos2)%%snp.dat$g  - 0.5*snp.dat$g),
                      MI = MI[ind])
 
-  sr_lr_switch = MI_df$len <= sr_dist
+  sr_lr_switch = (MI_df$len <= sr_dist)
   if(all(sr_lr_switch==TRUE)) {
     MI_df_sr = MI_df
     sr_present = T
@@ -238,6 +258,7 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
   # Discard MI values w len > sr_dist using discard_MI_threshold
   if(lr_present){
     # WARNING! setting a low quantile will create a HUGE lr_links.tsv file!
+    cat("... Adding LR links to file ...") # debug
     disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
     len_filt = MI_df_lr$MI >= disc_thresh
     if(!all(len_filt == FALSE)){
@@ -247,11 +268,12 @@ perform_MI_computation_ACGTN = function(snp.dat, hdw, from, to, paint, nclust, s
   }
 
   if(sr_present){
+    cat("... Updating sr_links list ...") # debug
     # write.table(x = MI_df_sr, file = sr_save_path, append = T, quote = F, row.names = F, col.names = F)
     clust_mat = matrix(c(MI_df_sr$clust1, MI_df_sr$clust2), nrow = nrow(MI_df_sr))
 
     # quickly loop through across nclust and append link info to the relevant object
-    for(i in 1:nclust){
+    for(i in 1:cds_var$nclust){
       clust_link_idx = which(.compareToRow(clust_mat, i))
       if(length(clust_link_idx) > 0){
         sr_links[[i]] <- rbind(sr_links[[i]], MI_df_sr[clust_link_idx, ])
