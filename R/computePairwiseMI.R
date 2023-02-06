@@ -209,9 +209,9 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
 
   }
 
-  cat("\n")
-  cat(str(MI))
-  cat("\n")
+  # cat("\n")
+  # cat(str(MI))
+  # cat("\n")
   # Once MI is computed, we need to save it to a text file
   # Diagnoal blocks of the big matrix should only use upper.tri entries
   # Can we also get the clustering done?
@@ -221,9 +221,9 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
     ind <- rbind(which( upper.tri(MI, diag=FALSE) , arr.ind = TRUE), which( lower.tri(MI, diag=FALSE) , arr.ind = TRUE))
   }
 
-  cat("\n")
-  cat(paste("r:", min(ind[,1]), ",R:", max(ind[,1]), ",c:", min(ind[,2]), ",C:", max(ind[,2]), sep = ""))
-  cat("\n")
+  # cat("\n")
+  # cat(paste("r:", min(ind[,1]), ",R:", max(ind[,1]), ",c:", min(ind[,2]), ",C:", max(ind[,2]), sep = ""))
+  # cat("\n")
 
 
   lr_present = sr_present = F
