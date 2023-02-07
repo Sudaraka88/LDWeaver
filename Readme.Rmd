@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # BacGWES
 
-## Genomewide Epistasis Analysis on Bacteria
+## Genomewide Search for Evidence of Epistasis and Co-selection in Bacteria
+
+BacGWES takes an alignment of sequences and identifies LD between pairs of variants that is unusually high given the genomic distance between the pair, and hence could be due to epistasis. Approximate statistical significance of pairs is reported, and output from BacGWES can be used as inputs for GWESExplorer (and other analyses).
 
 ## Installation
 
