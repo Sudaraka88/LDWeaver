@@ -16,7 +16,8 @@ perform_MI_computation(
   lr_retain_level = 0.99,
   max_blk_sz = 10000,
   srp_cutoff = 3,
-  runARACNE = TRUE
+  runARACNE = TRUE,
+  perform_SR_analysis_only = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ modelling since all links are used. However, setting a threshold > 2 will genera
 and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1)}
 
 \item{runARACNE}{specify whether to run ARACNE (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1}
+
+\item{perform_SR_analysis_only}{skip the long range link analysis (default = FALSE)}
 }
 \value{
 R data frame with short range GWES links (plots and long range links will be saved)

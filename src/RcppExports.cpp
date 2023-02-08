@@ -65,9 +65,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// getACGTN_Sites
-List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh);
-RcppExport SEXP _BacGWES_getACGTN_Sites(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
+// extractAlnParam
+List extractAlnParam(std::string file, int filter, double gap_thresh, double maf_thresh);
+RcppExport SEXP _BacGWES_extractAlnParam(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -75,7 +75,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type filter(filterSEXP);
     Rcpp::traits::input_parameter< double >::type gap_thresh(gap_threshSEXP);
     Rcpp::traits::input_parameter< double >::type maf_thresh(maf_threshSEXP);
-    rcpp_result_gen = Rcpp::wrap(getACGTN_Sites(file, filter, gap_thresh, maf_thresh));
+    rcpp_result_gen = Rcpp::wrap(extractAlnParam(file, filter, gap_thresh, maf_thresh));
+    return rcpp_result_gen;
+END_RCPP
+}
+// extractSNPs
+List extractSNPs(std::string file, int n_seq, int n_snp, std::vector<int> POS);
+RcppExport SEXP _BacGWES_extractSNPs(SEXP fileSEXP, SEXP n_seqSEXP, SEXP n_snpSEXP, SEXP POSSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< int >::type n_seq(n_seqSEXP);
+    Rcpp::traits::input_parameter< int >::type n_snp(n_snpSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type POS(POSSEXP);
+    rcpp_result_gen = Rcpp::wrap(extractSNPs(file, n_seq, n_snp, POS));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -85,7 +99,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BacGWES_fastHadamard", (DL_FUNC) &_BacGWES_fastHadamard, 9},
     {"_BacGWES_compareToRow", (DL_FUNC) &_BacGWES_compareToRow, 2},
     {"_BacGWES_compareTriplet", (DL_FUNC) &_BacGWES_compareTriplet, 3},
-    {"_BacGWES_getACGTN_Sites", (DL_FUNC) &_BacGWES_getACGTN_Sites, 4},
+    {"_BacGWES_extractAlnParam", (DL_FUNC) &_BacGWES_extractAlnParam, 4},
+    {"_BacGWES_extractSNPs", (DL_FUNC) &_BacGWES_extractSNPs, 4},
     {NULL, NULL, 0}
 };
 

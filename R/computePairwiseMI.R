@@ -31,6 +31,7 @@
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 #' and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1)
 #' @param runARACNE specify whether to run ARACNE (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1
+#' @param perform_SR_analysis_only skip the long range link analysis (default = FALSE)
 #'
 #' @return R data frame with short range GWES links (plots and long range links will be saved)
 #'
@@ -42,7 +43,8 @@
 #'
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
-                                  sr_dist = 20000, lr_retain_level = 0.99, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE){
+                                  sr_dist = 20000, lr_retain_level = 0.99, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
+                                  perform_SR_analysis_only = FALSE){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -68,13 +70,16 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   for(i in 1:nblcks){
     t0 = Sys.time()
     cat(paste("Block", i, "of", nblcks, "..."))
+    from_ = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i]
+    to_ = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i]
     # sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
     #                                         to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
     #                                         nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
     #                                         lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
-    sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var, lr_save_path = lr_save_path,
-                                            from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i], sr_dist = 20000, lr_retain_level = 0.99,
-                                            to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], ncores = ncores, sr_links = sr_links)
+    sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var,
+                                            lr_save_path = lr_save_path, from = from_, sr_dist = 20000,
+                                            lr_retain_level = 0.99, to = to_, ncores = ncores, sr_links = sr_links,
+                                            perform_SR_analysis_only = perform_SR_analysis_only)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
@@ -118,7 +123,7 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_level = 0.99){
+perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_level = 0.99, perform_SR_analysis_only = F){
   # from, to are vectors
 
   # These are static, best passed in here <potential inputs>
@@ -126,6 +131,21 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   # hsq = diag(sqrt(hdw))
   POS_f = as.numeric(snp.dat$POS[from])
   POS_t = as.numeric(snp.dat$POS[to])
+
+  if(perform_SR_analysis_only){ # We can save (a lot!) of time if only SR analysis is required
+
+    # perform a length check on <POS_f, POS_t> with all <POS_t, POS_f> - drop sites that don't form links < sr_dist
+    kp_f = sapply(POS_f, function(x) any( abs(0.5*snp.dat$g - abs((POS_t - x)%%snp.dat$g  - 0.5*snp.dat$g)) < sr_dist) )
+    kp_t = sapply(POS_t, function(x) any( abs(0.5*snp.dat$g - abs((POS_f - x)%%snp.dat$g  - 0.5*snp.dat$g)) < sr_dist) )
+    from = from[kp_f]
+    to = to[kp_t]
+    POS_f = as.numeric(snp.dat$POS[from])
+    POS_t = as.numeric(snp.dat$POS[to])
+
+    }
+
+
+
   # paint_f = paint[from]
   # paint_t = paint[to]
   paint_f = cds_var$paint[from]
@@ -256,7 +276,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   }
 
   # Discard MI values w len > sr_dist using discard_MI_threshold
-  if(lr_present){
+  if(lr_present & !perform_SR_analysis_only){ # if only the SR analysis is requested, discard this section
     # WARNING! setting a low quantile will create a HUGE lr_links.tsv file!
     cat("... Adding LR links to file ...") # debug
     disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)

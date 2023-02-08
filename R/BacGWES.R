@@ -11,7 +11,8 @@
 #' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
-#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more
+#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?
+#' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
 #' @param lr_retain_level specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained, range 0.1-0.999. WARNING! Low values will results in a HUGE lr_links.tsv file!
@@ -26,6 +27,7 @@
 #' @param ncores specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
 #'
+#'
 #' @return Numeric Value 0 if successful (all generated outputs will be saved)
 #'
 #' @examples
@@ -34,8 +36,8 @@
 #' }
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
-                   snpeff_jar_path = NULL, hdw_threshold = 0.1, SnpEff_Annotate = T, sr_dist = 20000,
-                   lr_retain_level = 0.99, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
+                   snpeff_jar_path = NULL, hdw_threshold = 0.1, perform_SR_analysis_only = F, SnpEff_Annotate = T,
+                   sr_dist = 20000, lr_retain_level = 0.99, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
                    tanglegram_break_segments = 5, multicore = T, max_blk_sz = 10000, ncores = NULL){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
@@ -131,11 +133,12 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK1
   cat("\n\n #################### BLOCK 1 #################### \n\n")
   if(!file.exists(ACGTN_snp_path)) {
+    t0 = Sys.time()
     cat("Performing snp extraction from the alignment \n")
     snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method)
     cat("Savings snp.dat...")
     saveRDS(snp.dat, ACGTN_snp_path)
-    cat("Done!\n")
+    cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }else{
     cat("Loading previous snp matrix \n")
     snp.dat = readRDS(ACGTN_snp_path)
@@ -187,7 +190,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     sr_links = BacGWES::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
                                                plt_folder = dset, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
-                                               max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T)
+                                               max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
+                                               perform_SR_analysis_only = perform_SR_analysis_only)
   }
 
   if(file.exists(lr_save_path)){

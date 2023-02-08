@@ -9,8 +9,8 @@ KSEQ_INIT(gzFile, gzread)
 
   using namespace Rcpp;
 
-// [[Rcpp::export(name = '.getACGTN_Sites')]]
-List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_thresh) {
+// [[Rcpp::export(name = '.extractAlnParam')]]
+List extractAlnParam(std::string file, int filter, double gap_thresh, double maf_thresh) {
   // filter = 0, default in spydrpick
   // filter = 1, relaxed
   // default gap_thresh = 0.15, maf_thresh = 0.01
@@ -19,7 +19,7 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   int l = 0;
   // kseq seq;
 
-  gzFile fp_, fp, fp2;
+  gzFile fp_, fp;
   kseq_t *seq;
 
   const char * f = file.c_str();
@@ -35,6 +35,7 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   l = kseq_read(seq);
   int seq_length = strlen(seq->seq.s); // This is the first sequence, while loop reads from the second, re-run below?
   Rcout << seq_length << " bases \n";
+  kseq_destroy(seq);
   gzclose(fp_);
 
   Rcout << "Step 2: Getting allele counts \n";
@@ -81,6 +82,7 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
     n++;
   }
   // close(fp);
+  kseq_destroy(seq);
   gzclose(fp);
 
   Rcout << "Step 3: Performing SNP filtering: ";
@@ -161,11 +163,23 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   }
 
   Rcout << n_snp << " sites retained \n";
+  List params = List::create(Named("num.seqs") = n,
+                             Named("num.snps") = n_snp,
+                             Named("seq.length") = seq_length,
+                             Named("pos") = POS);
+  return(params);
+
+}
+
+// [[Rcpp::export(name = '.extractSNPs')]]
+List extractSNPs(std::string file, int n_seq, int n_snp, std::vector<int> POS) {
+  gzFile fp2;
+  kseq_t *seq;
+  const char * f = file.c_str();
   // Prepare the data for sparse matrix
   Rcout << "Step 4: Building sparse mx \n";
 
-  Rcpp::StringVector seq_names(n);
-  n = 0;
+  int n = 0;
   int k; // indexing the positions
   std::vector<int> m_i_A; m_i_A.reserve(2*n_snp);
   std::vector<int> m_j_A; m_j_A.reserve(2*n_snp);
@@ -199,6 +213,8 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
   // we need to add the functionality to find *R* and *UQE* required for MI computation
 
   // while((l = ks2.read(seq)) >= 0) {
+  Rcpp::StringVector seq_names(n_seq);
+  int l = 0;
   while((l = kseq_read(seq)) >= 0) {
     // Record sequence names
     // seq_names[n] = seq.name;
@@ -246,16 +262,11 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
     n += 1;
   }
   // close(fp2);
+  kseq_destroy(seq);
   gzclose(fp2);
   // Rcout << n  << '\n';
 
-  List params = List::create(_["num.seqs"] = n,
-                             _["num.snps"] = n_snp,
-                             _["seq.names"] = seq_names,
-                             _["seq.length"] = seq_length);
-
-  return List::create(Named("pos") = wrap(POS),
-                      //Named("consensus") = wrap(consensus), // we don't need a consensus here
+  return List::create(Named("seq.names") = seq_names,
                       Named("ACGTN_table") = wrap(ACGTN_table),
                       Named("i_A") = wrap(m_i_A),
                       Named("j_A") = wrap(m_j_A),
@@ -271,11 +282,5 @@ List getACGTN_Sites(std::string file, int filter, double gap_thresh, double maf_
                       Named("x_T") = wrap(m_x_T),
                       Named("i_N") = wrap(m_i_N),
                       Named("j_N") = wrap(m_j_N),
-                      Named("x_N") = wrap(m_x_N),
-                      Named("params") = params);
-  //Named("num.seqs") = n,
-  //Named("num.snps") = n_snp,
-  //Named("seq.names") = seq_names,
-  //Named("seq.length") = seq_length);
-
+                      Named("x_N") = wrap(m_x_N));
 }
