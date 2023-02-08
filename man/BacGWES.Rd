@@ -12,6 +12,7 @@ BacGWES(
   snp_filt_method = "default",
   snpeff_jar_path = NULL,
   hdw_threshold = 0.1,
+  perform_SR_analysis_only = F,
   SnpEff_Annotate = T,
   sr_dist = 20000,
   lr_retain_level = 0.99,
@@ -37,7 +38,9 @@ BacGWES(
 
 \item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F}
 
-\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more}
+\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?}
+
+\item{perform_SR_analysis_only}{specify whether to only perform the short range link analysis (default = FALSE)}
 
 \item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff}
 

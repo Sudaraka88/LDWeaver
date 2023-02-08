@@ -17,7 +17,11 @@
     .Call('_BacGWES_compareTriplet', PACKAGE = 'BacGWES', MI0X, MI0Z, MI0)
 }
 
-.getACGTN_Sites <- function(file, filter, gap_thresh, maf_thresh) {
-    .Call('_BacGWES_getACGTN_Sites', PACKAGE = 'BacGWES', file, filter, gap_thresh, maf_thresh)
+.extractAlnParam <- function(file, filter, gap_thresh, maf_thresh) {
+    .Call('_BacGWES_extractAlnParam', PACKAGE = 'BacGWES', file, filter, gap_thresh, maf_thresh)
+}
+
+.extractSNPs <- function(file, n_seq, n_snp, POS) {
+    .Call('_BacGWES_extractSNPs', PACKAGE = 'BacGWES', file, n_seq, n_snp, POS)
 }
 
