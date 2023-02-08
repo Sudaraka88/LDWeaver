@@ -52,7 +52,6 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   timestamp()
   cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
   #TODO: show a set of parameters before starting the run (save paths, file sizes, etc.)
-  #TODO: Bug fix from pnuemo SA dataset (output in Linux)
 
   # Sanity checks
   # annotations
