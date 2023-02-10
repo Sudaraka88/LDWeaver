@@ -10,6 +10,8 @@ BacGWES(
   gbk_path,
   check_gbk_fasta_lengths = T,
   snp_filt_method = "default",
+  gap_freq = 0.15,
+  maf_freq = 0.01,
   snpeff_jar_path = NULL,
   hdw_threshold = 0.1,
   perform_SR_analysis_only = F,
@@ -35,6 +37,10 @@ BacGWES(
 \item{check_gbk_fasta_lengths}{check if the gbk reference sequence length matches the with fasta alignment (default = T)}
 
 \item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')}
+
+\item{gap_freq}{sites with a gap frequency >gap_greq will be dropped (default = 0.15)}
+
+\item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
 \item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F}
 

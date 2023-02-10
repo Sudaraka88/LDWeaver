@@ -10,6 +10,8 @@
 #' @param gbk_path path to genbank file
 #' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
+#' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
+#' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
@@ -36,9 +38,10 @@
 #' }
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
-                   snpeff_jar_path = NULL, hdw_threshold = 0.1, perform_SR_analysis_only = F, SnpEff_Annotate = T,
-                   sr_dist = 20000, lr_retain_level = 0.99, max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3,
-                   tanglegram_break_segments = 5, multicore = T, max_blk_sz = 10000, ncores = NULL){
+                   gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
+                   perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_level = 0.99,
+                   max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
+                   multicore = T, max_blk_sz = 10000, ncores = NULL){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK
@@ -50,16 +53,13 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK8: Tanglegram (depends: chromoMap)
   # BLK9: GWESExplorer (depends: GWESExplorer)
 
-  # Welcome message
-  timestamp()
-  cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
-  #TODO: show a set of parameters before starting the run (save paths, file sizes, etc.)
-  #TODO: Bug fix from pnuemo SA dataset (output in Linux)
+  #TODO: Change lr_retain_level to save #n links
 
   # Sanity checks
   # annotations
   if(SnpEff_Annotate == T) {
     if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, set SnpEff_Annotate = F")
+    if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
   }
 
   # multicore
@@ -131,15 +131,46 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   tophits_path = file.path(dset, "tophits.tsv")
   clust_plt_path = file.path(dset, "CDS_clustering.png")
 
+
+  ######## Welcome message ########
+  {
+    timestamp()
+    if(ncores > 1) cat(paste("\n\n Performing GWES analysis on:", dset, " - using", ncores, "cores\n\n"))
+    if(ncores == 1) cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
+    if(perform_SR_analysis_only) cat("Only short-range analysis requested. \n")
+    cat(paste("All outputs will be saved to:", normalizePath(dset), "\n"))
+    cat(paste("\n *** Input paths *** \n\n"))
+    cat(paste("* Alignment:", aln_path, "\n"))
+    cat(paste("* GenBank Annotation:", gbk_path, "\n"))
+    if(!is.null(snpeff_jar_path)) cat(paste("* SnpEff Annotations will be performed on short-range links. SnpEff path:", snpeff_jar_path, "\n"))
+
+    cat(paste("\n *** Parameters *** \n\n"))
+
+    if(snp_filt_method == "default") {
+      cat(paste("Default SNP filtering: sites with gap_freq <", gap_freq, "and non-gap minor allele freq >", maf_freq, "will be retained. \n"))
+    } else {
+      cat(paste("Relaxed SNP filtering: sites with gap_freq <", gap_freq, "and minor allele freq >", maf_freq, "will be retained. \n"))
+    }
+    cat(paste("Hamming distance calculation weight:", hdw_threshold, "\n"))
+    cat(paste("Links <=", sr_dist, "bp-apart will be classified as short-range (sr-links) \n"))
+    if(!perform_SR_analysis_only) cat(paste("Approx. top", lr_retain_level, "long range links will be saved \n"))
+    cat(paste("Top sr-links with -log10(p) >", srp_cutoff, "will be saved \n"))
+    cat(paste("Tanglegram/GWESExplorer outputs will illustrate upto:", max_tophits, "top sr-links \n"))
+    cat(paste("MI Computation will use a max block size of:", max_blk_sz, "x", max_blk_sz, "SNPs! Reduce <max_blk_sz> if RAM is scarce!\n\n"))
+    cat(paste("~~~~~ https://github.com/Sudaraka88/BacGWES/ ~~~~~"))
+  }
+  ######## <Welcome message> ########
+  t_global = Sys.time() # global timer
+
   # BLK1
   cat("\n\n #################### BLOCK 1 #################### \n\n")
   if(!file.exists(ACGTN_snp_path)) {
     t0 = Sys.time()
-    cat("Performing snp extraction from the alignment \n")
-    snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method)
-    cat("Savings snp.dat...")
+    cat(paste("Parsing Alignment:", aln_path ,"\n"))
+    snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+    cat("Step 5: Savings snp.dat...")
     saveRDS(snp.dat, ACGTN_snp_path)
-    cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
+    cat(paste("BLOCK 1 complete in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }else{
     cat("Loading previous snp matrix \n")
     snp.dat = readRDS(ACGTN_snp_path)
@@ -181,7 +212,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK5
   cat("\n\n #################### BLOCK 5 #################### \n\n")
-  if(file.exists(lr_save_path) & file.exists(sr_save_path)) {
+  if( (perform_SR_analysis_only &  file.exists(sr_save_path)) |   (file.exists(lr_save_path) &  file.exists(sr_save_path)) ) {
     cat("Loading previous MI computation \n")
     sr_links = read.table(sr_save_path)
     colnames(sr_links) = c("clust_c", "pos1", "pos2", "clust1", "clust2", "len", "MI", "srp_max", "ARACNE")
@@ -244,6 +275,6 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   cat("\n\n #################### BLOCK 7 #################### \n\n")
   BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
-  cat("\n\n ** All done ** \n")
+  cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
 
 }
