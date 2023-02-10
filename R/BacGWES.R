@@ -53,7 +53,14 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK8: Tanglegram (depends: chromoMap)
   # BLK9: GWESExplorer (depends: GWESExplorer)
 
+<<<<<<< HEAD
   #TODO: Change lr_retain_level to save #n links
+=======
+  # Welcome message
+  timestamp()
+  cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
+  #TODO: show a set of parameters before starting the run (save paths, file sizes, etc.)
+>>>>>>> 20b1541ce6952880e14a18cfb521005767805046
 
   # Sanity checks
   # annotations
