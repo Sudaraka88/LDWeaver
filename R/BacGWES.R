@@ -249,8 +249,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK7
   cat("\n\n #################### BLOCK 7 #################### \n\n")
   if(SnpEff_Annotate == F){
-    cat("\n\n ** All done ** \n")
-    return(0)
+    cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
+    return()
   }
 
   # Additional paths if annotations are requested

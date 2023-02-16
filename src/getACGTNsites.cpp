@@ -83,7 +83,7 @@ List extractAlnParam(std::string file, int filter, double gap_thresh, double maf
     // }
     n++;
   }
-  Rcout << seq_length << " seqs found \n";
+  Rcout << n << " seqs found \n";
   // close(fp);
   kseq_destroy(seq);
   gzclose(fp);

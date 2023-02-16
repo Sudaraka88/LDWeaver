@@ -56,7 +56,7 @@ aln_path <- system.file("extdata", "sample.aln.gz", package = "BacGWES")
 gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
 snp_filt_method = "relaxed"
 BacGWES(dset = dset, aln_path = aln_path, gbk_path = gbk_path, check_gbk_fasta_lengths = F,
-        num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method, discard_MI_threshold_lr = 0.11)
+        num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ```
 
 ## Basic Outputs
