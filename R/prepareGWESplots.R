@@ -6,13 +6,13 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom utils read.table
 #'
-#' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param lr_links data.frame containing lr_links or the path to saved lr_links TSV file.
 #' Usually output from perform_MI_computation(), (default = NULL)
 #' @param sr_links data.frame containing sr_links or the path to saved sr_links TSV file.
 #' Usually output from perform_MI_computation(), (default = NULL)
-#'
-#' @return R data frame with short range GWES links (plots and long range links will be saved)
+#' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
+#' @param are_srlinks_ordered if False, links will be ordered before plotting, which will plot higher srp links on top of lower ones (default = F).
+#' Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot top to bottom plotting order.
 #'
 #' @examples
 #' \dontrun{
@@ -21,7 +21,7 @@
 #' }
 #'
 #' @export
-make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL){
+make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, are_srlinks_ordered = F){
   cat("Generating short and long range GWES plots ... ")
   t0 = Sys.time()
   len = MI = srp_max = NULL # avoid ggplot NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
@@ -90,7 +90,13 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL){
       # return(-1)
     }
 
+
     # sr_links are sorted (largest to smallest)
+    if(!are_srlinks_ordered){ # if they are not sorted, sort below
+      sr_links_red = sr_links_red[order(sr_links_red$srp_max, decreasing = T), ]
+      rownames(sr_links_red) = NULL
+    }
+
     # Note: ggplot plots from top to bottom of DF, we need to reverse order the links so that the top links appear on top!
     sr_links = sr_links[rev(1:nrow(sr_links)), ]
     p1 = ggplot2::ggplot() +

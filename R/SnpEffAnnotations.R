@@ -24,7 +24,7 @@
 #' }
 #'
 #' @export
-perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links, snp.dat, tophits_path = NULL, max_tophits = 250){
+perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links_red, snp.dat, tophits_path = NULL, max_tophits = 250){
   genome_name = gbk@genes@seqinfo@genome
   snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
 
@@ -32,7 +32,7 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   if(snpeff_ready==1){ # ready for annotation?
     # Write the interested sites to a VCF file
     cat("Preparing VCF files ... ")
-    snps_to_ann = sort(unique(c(sr_links$pos1, sr_links$pos2))) # These are the SNPs that need annotation
+    snps_to_ann = sort(unique(c(sr_links_red$pos1, sr_links_red$pos2))) # These are the SNPs that need annotation
     snps_to_ann_idx = sapply(snps_to_ann, function(x) which(snp.dat$POS %in% x)) # These are their original positions
 
     vcf_sr_path = file.path(annotation_folder, "sr_snps.vcf")
@@ -65,7 +65,7 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   }
   cat("Adding annotations to links ...")
   srlinks_annotated_path = file.path(annotation_folder,  "sr_links_annotated.tsv")
-  srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
+  srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links_red, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
 
   if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "tophits.tsv")
 
@@ -197,8 +197,37 @@ getAlleleDistribution = function(ad_, nseq){
 
 add_annotations_to_links = function(sr_links_red, ann, srlinks_annotated_path){
 
-  pos1_idx = sapply(sr_links_red$pos1, function(x) which(ann$pos %in% x))
-  pos2_idx = sapply(sr_links_red$pos2, function(x) which(ann$pos %in% x))
+  # t0 = Sys.time()
+  # a bit faster now
+  pp_ = 0
+  vidx = 0
+  nlinks = nrow(sr_links_red)
+  pos1_idx = rep(NA, nlinks)
+  pos2_idx = rep(NA, nlinks)
+
+  pb = utils::txtProgressBar(min = 1, max = nlinks, initial = 1)
+
+  for(idx in 1:nlinks){
+    utils::setTxtProgressBar(pb,idx)
+    pp = sr_links_red$pos1[idx]
+    if(pp != pp_){
+      vidx = pos1_idx[idx] = which(ann$pos %in% pp)
+      pp_ = pp
+    } else {
+      pos1_idx[idx] = vidx
+    }
+
+    pos2_idx[idx] = which(ann$pos %in% sr_links_red$pos2[idx])
+  }
+  # print(Sys.time() - t0)
+
+  # t0 = Sys.time()
+  # pos1_idx_ = sapply(sr_links_red$pos1, function(x) which(ann$pos %in% x))
+  # pos2_idx_ = sapply(sr_links_red$pos2, function(x) which(ann$pos %in% x))
+  # print(Sys.time() - t0)
+  #
+  # all(pos1_idx == pos1_idx_)
+  # all(pos2_idx == pos2_idx_)
 
   l1_a1_d = data.frame(pos1 = sr_links_red$pos1,
                        pos2 = sr_links_red$pos2,
@@ -215,11 +244,15 @@ add_annotations_to_links = function(sr_links_red, ann, srlinks_annotated_path){
                        links = paste(ann$code[pos1_idx], ann$code[pos2_idx], sep = "X"))
 
   # saving annotated links
+  # sort these links here
+  l1_a1_d = l1_a1_d[order(l1_a1_d$srp, decreasing = T), ]
+  rownames(l1_a1_d) = NULL
+
   write.table(l1_a1_d, file = srlinks_annotated_path, sep = '\t', col.names = T, row.names = F, quote = F)
   return(l1_a1_d)
 }
 
-detect_top_hits = function(l1_a1_d, max_tophits, tophits_path){
+detect_top_hits = function(l1_a1_d, max_tophits = 250, tophits_path){
   l1_a1_d = l1_a1_d[which(l1_a1_d$ARACNE == 1),] # ARACNE direct only
   l1_a1_d = l1_a1_d[which(l1_a1_d$links!='syXsy'),] # remove syXsy links
   l1_a1_d = l1_a1_d[which(l1_a1_d$pos1_genreg != l1_a1_d$pos2_genreg), ] # remove links from the same region

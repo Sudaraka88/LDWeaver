@@ -65,6 +65,9 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(SnpEff_Annotate == T) {
     if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, set SnpEff_Annotate = F")
     if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
+    order_links = F # sr_links should be ordered at the end after adding annotations
+  } else {
+    order_links = T # sr_links will be ordered and saved without annotations
   }
 
   # multicore
@@ -237,7 +240,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
                                                plt_folder = dset, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
-                                               perform_SR_analysis_only = perform_SR_analysis_only)
+                                               perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
   }
 
   if(file.exists(lr_save_path)){
@@ -254,7 +257,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK6
   cat("\n\n #################### BLOCK 6 #################### \n\n")
-  BacGWES::make_gwes_plots(lr_links = lr_links, sr_links = sr_links, plt_folder = dset)
+  # order links will be false for analyses that require further analysis, make_gwes_plots() will order the links before plotting
+  BacGWES::make_gwes_plots(lr_links = lr_links, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
 
   # BLK7
   cat("\n\n #################### BLOCK 7 #################### \n\n")

@@ -32,6 +32,7 @@
 #' and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1)
 #' @param runARACNE specify whether to run ARACNE (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1
 #' @param perform_SR_analysis_only skip the long range link analysis (default = FALSE)
+#' @param order_links return and save links after sorting in short-range p-value order, most to least important (default = T)
 #'
 #' @return R data frame with short range GWES links (plots and long range links will be saved)
 #'
@@ -44,7 +45,7 @@
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
                                   sr_dist = 20000, lr_retain_level = 0.99, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
-                                  perform_SR_analysis_only = FALSE){
+                                  perform_SR_analysis_only = FALSE, order_links = T){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -84,16 +85,22 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
   # In case a link gets through with len > sr_dist, we should filter that out in <mergeNsort_sr_links()>
-  sr_links_df = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, sr_dist = sr_dist, plt_path = plt_folder)
-  sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
+  sr_links_red = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, sr_dist = sr_dist, plt_path = plt_folder, srp_cutoff = srp_cutoff)
+  # sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
 
   if(runARACNE){
-    cat("Running ARACNE... \n")
+    cat(paste("Running ARACNE on", nrow(sr_links_red), "links... \n"))
     ARACNE = runAracne(sr_links_red)
     sr_links_red$ARACNE = as.numeric(ARACNE)
   } else {
     warning('ARACNE not run, all values will be set to 1')
     sr_links_red$ARACNE = 1
+  }
+
+  # sorting after ARACNE
+  if(order_links){ # not ordering can speed up annotations
+    sr_links_red = sr_links_red[order(sr_links_red$srp_max, decreasing = T), ]
+    rownames(sr_links_red) = NULL
   }
 
   # can we omit this save? sr_links_annotated is the annotated version of this
@@ -143,7 +150,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
     POS_f = as.numeric(snp.dat$POS[from])
     POS_t = as.numeric(snp.dat$POS[to])
 
-    }
+  }
 
 
 
@@ -333,7 +340,7 @@ computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, nc
   # return(MI_t)
 }
 
-mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
+mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff){
   sr_links_df = data.frame()
   duplink_df = data.frame()
 
@@ -424,8 +431,9 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
                         duplink_df[duplink_dt_red, ])
   }
 
-  sr_links_df = sr_links_df[order(sr_links_df$srp_max, decreasing = T), ]
-  rownames(sr_links_df) = NULL
+  # if we do the sorting after ARACNE, it could be faster!
+  # sr_links_df = sr_links_df[order(sr_links_df$srp_max, decreasing = T), ]
+  # rownames(sr_links_df) = NULL
 
   # nlinks = nrow(sr_links_df)
   # srp_thresh = -log10(0.01/nlinks) # Bonferroni (until we find a better cut-off)
@@ -435,8 +443,11 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
   # sr_links_red = sr_links_df[sr_links_df$srp_max > 3, ] # This is an arbitrary filter for a nice plot
   # sr_links_red = sr_links_red[order(sr_links_red$srp_max, decreasing = T), ] # we need to drop as many links as possible before coming here
   # row.names(sr_links_red) = NULL
-  cat(paste("Done in", round(difftime(Sys.time(), t00, units = "secs"), 2), "s \n"))
-  return(sr_links_df)
+
+  sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
+
+  cat(paste("All done in", round(difftime(Sys.time(), t00, units = "secs"), 2), "s \n"))
+  return(sr_links_red)
 
 }
 
@@ -455,22 +466,29 @@ runAracne = function(sr_links_red){
   t0 = Sys.time()
   pb = utils::txtProgressBar(min = 1, max = nlinks, initial = 1)
 
+  pX_ = 0
+  # pZ_ = 0 # links are not in pos2 order, probably not worth checking pos2 for order
+
   for(i in 1:nlinks){
     # microbenchmark::microbenchmark(
     #   {
     utils::setTxtProgressBar(pb,i)
+    redo_comXZ = F
     pX = pos_mat[i,1]; # X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
     pZ = pos_mat[i,2]; #Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
-    idX = which(.compareToRow(pos_mat, pX)) #decodeIndex(index[[X]])
+
+    if(pX != pX_){ # skip this check if pX is unchanged
+      idX = which(.compareToRow(pos_mat, pX)) #decodeIndex(index[[X]])
+      matX = cbind(pos_mat[idX,1], pos_mat[idX,2]); matX = matX[matX != pX]
+      pX_ = pX
+    }
+    # if(pZ != pZ_){
     idZ = which(.compareToRow(pos_mat, pZ)) #decodeIndex(index[[Z]])
-
-    # matX = cbind(sr_links_df$pos1[idX], sr_links_df$pos2[idX]); matX = matX[matX != pX]
-    # matZ = cbind(sr_links_df$pos1[idZ], sr_links_df$pos2[idZ]); matZ = matZ[matZ != pZ]
-
-    matX = cbind(pos_mat[idX,1], pos_mat[idX,2]); matX = matX[matX != pX]
     matZ = cbind(pos_mat[idZ,1], pos_mat[idZ,2]); matZ = matZ[matZ != pZ]
+    # pZ_ = pZ
+    # }
 
-    comXZ = Rfast2::Intersect(matX, matZ)
+    comXZ = Rfast2::Intersect(matX, matZ) # either of matX or matZ should change for a new link, cannot skip!
 
     if(length(comXZ) > 0){ # This is the only sr_links
       # MI0 = sr_links_df$MI[Rfast2::Intersect(idX, idZ)]
