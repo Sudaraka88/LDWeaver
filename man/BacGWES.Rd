@@ -24,7 +24,8 @@ BacGWES(
   tanglegram_break_segments = 5,
   multicore = T,
   max_blk_sz = 10000,
-  ncores = NULL
+  ncores = NULL,
+  save_additional_outputs = F
 )
 }
 \arguments{
@@ -70,6 +71,8 @@ and run time for ARACNE. If all links are required to be returned, set to 0 (i.e
 \item{max_blk_sz}{specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000}
 
 \item{ncores}{specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL}
+
+\item{save_additional_outputs}{specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)}
 }
 \value{
 Numeric Value 0 if successful (all generated outputs will be saved)

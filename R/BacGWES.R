@@ -28,6 +28,7 @@
 #' @param multicore specify whether to use parallel processing (default = T)
 #' @param ncores specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
+#' @param save_additional_outputs specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)
 #'
 #'
 #' @return Numeric Value 0 if successful (all generated outputs will be saved)
@@ -41,7 +42,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
                    gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
                    perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_level = 0.99,
                    max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
-                   multicore = T, max_blk_sz = 10000, ncores = NULL){
+                   multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK
@@ -172,8 +173,11 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     t0 = Sys.time()
     cat(paste("Parsing Alignment:", aln_path ,"\n"))
     snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
-    cat("Step 5: Savings snp.dat...")
-    saveRDS(snp.dat, ACGTN_snp_path)
+    if(save_additional_outputs){
+      cat("Step 5: Savings snp.dat...")
+      saveRDS(snp.dat, ACGTN_snp_path)
+    }
+
     cat(paste("BLOCK 1 complete in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }else{
     cat("Loading previous snp matrix \n")
@@ -185,7 +189,9 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(!file.exists(parsed_gbk_path)) {
     cat("Reading the GBK file \n")
     gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = check_gbk_fasta_lengths) # will return 1 if fails
-    saveRDS(gbk, parsed_gbk_path)
+    if(save_additional_outputs){
+      saveRDS(gbk, parsed_gbk_path)
+    }
   } else {
     cat("Loading parsed gbk file \n")
     gbk = readRDS(parsed_gbk_path)
@@ -196,7 +202,9 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(!file.exists(cds_var_path)) {
     cat("Estimating the variation in CDS \n")
     cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path)
-    saveRDS(cds_var, cds_var_path)
+    if(save_additional_outputs){
+      saveRDS(cds_var, cds_var_path)
+    }
   } else {
     cat("Loading previous CDS variation estimates \n")
     cds_var = readRDS(cds_var_path)
@@ -208,7 +216,9 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     cat("Estimating per sequence Hamming distance \n")
     # hdw = perform_pop_struct_correction_sparse(snp.matrix = snp.dat$snp.matrix, nsnp = snp.dat$nsnp)
     hdw = BacGWES::estimate_Hamming_distance_weights(snp.dat = snp.dat, threshold = hdw_threshold)
-    saveRDS(hdw, hdw_path)
+    if(save_additional_outputs){
+      saveRDS(hdw, hdw_path)
+    }
   } else {
     cat("Loading previous Hamming distance estimates \n")
     hdw = readRDS(hdw_path)
@@ -272,11 +282,11 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   }
 
   # BLK8
-  cat("\n\n #################### BLOCK 7 #################### \n\n")
+  cat("\n\n #################### BLOCK 8 #################### \n\n")
   BacGWES::create_tanglegram(srlinks_tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
 
   # BLK9
-  cat("\n\n #################### BLOCK 7 #################### \n\n")
+  cat("\n\n #################### BLOCK 9 #################### \n\n")
   BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

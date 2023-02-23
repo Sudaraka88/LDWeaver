@@ -48,6 +48,8 @@ and run time for ARACNE. If all links are required to be returned, set to 0 (i.e
 \item{runARACNE}{specify whether to run ARACNE (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1}
 
 \item{perform_SR_analysis_only}{skip the long range link analysis (default = FALSE)}
+
+\item{save_additional_outputs}{specify whether to save intermediary outputs (default = F)}
 }
 \value{
 R data frame with short range GWES links (plots and long range links will be saved)

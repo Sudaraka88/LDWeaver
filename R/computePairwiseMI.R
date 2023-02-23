@@ -89,13 +89,14 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
 
   if(runARACNE){
     cat("Running ARACNE... \n")
-    ARACNE = runAracne(sr_links_red, sr_links_df, snp.dat$POS)
+    ARACNE = runAracne(sr_links_red)
     sr_links_red$ARACNE = as.numeric(ARACNE)
   } else {
     warning('ARACNE not run, all values will be set to 1')
     sr_links_red$ARACNE = 1
   }
 
+  # can we omit this save? sr_links_annotated is the annotated version of this
   write.table(x = sr_links_red, file = sr_save_path, append = T, quote = F, row.names = F, col.names = F, sep = '\t')
   cat(paste("All done in", round(difftime(Sys.time(), t000, units = "mins"), 2), "mins \n"))
 
@@ -344,7 +345,7 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
   for(i in 1:cds_var$nclust){
     len = MI = fit = srp_max = NULL # avoid dplyr NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
 
-    cat(paste("Clust", i,"of", cds_var$nclust, "\nStep 1/3 - Extract links ... "))
+    cat(paste("Clust", i,"of", cds_var$nclust, "\nStep 1/3 - Extract links ..."))
     t0 = Sys.time()
 
     sr_links_t = sr_links[[i]]
@@ -356,9 +357,9 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
     # colnames(sr_links_t) = c("len", "MI")
     maxvls = sr_links_t %>% dplyr::group_by(len) %>% dplyr::summarise(max = quantile(MI, 0.95))
 
-    cat("Done in", difftime(time1 = Sys.time(), time2 = t0, units = "secs"), "s\n")
+    cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
 
-    cat("Step 2/3 - Model decay ... ")
+    cat("Step 2/3 - Model decay ...")
     t0 = Sys.time()
     fit_l = RcppArmadillo::fastLm(X = cbind(log(maxvls$len), 1), y = log(maxvls$max))
     maxvls$fit = mean_dist = exp(fitted(fit_l))
@@ -371,9 +372,9 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
     # plot(maxvls)
     ggplot2::ggsave(filename = file.path(plt_path, paste("c", i, "_fit.png", sep= "")), plot =  p_cf, width = 2200, height = 1200, units = "px")
 
-    cat("Done in", difftime(time1 = Sys.time(), time2 = t0, units = "secs"), "s\n")
+    cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
 
-    cat("Step 3/3 - Fit links ... ")
+    cat("Step 3/3 - Fit links ...")
     t0 = Sys.time()
 
     # Fitting all links together
@@ -399,7 +400,7 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
       sr_links_df = rbind(sr_links_df, data.frame(clust_c = i, sr_links_t))
     }
 
-    cat("Done in", difftime(time1 = Sys.time(), time2 = t0, units = "secs"), "s\n")
+    cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
 
   }
   cat("Cleaning up links ... ")
@@ -439,37 +440,48 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path){
 
 }
 
-runAracne = function(sr_links_red, sr_links_df, POS){
+runAracne = function(sr_links_red){
   t0 = Sys.time()
   # TODO: make this function faster using openMP
   # links red is the reduced set of links
-  pos_mat = matrix(c(sr_links_red$pos1, sr_links_red$pos2), nrow = nrow(sr_links_red)) # for the reduced link set
-  POS = matrix(POS, nrow = length(POS)) # convert to mx for fast searching
-  ARACNE = rep(NA, nrow(sr_links_red))
+  # sr_links_df is useless here, no data is taken from it! sr_links_red is a subset of it!
+  nlinks = nrow(sr_links_red)
+  pos_mat = matrix(c(sr_links_red$pos1, sr_links_red$pos2), nrow = nlinks) # for the reduced link set
+  MIs = matrix(sr_links_red$MI)
+
+  # POS = matrix(POS, nrow = length(POS)) # convert to mx for fast searching
+
+  ARACNE = rep(T, nlinks)
   t0 = Sys.time()
-  pb = utils::txtProgressBar(min = 1, max = nrow(sr_links_red), initial = 1)
-  for(i in 1:nrow(sr_links_red)){
+  pb = utils::txtProgressBar(min = 1, max = nlinks, initial = 1)
+
+  for(i in 1:nlinks){
+    # microbenchmark::microbenchmark(
+    #   {
     utils::setTxtProgressBar(pb,i)
-    pX = sr_links_red$pos1[i]; X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
-    pZ = sr_links_red$pos2[i]; Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
+    pX = pos_mat[i,1]; # X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
+    pZ = pos_mat[i,2]; #Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
     idX = which(.compareToRow(pos_mat, pX)) #decodeIndex(index[[X]])
     idZ = which(.compareToRow(pos_mat, pZ)) #decodeIndex(index[[Z]])
 
-    matX = cbind(sr_links_df$pos1[idX], sr_links_df$pos2[idX]); matX = matX[matX != pX]
-    matZ = cbind(sr_links_df$pos1[idZ], sr_links_df$pos2[idZ]); matZ = matZ[matZ != pZ]
+    # matX = cbind(sr_links_df$pos1[idX], sr_links_df$pos2[idX]); matX = matX[matX != pX]
+    # matZ = cbind(sr_links_df$pos1[idZ], sr_links_df$pos2[idZ]); matZ = matZ[matZ != pZ]
+
+    matX = cbind(pos_mat[idX,1], pos_mat[idX,2]); matX = matX[matX != pX]
+    matZ = cbind(pos_mat[idZ,1], pos_mat[idZ,2]); matZ = matZ[matZ != pZ]
+
     comXZ = Rfast2::Intersect(matX, matZ)
 
     if(length(comXZ) > 0){ # This is the only sr_links
-      MI0 = sr_links_df$MI[Rfast2::Intersect(idX, idZ)]
-
-      MI0X = sr_links_df$MI[idX[which(.compareToRow(matrix(matX), comXZ))]]
-      MI0Z = sr_links_df$MI[idZ[which(.compareToRow(matrix(matZ), comXZ))]]
-
-      ARACNE[i] = .compareTriplet(MI0X, MI0Z, MI0)
+      # MI0 = sr_links_df$MI[Rfast2::Intersect(idX, idZ)]
+      MI0X = MIs[idX[which(.compareToRow(matrix(matX), comXZ))], 1]
+      MI0Z = MIs[idZ[which(.compareToRow(matrix(matZ), comXZ))], 1]
+      ARACNE[i] = .compareTriplet(MI0X, MI0Z, MIs[i,1])
     }
   }
   close(pb)
   cat(paste("\nDone in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
   return(ARACNE)
 }
+
 
