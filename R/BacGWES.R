@@ -274,6 +274,8 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # GWESExplorer
   gwesexplorer_path = file.path(dset, "GWESExplorer")
   if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
+  # NetworkPlot
+  netplot_path = file.path(dset, "network_plot.png")
 
   if(!file.exists(tophits_path)){
     tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
@@ -292,6 +294,11 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK9
   cat("\n\n #################### BLOCK 9 #################### \n\n")
   BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
+
+  # BLK10
+  cat("\n\n #################### BLOCK 10 #################### \n\n")
+  BacGWES::create_network(srlinks_tophits = tophits, netplot_path = netplot_path)
+
 
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
 
