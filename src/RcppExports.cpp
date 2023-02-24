@@ -52,6 +52,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vecPosMatch
+NumericVector vecPosMatch(NumericVector x, NumericVector y);
+RcppExport SEXP _BacGWES_vecPosMatch(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(vecPosMatch(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compareTriplet
 bool compareTriplet(NumericVector MI0X, NumericVector MI0Z, double MI0);
 RcppExport SEXP _BacGWES_compareTriplet(SEXP MI0XSEXP, SEXP MI0ZSEXP, SEXP MI0SEXP) {
@@ -98,6 +110,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BacGWES_ACGTN2num", (DL_FUNC) &_BacGWES_ACGTN2num, 3},
     {"_BacGWES_fastHadamard", (DL_FUNC) &_BacGWES_fastHadamard, 9},
     {"_BacGWES_compareToRow", (DL_FUNC) &_BacGWES_compareToRow, 2},
+    {"_BacGWES_vecPosMatch", (DL_FUNC) &_BacGWES_vecPosMatch, 2},
     {"_BacGWES_compareTriplet", (DL_FUNC) &_BacGWES_compareTriplet, 3},
     {"_BacGWES_extractAlnParam", (DL_FUNC) &_BacGWES_extractAlnParam, 4},
     {"_BacGWES_extractSNPs", (DL_FUNC) &_BacGWES_extractSNPs, 4},

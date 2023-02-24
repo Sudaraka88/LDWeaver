@@ -13,6 +13,10 @@
     .Call('_BacGWES_compareToRow', PACKAGE = 'BacGWES', x, y)
 }
 
+.vecPosMatch <- function(x, y) {
+    .Call('_BacGWES_vecPosMatch', PACKAGE = 'BacGWES', x, y)
+}
+
 .compareTriplet <- function(MI0X, MI0Z, MI0) {
     .Call('_BacGWES_compareTriplet', PACKAGE = 'BacGWES', MI0X, MI0Z, MI0)
 }

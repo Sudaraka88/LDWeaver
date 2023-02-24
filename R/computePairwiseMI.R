@@ -470,7 +470,7 @@ runAracne = function(sr_links_red, sr_links_ARACNE_check){
   MIs_chk = matrix(sr_links_red$MI)
   # POS = matrix(POS, nrow = length(POS)) # convert to mx for fast searching
 
-  ARACNE = rep('A', nlinks) # unchekable links must be marked T
+  ARACNE = rep(T, nlinks) # unchekable links must be marked T
   t0 = Sys.time()
   pb = utils::txtProgressBar(min = 1, max = nlinks, initial = 1)
 
