@@ -25,6 +25,8 @@
 #'
 #' @export
 create_network = function(srlinks_tophits, netplot_path, separator = ":", max_plot_nodes = 50, plot_w = 6000, plot_h = 4000){
+  cat("Preparing Network Plot ... ")
+  t0 = Sys.time()
   # Let's ensure 50 nodes are present here
   c50 = T
   avail_links = max_plot_nodes
@@ -112,5 +114,6 @@ create_network = function(srlinks_tophits, netplot_path, separator = ":", max_pl
 
   # p1
   ggplot2::ggsave(plot = p1, filename = netplot_path, width = 6000, height = 4000, units = "px", device = "png", dpi = 300)
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
 
 }
