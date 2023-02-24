@@ -10,7 +10,7 @@
 #' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
 #' @param gbk_path path to genbank file
 #' @param cds_var output from BacGWES::estimate_variation_in_CDS()
-#' @param sr_links data.frame containing sr_links output from perform_MI_computation()
+#' @param sr_links data.frame containing sr_links (reduced links can be used to save time) output from perform_MI_computation()
 #' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
 #' @param max_tophits specify the number of top hits to return (all links will be annotated and saved to the annotations_folder)
 #' @param tophits_path specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv
@@ -24,7 +24,7 @@
 #' }
 #'
 #' @export
-perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links_red, snp.dat, tophits_path = NULL, max_tophits = 250){
+perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, sr_links, snp.dat, tophits_path = NULL, max_tophits = 250){
   genome_name = gbk@genes@seqinfo@genome
   snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
 
@@ -32,7 +32,7 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   if(snpeff_ready==1){ # ready for annotation?
     # Write the interested sites to a VCF file
     cat("Preparing VCF files ... ")
-    snps_to_ann = sort(unique(c(sr_links_red$pos1, sr_links_red$pos2))) # These are the SNPs that need annotation
+    snps_to_ann = sort(unique(c(sr_links$pos1, sr_links$pos2))) # These are the SNPs that need annotation
     snps_to_ann_idx = sapply(snps_to_ann, function(x) which(snp.dat$POS %in% x)) # These are their original positions
 
     vcf_sr_path = file.path(annotation_folder, "sr_snps.vcf")
@@ -65,7 +65,7 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   }
   cat("Adding annotations to links ...")
   srlinks_annotated_path = file.path(annotation_folder,  "sr_links_annotated.tsv")
-  srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links_red, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
+  srlinks_annotated = add_annotations_to_links(sr_links_red = sr_links, ann = ann, srlinks_annotated_path = srlinks_annotated_path)
 
   if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "tophits.tsv")
 

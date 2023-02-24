@@ -4,7 +4,12 @@
 \alias{make_gwes_plots}
 \title{make_gwes_plots}
 \usage{
-make_gwes_plots(lr_links = NULL, sr_links = NULL, plt_folder = NULL)
+make_gwes_plots(
+  lr_links = NULL,
+  sr_links = NULL,
+  plt_folder = NULL,
+  are_srlinks_ordered = F
+)
 }
 \arguments{
 \item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file.
@@ -14,9 +19,9 @@ Usually output from perform_MI_computation(), (default = NULL)}
 Usually output from perform_MI_computation(), (default = NULL)}
 
 \item{plt_folder}{specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())}
-}
-\value{
-R data frame with short range GWES links (plots and long range links will be saved)
+
+\item{are_srlinks_ordered}{if False, links will be ordered before plotting, which will plot higher srp links on top of lower ones (default = F).
+Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot top to bottom plotting order.}
 }
 \description{
 Function to generate long and short range GWES plots

@@ -93,8 +93,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
 
     # sr_links are sorted (largest to smallest)
     if(!are_srlinks_ordered){ # if they are not sorted, sort below
-      sr_links_red = sr_links_red[order(sr_links_red$srp_max, decreasing = T), ]
-      rownames(sr_links_red) = NULL
+      sr_links = sr_links[order(sr_links$srp_max, decreasing = T), ]
+      rownames(sr_links) = NULL
     }
 
     # Note: ggplot plots from top to bottom of DF, we need to reverse order the links so that the top links appear on top!

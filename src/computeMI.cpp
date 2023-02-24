@@ -40,6 +40,25 @@ LogicalVector compareToRow(NumericMatrix x, NumericVector y) {
   return ret;
 }
 
+// [[Rcpp::export(name = '.vecPosMatch')]]
+NumericVector vecPosMatch(NumericVector x, NumericVector y) {
+  // find pos of x in y
+  int nx = x.length();
+  int ny = y.length();
+
+  NumericVector ret(nx);
+  for(int ii=0; ii < nx; ++ii){
+    for(int jj=0; jj<ny; ++jj){
+      if(y[jj] == x[ii]){
+        ret[ii] = jj+1;
+        break;
+      }
+    }
+  }
+  return ret;
+}
+
+
 // [[Rcpp::export(name = '.compareTriplet')]]
 bool compareTriplet(NumericVector MI0X, NumericVector MI0Z, double MI0){
   // This function still stands for ARACNE, we probably need to redo this using sparseMx
@@ -47,9 +66,11 @@ bool compareTriplet(NumericVector MI0X, NumericVector MI0Z, double MI0){
   const int nl = MI0X.length();
   for(int i=0; i<nl; ++i){
     //  Rprintf("%d", i);
-    if(MI0 < MI0X[i] && MI0 < MI0Z[i]){
-      ARACNE = false;
-      break;
+    if(MI0 < MI0X[i]){
+      if(MI0 < MI0Z[i]){
+        ARACNE = false;
+        break;
+      }
     }
   }
   return ARACNE;

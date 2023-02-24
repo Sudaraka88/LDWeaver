@@ -85,12 +85,15 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
   # In case a link gets through with len > sr_dist, we should filter that out in <mergeNsort_sr_links()>
-  sr_links_red = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, sr_dist = sr_dist, plt_path = plt_folder, srp_cutoff = srp_cutoff)
+  sr_links_all = mergeNsort_sr_links(cds_var = cds_var, sr_links = sr_links, sr_dist = sr_dist, plt_path = plt_folder, srp_cutoff = srp_cutoff)
+  sr_links_red = sr_links_all$sr_links_red
+  sr_links_ARACNE_check = sr_links_all$sr_links_ARACNE_check # do not pass outside this function
+  rm(sr_links_all)
   # sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
 
   if(runARACNE){
     cat(paste("Running ARACNE on", nrow(sr_links_red), "links... \n"))
-    ARACNE = runAracne(sr_links_red)
+    ARACNE = runAracne(sr_links_red, sr_links_ARACNE_check)
     sr_links_red$ARACNE = as.numeric(ARACNE)
   } else {
     warning('ARACNE not run, all values will be set to 1')
@@ -445,24 +448,29 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff)
   # row.names(sr_links_red) = NULL
 
   sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
+  sr_links_ARACNE_check = sr_links_df[sr_links_df$MI >= min(sr_links_red$MI), ]
 
   cat(paste("All done in", round(difftime(Sys.time(), t00, units = "secs"), 2), "s \n"))
-  return(sr_links_red)
+  return(list(sr_links_red = sr_links_red, sr_links_ARACNE_check = sr_links_ARACNE_check))
 
 }
 
-runAracne = function(sr_links_red){
+runAracne = function(sr_links_red, sr_links_ARACNE_check){
   t0 = Sys.time()
   # TODO: make this function faster using openMP
   # links red is the reduced set of links
   # sr_links_df is useless here, no data is taken from it! sr_links_red is a subset of it!
-  nlinks = nrow(sr_links_red)
-  pos_mat = matrix(c(sr_links_red$pos1, sr_links_red$pos2), nrow = nlinks) # for the reduced link set
-  MIs = matrix(sr_links_red$MI)
+  ## mx of all values
+  pos_mat = matrix(c(sr_links_ARACNE_check$pos1, sr_links_ARACNE_check$pos2), nrow = nrow(sr_links_ARACNE_check)) # for the reduced link set
+  MIs = matrix(sr_links_ARACNE_check$MI)
 
+  ## mx of values to check
+  nlinks = nrow(sr_links_red)
+  pos_mat_chk = matrix(c(sr_links_red$pos1, sr_links_red$pos2), nrow = nlinks)
+  MIs_chk = matrix(sr_links_red$MI)
   # POS = matrix(POS, nrow = length(POS)) # convert to mx for fast searching
 
-  ARACNE = rep(T, nlinks)
+  ARACNE = rep('A', nlinks) # unchekable links must be marked T
   t0 = Sys.time()
   pb = utils::txtProgressBar(min = 1, max = nlinks, initial = 1)
 
@@ -473,18 +481,18 @@ runAracne = function(sr_links_red){
     # microbenchmark::microbenchmark(
     #   {
     utils::setTxtProgressBar(pb,i)
-    redo_comXZ = F
-    pX = pos_mat[i,1]; # X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
-    pZ = pos_mat[i,2]; #Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
+    # redo_comXZ = F
+    pX = pos_mat_chk[i,1]; # X = which(.compareToRow(POS, pX)) #which(POS %in% pX)
+    pZ = pos_mat_chk[i,2]; #Z = which(.compareToRow(POS, pZ)) #which(POS %in% pZ)
 
     if(pX != pX_){ # skip this check if pX is unchanged
       idX = which(.compareToRow(pos_mat, pX)) #decodeIndex(index[[X]])
-      matX = cbind(pos_mat[idX,1], pos_mat[idX,2]); matX = matX[matX != pX]
+      matX = c(rbind(pos_mat[idX,1], pos_mat[idX,2])); matX = matX[matX != pX]
       pX_ = pX
     }
     # if(pZ != pZ_){
     idZ = which(.compareToRow(pos_mat, pZ)) #decodeIndex(index[[Z]])
-    matZ = cbind(pos_mat[idZ,1], pos_mat[idZ,2]); matZ = matZ[matZ != pZ]
+    matZ = c(rbind(pos_mat[idZ,1], pos_mat[idZ,2])); matZ = matZ[matZ != pZ]
     # pZ_ = pZ
     # }
 
@@ -492,13 +500,16 @@ runAracne = function(sr_links_red){
 
     if(length(comXZ) > 0){ # This is the only sr_links
       # MI0 = sr_links_df$MI[Rfast2::Intersect(idX, idZ)]
-      MI0X = MIs[idX[which(.compareToRow(matrix(matX), comXZ))], 1]
-      MI0Z = MIs[idZ[which(.compareToRow(matrix(matZ), comXZ))], 1]
-      ARACNE[i] = .compareTriplet(MI0X, MI0Z, MIs[i,1])
+      # MI0X = MIs[idX[sapply(comXZ, function(x) which(.compareToRow(matrix(matX), x)))], 1]
+      # MI0Z = MIs[idZ[sapply(comXZ, function(x) which(.compareToRow(matrix(matZ), x)))], 1]
+      MI0X = MIs[idX[.vecPosMatch(comXZ, matX)], 1]
+      MI0Z = MIs[idZ[.vecPosMatch(comXZ, matZ)], 1]
+      ARACNE[i] = .compareTriplet(MI0X, MI0Z, MIs_chk[i,1])
     }
   }
   close(pb)
   cat(paste("\nDone in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
+  table(ARACNE)
   return(ARACNE)
 }
 
