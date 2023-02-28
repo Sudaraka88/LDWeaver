@@ -249,3 +249,12 @@ In addition to these, it is possible to provide a GFF3 annotation file,
 phenotype data and a sequence tree into GWESExplorer for enhanced
 visualisation. The circular GWESExplorer plot should look like this:
 ![](inst/sup/GWESExplorer_screenshot.png)
+
+``` r
+# Generate the Network Plot
+BacGWES::create_network(srlinks_tophits = tophits, netplot_path = file.path(dset, "network_plot.png"), plot_title = paste("Genome regions with multiple top-hits in", dset))
+```
+
+Above line will create the network plot that shows the links between
+genomic regions that have multiple top hits.
+![](inst/sup/network_plot.png)
