@@ -7,8 +7,9 @@
 create_network(
   srlinks_tophits,
   netplot_path,
+  plot_title = NULL,
   separator = ":",
-  max_plot_nodes = 50,
+  max_plot_nodes = NULL,
   plot_w = 6000,
   plot_h = 4000
 )
@@ -18,9 +19,11 @@ create_network(
 
 \item{netplot_path}{folder to save the network}
 
-\item{separator}{break pattern for annotation (default = ":", which is the default used by SnpEff)}
+\item{plot_title}{title for the network plot (default = NULL)}
 
-\item{max_plot_nodes}{specify the maximum number of nodes to visualise in the plot (default = 50). Large values will result in a cluttered output, consider increasing plot size.}
+\item{separator}{break pattern in annotation (default = ":", this is the default used by SnpEff)}
+
+\item{max_plot_nodes}{specify the maximum number of nodes to visualise in the plot (default = NULL, use all). Large values will result in a cluttered output, consider increasing plot size.}
 
 \item{plot_w}{specify plot width in pixels (default = 6000)}
 

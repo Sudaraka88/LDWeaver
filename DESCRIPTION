@@ -2,7 +2,7 @@ Package: BacGWES
 Type: Package
 Title:Genomewide Epistasis Analysis on Bacteria
 Version: 1.0
-Author: Sudaraka Mallawa Arachchi <smallawaarachchi@gmail.com>
+Authors@R: person("Sudaraka", "Mallawa Arachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
 Maintainer: Sudaraka Mallawa Arachchi <smallawaarachchi@gmail.com>
 Description:Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
 License: GPL (>=3) + file LICENSE
@@ -17,15 +17,13 @@ Imports:
          fitdistrplus,
          genbankr,
          GenomicRanges,
-         GGally,
          ggplot2,
+         ggraph,
          htmlwidgets,
          igraph,
-         intergraph,
          Matrix,
          MatrixExtra,
          methods,
-         network,
          plyr,
          parallel,
          RColorBrewer,
@@ -34,5 +32,7 @@ Imports:
          Rfast2,
          stats,
          utils
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.2.3
+URL: https://github.com/Sudaraka88/BacGWES
+BugReports: https://github.com/Sudaraka88/BacGWES/issues

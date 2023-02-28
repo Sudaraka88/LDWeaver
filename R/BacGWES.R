@@ -17,7 +17,7 @@
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
-#' @param lr_retain_level specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained, range 0.1-0.999. WARNING! Low values will results in a HUGE lr_links.tsv file!
+#' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved
 #' @param max_tophits specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10
@@ -40,7 +40,7 @@
 #' @export
 BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
                    gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
-                   perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_level = 0.99,
+                   perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                    max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
                    multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
   # Build blocks
@@ -90,12 +90,12 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     sr_dist = 20000
   }
 
-  if(lr_retain_level <= 0.1 | lr_retain_level >= 0.9999) {
-    warning(paste("Unable to use the provided value for <lr_retain_level>, using", 0.99))
-    lr_retain_level = 0.99
+  if(lr_retain_links <= 1e3 | lr_retain_links >= 1e10) {
+    warning(paste("Unable to use the provided value for <lr_retain_links>, using", 1e6))
+    lr_retain_links = 1e6
   }
 
-  if(lr_retain_level < 0.8) warning("The given lr_retain_level can results in a large lr_links.tsv file!")
+  if(lr_retain_links > 1e6) warning("The given lr_retain_links value may generate a very large lr_links.tsv file!")
 
   if(max_tophits < 50 | max_tophits > 1000) {
     warning(paste("Unable to use the provided value for <max_tophits>, using", 250))
@@ -161,7 +161,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     }
     cat(paste("Hamming distance calculation weight:", hdw_threshold, "\n"))
     cat(paste("Links <=", sr_dist, "bp-apart will be classified as short-range (sr-links) \n"))
-    if(!perform_SR_analysis_only) cat(paste("Approx. top", lr_retain_level, "long range links will be saved \n"))
+    if(!perform_SR_analysis_only) cat(paste("Approx. top", lr_retain_links, "long range links will be saved \n"))
     cat(paste("Top sr-links with -log10(p) >", srp_cutoff, "will be saved \n"))
     cat(paste("Tanglegram/GWESExplorer outputs will illustrate upto:", max_tophits, "top sr-links \n"))
     cat(paste("MI Computation will use a max block size of:", max_blk_sz, "x", max_blk_sz, "SNPs! Reduce <max_blk_sz> if RAM is scarce!\n\n"))
@@ -238,7 +238,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     cat("Commencing MI computation \n")
     sr_links = BacGWES::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
-                                               plt_folder = dset, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
+                                               plt_folder = dset, sr_dist = sr_dist, lr_retain_links = lr_retain_links,
                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
                                                perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
   }
@@ -297,7 +297,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK10
   cat("\n\n #################### BLOCK 10 #################### \n\n")
-  BacGWES::create_network(srlinks_tophits = tophits, netplot_path = netplot_path)
+  BacGWES::create_network(srlinks_tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
 
 
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

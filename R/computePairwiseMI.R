@@ -16,6 +16,7 @@
 #' @importFrom RcppArmadillo fastLm
 #' @importFrom Rfast2 Intersect
 #' @importFrom utils txtProgressBar
+#' @importFrom Rfast2 Quantile
 #'
 #' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
 #' @param hdw vector of Hamming distance weights, output from BacGWES::estimate_Hamming_distance_weights()
@@ -25,7 +26,7 @@
 #' @param sr_save_path specify the location to save short range MI links as a tsv file (default = NULL, will be auto set), links below srp_cutoff will not be saved
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param sr_dist specify the short-range basepair separation (default = 20000)
-#' @param lr_retain_level specify the long-range MI retaining percentile (default = 0.99) - in each block, only the top 1\% of lr MI links will be retained
+#' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
@@ -44,7 +45,7 @@
 #'
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
-                                  sr_dist = 20000, lr_retain_level = 0.99, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
+                                  sr_dist = 20000, lr_retain_links = 1e6, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
                                   perform_SR_analysis_only = FALSE, order_links = T){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
@@ -73,13 +74,10 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     cat(paste("Block", i, "of", nblcks, "..."))
     from_ = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i]
     to_ = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i]
-    # sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, hdw = hdw, from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i],
-    #                                         to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i], paint = cds_var$paint,
-    #                                         nclust = cds_var$nclust, sr_dist = sr_dist, lr_retain_level = lr_retain_level,
-    #                                         lr_save_path = lr_save_path, ncores = ncores, sr_links = sr_links)
+
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var,
-                                            lr_save_path = lr_save_path, from = from_, sr_dist = 20000,
-                                            lr_retain_level = 0.99, to = to_, ncores = ncores, sr_links = sr_links,
+                                            lr_save_path = lr_save_path, from = from_, sr_dist = sr_dist,
+                                            lr_retain_links = lr_retain_links, to = to_, ncores = ncores, sr_links = sr_links,
                                             perform_SR_analysis_only = perform_SR_analysis_only)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
@@ -134,7 +132,7 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_level = 0.99, perform_SR_analysis_only = F){
+perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_links = lr_retain_links, perform_SR_analysis_only = F){
   # from, to are vectors
 
   # These are static, best passed in here <potential inputs>
@@ -204,7 +202,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   # snp_i = 3
   # snp_j = 41
   {
-    t0 = Sys.time()
+    # t0 = Sys.time()
     MI = matrix(rep(0, length(from)*length(to)), nrow = length(from))
 
     computeMI_Sprase(MI, tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
@@ -288,10 +286,12 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
 
   # Discard MI values w len > sr_dist using discard_MI_threshold
   if(lr_present & !perform_SR_analysis_only){ # if only the SR analysis is requested, discard this section
-    # WARNING! setting a low quantile will create a HUGE lr_links.tsv file!
-    cat("... Adding LR links to file ...") # debug
-    disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
+    # disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
+    n_lr_links = nrow(MI_df_lr)
+
+    disc_thresh = Rfast2::Quantile(MI_df_lr$MI, probs = 1 - ((lr_retain_links * (n_lr_links / snp.dat$nsnp^2)) / n_lr_links))
     len_filt = MI_df_lr$MI >= disc_thresh
+    cat(paste("... Adding ", sum(len_filt) ," LR links with MI>",round(disc_thresh, 3) ," to file ...", sep = "")) # debug
     if(!all(len_filt == FALSE)){
       MI_df_lr = MI_df_lr[len_filt, ]
       write.table(x = MI_df_lr, file = lr_save_path, append = T, quote = F, row.names = F, col.names = F, sep = '\t')
@@ -299,9 +299,9 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   }
 
   if(sr_present){
-    cat("... Updating sr_links list ...") # debug
     # write.table(x = MI_df_sr, file = sr_save_path, append = T, quote = F, row.names = F, col.names = F)
-    clust_mat = matrix(c(MI_df_sr$clust1, MI_df_sr$clust2), nrow = nrow(MI_df_sr))
+    n_sr_links = nrow(MI_df_sr)
+    clust_mat = matrix(c(MI_df_sr$clust1, MI_df_sr$clust2), nrow = n_sr_links)
 
     # quickly loop through across nclust and append link info to the relevant object
     for(i in 1:cds_var$nclust){
@@ -311,6 +311,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
       }
 
     }
+    cat(paste("... Adding", n_sr_links, "SR links to list ...")) # debug
 
   }
   return(sr_links)

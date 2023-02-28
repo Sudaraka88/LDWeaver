@@ -4,16 +4,15 @@
 #'
 #' @importFrom plyr . ddply
 #' @importFrom stats quantile
-#' @importFrom igraph graph_from_edgelist
-#' @importFrom intergraph asNetwork
-#' @importFrom network set.edge.attribute `%e%`
-#' @importFrom GGally ggnet2
-#' @importFrom ggplot2 ggsave
+#' @importFrom igraph graph_from_edgelist set.edge.attribute
+#' @importFrom ggraph ggraph geom_edge_arc2 scale_edge_colour_discrete geom_node_label
+#' @importFrom ggplot2 theme_void theme ggsave
 #'
 #' @param srlinks_tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
 #' @param netplot_path folder to save the network
-#' @param separator break pattern for annotation (default = ":", which is the default used by SnpEff)
-#' @param max_plot_nodes specify the maximum number of nodes to visualise in the plot (default = 50). Large values will result in a cluttered output, consider increasing plot size.
+#' @param plot_title title for the network plot (default = NULL)
+#' @param separator break pattern in annotation (default = ":", this is the default used by SnpEff)
+#' @param max_plot_nodes specify the maximum number of nodes to visualise in the plot (default = NULL, use all). Large values will result in a cluttered output, consider increasing plot size.
 #' @param plot_w specify plot width in pixels (default = 6000)
 #' @param plot_h specify plot height in pixels (default = 4000)
 #' @return none
@@ -24,12 +23,24 @@
 #' }
 #'
 #' @export
-create_network = function(srlinks_tophits, netplot_path, separator = ":", max_plot_nodes = 50, plot_w = 6000, plot_h = 4000){
+create_network = function(srlinks_tophits, netplot_path, plot_title = NULL, separator = ":", max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000){
   cat("Preparing Network Plot ... ")
+  Num_Links = name = NULL # avoid ggplot NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
+
   t0 = Sys.time()
+
+  if(is.null(plot_title)) plot_title = ""
+
   # Let's ensure 50 nodes are present here
   c50 = T
-  avail_links = max_plot_nodes
+  if(is.null(max_plot_nodes)){
+    avail_links = nrow(srlinks_tophits)
+    max_plot_nodes = nrow(srlinks_tophits)
+  } else {
+    avail_links = max_plot_nodes
+  }
+
+
 
   while (c50){
 
@@ -44,6 +55,9 @@ create_network = function(srlinks_tophits, netplot_path, separator = ":", max_pl
     avail_links = avail_links + 1
     if(avail_links > nrow(srlinks_tophits)) c50=F
   }
+
+  df_uq = df_uq[df_uq$V1 > 1, ]
+
   # get the max srp for each link
   for(i in 1:nrow(df_uq)){
     df_uq$w[i] = max(df$w[which(df_uq$p1a[i] == df$p1a & df_uq$p2a[i] == df$p2a)])
@@ -91,29 +105,80 @@ create_network = function(srlinks_tophits, netplot_path, separator = ":", max_pl
     s_weights = df_uq$w[kps]
     s_labs = df_uq$V1[kps]
   } else {
-    print("Everything is a loop!")
+    stop("Everything is a loop!")
   }
   s_weights = (s_weights)/max(s_weights)
 
   g1 = igraph::graph_from_edgelist(matrix(c(p1a_d, p2a_d), ncol = 2))
-  g1 = intergraph::asNetwork(g1)
-  # add weights
-  g1 = network::set.edge.attribute(x = g1, attrname = "weights", value = s_weights)
+  g1 = igraph::set.edge.attribute(g1, name = "weights", value = s_weights)
+  g1 = igraph::set.edge.attribute(g1, name = "Num_Links", value = as.factor(s_labs))
 
-  # add colours
-  qs = stats::quantile(s_weights)
-  g1 = network::set.edge.attribute(x = g1, attrname = "color", value = ifelse(g1 %e% "weights" < qs[2], "grey75",
-                                                                              ifelse(g1 %e% "weights" < qs[3], "grey50",
-                                                                                     ifelse (g1 %e% "weights" < qs[4], "black", "red"))))
-
-  g1 = network::set.edge.attribute(x = g1, attrname = "labs", value = s_labs)
-
-  p1 = GGally::ggnet2(g1, label = T, edge.size = "weights", edge.color = "color", label.color = "blue4",
-              node.color = "aliceblue", node.size = 6, shape = 13, edge.label = "labs", edge.label.color = "darkorchid1",
-              label.size = 4, mode = "fruchtermanreingold")
+  p1 = ggraph::ggraph(g1, layout = "nicely") +
+    # ggraph::geom_node_point(size = 0) +
+    ggraph::geom_edge_arc2(aes(label = Num_Links, colour = Num_Links), label_colour = NA, angle_calc = "along", force_flip = T,check_overlap = T) +
+    ggraph::scale_edge_colour_discrete(guide = "legend") +
+    # ggraph::geom_edge_arc2(aes(colour = labs)) +
+    ggraph::geom_node_label(aes(label = name)) +
+    ggplot2::theme_void() +
+    ggplot2::ggtitle(plot_title) +
+    ggplot2::theme(legend.position = "bottom")
 
   # p1
-  ggplot2::ggsave(plot = p1, filename = netplot_path, width = 6000, height = 4000, units = "px", device = "png", dpi = 300)
+
+
+
+
+    # g1 = intergraph::asNetwork(g1)
+    # g1 = network::set.edge.attribute(x = g1, attrname = "weights", value = s_weights)
+    # qs = stats::quantile(s_weights)
+    # g1 = network::set.edge.attribute(x = g1, attrname = "color", value = ifelse(g1 %e% "weights" < qs[2], "grey75",
+    #                                                                             ifelse(g1 %e% "weights" < qs[3], "grey50",
+    #                                                                                    ifelse (g1 %e% "weights" < qs[4], "black", "red"))))
+    #
+    # g1 = network::set.edge.attribute(x = g1, attrname = "labs", value = s_labs)
+
+
+
+
+
+  # net = ggnetwork::fortify(g1)
+  #
+  #
+  # ggplot(net, aes(x, y, xend = xend, yend = yend)) +
+  #   ggnetwork::geom_edges() +
+  #   ggnetwork::geom_nodes(size = 1, color = "black")+
+  #   ggnetwork::geom_edges(aes(color = weights)) +
+  #   scale_color_gradient(low = "grey50", high = "tomato") +
+  #   ggnetwork::geom_edgelabel(aes(label = labs)) +
+  #   ggnetwork::geom_nodetext_repel(aes(label = vertex.names),show.legend = F)
+  #
+  # +
+  #   ggnetwork::theme_blank()
+  # ggplot(ggnetwork::ggnetwork(g1))
+
+  # add weights
+
+
+  # add colours
+
+
+
+  # GGally::ggnet2(g1, label = T, edge.size = "weights", edge.color = "color", label.color = "blue4",
+  #             node.color = "aliceblue", node.size = 6, shape = 13, edge.label.color = "darkorchid1", edge.label = "labs",
+  #             label.size = 4, mode = "fruchtermanreingold")
+  #
+  # + ggrepel::geom_text_repel(aes(label = g1$vertex.names))
+  #
+  #
+  # ?GGally::ggnet2()
+  #
+  # p1
+  #
+  # + ggrepel::geom_text_repel()
+  #
+  # p1
+
+  ggplot2::ggsave(plot = p1, filename = netplot_path, width = plot_w, height = plot_h, units = "px", device = "png", dpi = 300, bg = "white")
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
 
 }
