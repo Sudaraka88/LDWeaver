@@ -4,16 +4,24 @@
 \alias{create_tanglegram}
 \title{create_tanglegram}
 \usage{
-create_tanglegram(srlinks_tophits, gbk, tanglegram_folder, break_segments = 5)
+create_tanglegram(
+  tophits,
+  gbk,
+  tanglegram_folder,
+  break_segments = 5,
+  links_type = "SR"
+)
 }
 \arguments{
-\item{srlinks_tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
 
 \item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
 
 \item{tanglegram_folder}{folder to save tanglegram(s)}
 
 \item{break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5)}
+
+\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
 }
 \value{
 none
@@ -23,7 +31,8 @@ Function to generate long and short range GWES plots
 }
 \examples{
 \dontrun{
-create_tanglegram(srlinks_tophits, gbk, tanglegram_path, break_segments = 5)
+gbk = BacGWES::parse_genbank_file("path_to_genbank_file", length_check = F)
+create_tanglegram(tophits, gbk, "save_folder")
 }
 
 }

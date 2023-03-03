@@ -4,14 +4,21 @@
 \alias{write_output_for_gwes_explorer}
 \title{write_output_for_gwes_explorer}
 \usage{
-write_output_for_gwes_explorer(snp.dat, srlinks_tophits, gwes_explorer_folder)
+write_output_for_gwes_explorer(
+  snp.dat,
+  tophits,
+  gwes_explorer_folder,
+  links_type = "SR"
+)
 }
 \arguments{
 \item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
 
-\item{srlinks_tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
 
 \item{gwes_explorer_folder}{folder to save the inputs for GWESExplorer}
+
+\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
 }
 \value{
 none
@@ -21,7 +28,7 @@ Function to generate long and short range GWES plots
 }
 \examples{
 \dontrun{
-write_output_for_gwes_explorer(snp.dat, srlinks_tophits, gwes_explorer_folder)
+write_output_for_gwes_explorer(snp.dat, tophits, gwes_explorer_folder)
 }
 
 }

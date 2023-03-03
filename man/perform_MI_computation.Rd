@@ -46,7 +46,7 @@ perform_MI_computation(
 modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1)}
 
-\item{runARACNE}{specify whether to run ARACNE (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1}
+\item{runARACNE}{specify whether to run ARACNE on short-range links (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1}
 
 \item{perform_SR_analysis_only}{skip the long range link analysis (default = FALSE)}
 

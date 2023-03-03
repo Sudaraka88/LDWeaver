@@ -13,7 +13,8 @@ make_gwes_plots(
 }
 \arguments{
 \item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file.
-Usually output from perform_MI_computation(), (default = NULL)}
+Usually output from perform_MI_computation(), (default = NULL). Instead of using this function to generate the lr-gwes plot, use the dedicated
+BacGWES::analyse_long_range_links() function for long range link analysis (and plotting).}
 
 \item{sr_links}{data.frame containing sr_links or the path to saved sr_links TSV file.
 Usually output from perform_MI_computation(), (default = NULL)}
@@ -21,7 +22,7 @@ Usually output from perform_MI_computation(), (default = NULL)}
 \item{plt_folder}{specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())}
 
 \item{are_srlinks_ordered}{if False, links will be ordered before plotting, which will plot higher srp links on top of lower ones (default = F).
-Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot top to bottom plotting order.}
+Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot's top to bottom plotting order.}
 }
 \description{
 Function to generate long and short range GWES plots

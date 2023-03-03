@@ -11,10 +11,11 @@ perform_snpEff_annotations(
   gbk,
   gbk_path,
   cds_var,
-  sr_links,
+  links_df,
   snp.dat,
   tophits_path = NULL,
-  max_tophits = 250
+  max_tophits = 250,
+  links_type = "SR"
 )
 }
 \arguments{
@@ -30,13 +31,15 @@ perform_snpEff_annotations(
 
 \item{cds_var}{output from BacGWES::estimate_variation_in_CDS()}
 
-\item{sr_links}{data.frame containing sr_links (reduced links can be used to save time) output from perform_MI_computation()}
+\item{links_df}{data.frame containing links (reduced links can be used to save time) output from perform_MI_computation()}
 
 \item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
 
 \item{tophits_path}{specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv}
 
 \item{max_tophits}{specify the number of top hits to return (all links will be annotated and saved to the annotations_folder)}
+
+\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
 }
 \value{
 R data frame with the top short range GWES links with snpEff annotated embedded

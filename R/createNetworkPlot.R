@@ -8,22 +8,25 @@
 #' @importFrom ggraph ggraph geom_edge_arc2 scale_edge_colour_discrete geom_node_label
 #' @importFrom ggplot2 theme_void theme ggsave
 #'
-#' @param srlinks_tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
+#' @param tophits data frame with top short or long range GWES links, returned from BacGWES::perform_snpEff_annotations()
 #' @param netplot_path folder to save the network
 #' @param plot_title title for the network plot (default = NULL)
 #' @param separator break pattern in annotation (default = ":", this is the default used by SnpEff)
 #' @param max_plot_nodes specify the maximum number of nodes to visualise in the plot (default = NULL, use all). Large values will result in a cluttered output, consider increasing plot size.
 #' @param plot_w specify plot width in pixels (default = 6000)
 #' @param plot_h specify plot height in pixels (default = 4000)
+#' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR")
+#'
 #' @return none
 #'
 #' @examples
 #' \dontrun{
-#' create_network(srlinks_tophits, netplot_path)
+#' create_network(tophits, netplot_path)
 #' }
 #'
 #' @export
-create_network = function(srlinks_tophits, netplot_path, plot_title = NULL, separator = ":", max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000){
+create_network = function(tophits, netplot_path, plot_title = NULL, separator = ":",
+                          max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000, links_type = "SR"){
   cat("Preparing Network Plot ... ")
   Num_Links = name = NULL # avoid ggplot NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
 
@@ -34,8 +37,8 @@ create_network = function(srlinks_tophits, netplot_path, plot_title = NULL, sepa
   # Let's ensure 50 nodes are present here
   c50 = T
   if(is.null(max_plot_nodes)){
-    avail_links = nrow(srlinks_tophits)
-    max_plot_nodes = nrow(srlinks_tophits)
+    avail_links = nrow(tophits)
+    max_plot_nodes = nrow(tophits)
   } else {
     avail_links = max_plot_nodes
   }
@@ -44,21 +47,25 @@ create_network = function(srlinks_tophits, netplot_path, plot_title = NULL, sepa
 
   while (c50){
 
-    p1a = unname(sapply(srlinks_tophits$pos1_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
-    p2a = unname(sapply(srlinks_tophits$pos2_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
+    p1a = unname(sapply(tophits$pos1_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
+    p2a = unname(sapply(tophits$pos2_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
 
 
-    df = data.frame(p1a, p2a, w = srlinks_tophits$srp[1:avail_links])
+    if(links_type == "SR"){
+      df = data.frame(p1a, p2a, w = tophits$srp[1:avail_links])
+    } else if(links_type == "LR") {
+      df = data.frame(p1a, p2a, w = tophits$MI[1:avail_links])
+    }
     df_uq =  plyr::ddply(df, .(p1a,p2a), nrow)
 
     if(nrow(df_uq) >= max_plot_nodes) c50=F
     avail_links = avail_links + 1
-    if(avail_links > nrow(srlinks_tophits)) c50=F
+    if(avail_links > nrow(tophits)) c50=F
   }
 
   df_uq = df_uq[df_uq$V1 > 1, ]
 
-  # get the max srp for each link
+  # get the max srp/MI val. for each link (this is now redundant!)
   for(i in 1:nrow(df_uq)){
     df_uq$w[i] = max(df$w[which(df_uq$p1a[i] == df$p1a & df_uq$p2a[i] == df$p2a)])
   }
@@ -102,15 +109,15 @@ create_network = function(srlinks_tophits, netplot_path, plot_title = NULL, sepa
   if(length(kps) > 0){
     p1a_d = df_uq$p1a[kps]
     p2a_d = df_uq$p2a[kps]
-    s_weights = df_uq$w[kps]
+    # s_weights = df_uq$w[kps]
     s_labs = df_uq$V1[kps]
   } else {
     stop("Everything is a loop!")
   }
-  s_weights = (s_weights)/max(s_weights)
+  # s_weights = (s_weights)/max(s_weights)
 
   g1 = igraph::graph_from_edgelist(matrix(c(p1a_d, p2a_d), ncol = 2))
-  g1 = igraph::set.edge.attribute(g1, name = "weights", value = s_weights)
+  # g1 = igraph::set.edge.attribute(g1, name = "weights", value = s_weights)
   g1 = igraph::set.edge.attribute(g1, name = "Num_Links", value = as.factor(s_labs))
 
   p1 = ggraph::ggraph(g1, layout = "nicely") +

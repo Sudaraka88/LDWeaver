@@ -12,13 +12,13 @@
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
-#' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F
+#' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
 #' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved
-#' @param max_tophits specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
+#' @param max_tophits specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
@@ -134,11 +134,10 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
   cds_var_path = file.path(dset, "cds_var.rds")
   hdw_path = file.path(dset, "hdw.rds")
+  clust_plt_path = file.path(dset, "CDS_clustering.png")
   lr_save_path = file.path(dset, "lr_links.tsv")
   sr_save_path = file.path(dset, "sr_links.tsv")
-  tophits_path = file.path(dset, "tophits.tsv")
-  clust_plt_path = file.path(dset, "CDS_clustering.png")
-
+  tophits_path = file.path(dset, "sr_tophits.tsv")
 
   ######## Welcome message ########
   {
@@ -243,12 +242,14 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
                                                perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
   }
 
-  if(file.exists(lr_save_path)){
-    lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
-    colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
-  } else {
-    lr_links = NULL # in case lr_links are not available
-  }
+  # if(file.exists(lr_save_path)){
+  #   # lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
+  #   # colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
+  #   lr_links = NULL # in case lr_links are not available
+  #   # print("Long-range GWES links will not be analysed in this pipeline, use BacGWES::analyse_long_range_links()")
+  # } else {
+  #   lr_links = NULL # in case lr_links are not available
+  # }
 
   if(nrow(sr_links) == 0){
     stop("No potentially important sr_links were identified! Cannot continue analysis...")
@@ -258,7 +259,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK6
   cat("\n\n #################### BLOCK 6 #################### \n\n")
   # order links will be false for analyses that require further analysis, make_gwes_plots() will order the links before plotting
-  BacGWES::make_gwes_plots(lr_links = lr_links, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
+  BacGWES::make_gwes_plots(lr_links = NULL, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
 
   # BLK7
   cat("\n\n #################### BLOCK 7 #################### \n\n")
@@ -269,18 +270,18 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # Additional paths if annotations are requested
   # tanglegram
-  tanglegram_path = file.path(dset, "Tanglegram")
+  tanglegram_path = file.path(dset, "SR_Tanglegram")
   if(!file.exists(tanglegram_path)) dir.create(tanglegram_path)
   # GWESExplorer
-  gwesexplorer_path = file.path(dset, "GWESExplorer")
+  gwesexplorer_path = file.path(dset, "SR_GWESExplorer")
   if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
   # NetworkPlot
-  netplot_path = file.path(dset, "network_plot.png")
+  netplot_path = file.path(dset, "SR_network_plot.png")
 
   if(!file.exists(tophits_path)){
     tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  cds_var = cds_var, sr_links = sr_links, snp.dat = snp.dat,
+                                                  cds_var = cds_var, links_df = sr_links, snp.dat = snp.dat,
                                                   tophits_path = tophits_path, max_tophits = max_tophits)
   } else {
     cat("Loading previous top hits \n")
@@ -289,17 +290,26 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK8
   cat("\n\n #################### BLOCK 8 #################### \n\n")
-  BacGWES::create_tanglegram(srlinks_tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
+  BacGWES::create_tanglegram(tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
 
   # BLK9
   cat("\n\n #################### BLOCK 9 #################### \n\n")
-  BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, srlinks_tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
+  BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
   # BLK10
   cat("\n\n #################### BLOCK 10 #################### \n\n")
-  BacGWES::create_network(srlinks_tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
+  BacGWES::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
 
-
+  if(!perform_SR_analysis_only){
+    # BLK11
+    cat("\n\n #################### BLOCK 11 #################### \n\n")
+    if(SnpEff_Annotate){
+      BacGWES::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
+                                        gbk_path = gbk_path, snp.dat = snp.dat, cds_var = cds_var)
+    } else {
+      BacGWES::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
+    }
+  }
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
 
 }

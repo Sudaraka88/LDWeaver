@@ -5,17 +5,18 @@
 \title{create_network}
 \usage{
 create_network(
-  srlinks_tophits,
+  tophits,
   netplot_path,
   plot_title = NULL,
   separator = ":",
   max_plot_nodes = NULL,
   plot_w = 6000,
-  plot_h = 4000
+  plot_h = 4000,
+  links_type = "SR"
 )
 }
 \arguments{
-\item{srlinks_tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short or long range GWES links, returned from BacGWES::perform_snpEff_annotations()}
 
 \item{netplot_path}{folder to save the network}
 
@@ -28,6 +29,8 @@ create_network(
 \item{plot_w}{specify plot width in pixels (default = 6000)}
 
 \item{plot_h}{specify plot height in pixels (default = 4000)}
+
+\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
 }
 \value{
 none
@@ -37,7 +40,7 @@ Function to generate a network view of top GWES hits
 }
 \examples{
 \dontrun{
-create_network(srlinks_tophits, netplot_path)
+create_network(tophits, netplot_path)
 }
 
 }

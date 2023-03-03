@@ -43,7 +43,7 @@ BacGWES(
 
 \item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
-\item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or not required, set SnpEff_Annotate = F}
+\item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F}
 
 \item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?}
 
@@ -55,7 +55,7 @@ BacGWES(
 
 \item{lr_retain_links}{specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved}
 
-\item{max_tophits}{specify the maximum number of short range links to save as <tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
+\item{max_tophits}{specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000}
 
 \item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10}

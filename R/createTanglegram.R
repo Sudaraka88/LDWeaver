@@ -8,39 +8,41 @@
 #' @importFrom plyr . ddply
 #' @importFrom chromoMap chromoMap
 #'
-#' @param srlinks_tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
+#' @param tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
 #' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
 #' @param tanglegram_folder folder to save tanglegram(s)
 #' @param break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5)
+#' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR")
 #'
 #' @return none
 #'
 #' @examples
 #' \dontrun{
-#' create_tanglegram(srlinks_tophits, gbk, tanglegram_path, break_segments = 5)
+#' gbk = BacGWES::parse_genbank_file("path_to_genbank_file", length_check = F)
+#' create_tanglegram(tophits, gbk, "save_folder")
 #' }
 #'
 #' @export
-create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segments = 5){
+create_tanglegram = function(tophits, gbk, tanglegram_folder, break_segments = 5, links_type = "SR"){
   p1a = p2a = NULL # avoid plyr NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
   if(!file.exists(tanglegram_folder)) dir.create(tanglegram_folder)
   cat("Preparing Tanglegrams ... ")
   t0 = Sys.time()
-  srlinks_tophits$dummy_chrom = cutree(hclust(dist(srlinks_tophits$pos1)), break_segments); #print(table(srlinks_tophits$dummy_chrom))
+  tophits$dummy_chrom = cutree(hclust(dist(tophits$pos1)), break_segments); #print(table(tophits$dummy_chrom))
 
   # we should swap labels depending on min
-  clst_brk_ord = order(sapply(1:break_segments, function(x) min(srlinks_tophits$pos1[srlinks_tophits$dummy_chrom == x])))
-  dc_tmp = srlinks_tophits$dummy_chrom
+  clst_brk_ord = order(sapply(1:break_segments, function(x) min(tophits$pos1[tophits$dummy_chrom == x])))
+  dc_tmp = tophits$dummy_chrom
   change = F
   for(i in 1:break_segments){
     if(i == clst_brk_ord[i]) {
       next
     } else{ # swap needed
-      dc_tmp[srlinks_tophits$dummy_chrom == i] = clst_brk_ord[i]
+      dc_tmp[tophits$dummy_chrom == i] = clst_brk_ord[i]
       change = T
     }
   }
-  if(change) srlinks_tophits$dummy_chrom = dc_tmp
+  if(change) tophits$dummy_chrom = dc_tmp
 
   # gbkv = as.data.frame(genbankr::cds(gbk)) # extract regions from gbk
 
@@ -51,10 +53,19 @@ create_tanglegram = function(srlinks_tophits, gbk, tanglegram_folder, break_segm
 
 
   for(clustidx in 1:break_segments){
-    srlinks_tophits_dumchr = srlinks_tophits[which(srlinks_tophits$dummy_chrom == clustidx), ]
-    df = data.frame(p1a = srlinks_tophits_dumchr$pos1_genreg,
-                    p2a = srlinks_tophits_dumchr$pos2_genreg,
-                    w = srlinks_tophits_dumchr$srp)
+    tophits_dumchr = tophits[which(tophits$dummy_chrom == clustidx), ]
+    if(links_type == "SR"){
+      df = data.frame(p1a = tophits_dumchr$pos1_genreg,
+                      p2a = tophits_dumchr$pos2_genreg,
+                      w = tophits_dumchr$srp)
+    } else if(links_type == "LR"){
+      df = data.frame(p1a = tophits_dumchr$pos1_genreg,
+                      p2a = tophits_dumchr$pos2_genreg,
+                      w = tophits_dumchr$MI)
+    } else {
+      stop("Links type must be SR or LR")
+    }
+
 
     df_uq =  plyr::ddply(df, plyr::.(p1a,p2a), nrow)
     # get the max srp for each link

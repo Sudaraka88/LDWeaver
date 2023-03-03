@@ -7,12 +7,13 @@
 #' @importFrom utils read.table
 #'
 #' @param lr_links data.frame containing lr_links or the path to saved lr_links TSV file.
-#' Usually output from perform_MI_computation(), (default = NULL)
+#' Usually output from perform_MI_computation(), (default = NULL). Instead of using this function to generate the lr-gwes plot, use the dedicated
+#' BacGWES::analyse_long_range_links() function for long range link analysis (and plotting).
 #' @param sr_links data.frame containing sr_links or the path to saved sr_links TSV file.
 #' Usually output from perform_MI_computation(), (default = NULL)
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
 #' @param are_srlinks_ordered if False, links will be ordered before plotting, which will plot higher srp links on top of lower ones (default = F).
-#' Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot top to bottom plotting order.
+#' Set True only if the links are already in the preferred order. Note: This function will reverse the link order to match the ggplot's top to bottom plotting order.
 #'
 #' @examples
 #' \dontrun{
@@ -103,7 +104,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 0), ], ggplot2::aes(x = len, y = MI), col = "#C0C0C0") +
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 1), ], ggplot2::aes(x = len, y = MI, col = srp_max)) +
       ggplot2::scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
-      ggplot2::facet_wrap('~clust_c')
+      ggplot2::facet_wrap('~clust_c') +
+      ggplot2::theme_light()
 
     sr_segregated_plt_path = file.path(plt_folder, "sr_gwes_clust.png")
     ggplot2::ggsave(plot = p1, filename = sr_segregated_plt_path, width = 2200, height = 1200, units = "px")
@@ -111,7 +113,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
     p2 = ggplot2::ggplot() +
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 0), ], ggplot2::aes(x = len, y = MI), col = "#C0C0C0") +
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 1), ], ggplot2::aes(x = len, y = MI, col = srp_max)) +
-      ggplot2::scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu")))
+      ggplot2::scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
+      ggplot2::theme_light()
 
     sr_combined_plt_path = file.path(plt_folder, "sr_gwes_combi.png")
     ggplot2::ggsave(plot = p2, filename = sr_combined_plt_path, width = 2200, height = 1200, units = "px")
