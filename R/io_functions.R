@@ -1,4 +1,4 @@
-#' readTopHits
+#' read_TopHits
 #'
 #' @param top_hits_path path to saved top_hits file
 #'
@@ -7,15 +7,15 @@
 #' @examples
 #' \dontrun{
 #' top_hits_path = "<path_to_tophits_file>"
-#' tophits = readTopHits(top_hits_path)
+#' tophits = read_TopHits(top_hits_path)
 #' }
 #' @export
-readTopHits = function(top_hits_path){
+read_TopHits = function(top_hits_path){
   tophits = read.table(top_hits_path, sep = "\t", header = T, quote = "", comment.char = "")
   return(tophits)
 }
 
-#' readLongRangeLinks
+#' read_LongRangeLinks
 #'
 #' @param lr_links_path path to saved lr_links.tsv or spydrpick file
 #' @param links_from_spydrpick are the links computed using spydrpick (default = F)
@@ -26,10 +26,10 @@ readTopHits = function(top_hits_path){
 #' @examples
 #' \dontrun{
 #' lr_links_path = "<path_to_lrlinks.tsv_file>"
-#' lr_links = readLongRangeLinks(lr_links_path)
+#' lr_links = read_LongRangeLinks(lr_links_path)
 #' }
 #' @export
-readLongRangeLinks = function(lr_links_path, links_from_spydrpick = F, sr_dist = 20000){
+read_LongRangeLinks = function(lr_links_path, links_from_spydrpick = F, sr_dist = 20000){
   if(!links_from_spydrpick){
     lr_links = read.table(lr_links_path, sep = "\t", header = F, quote = "", comment.char = "")
     colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
@@ -43,7 +43,7 @@ readLongRangeLinks = function(lr_links_path, links_from_spydrpick = F, sr_dist =
   return(lr_links)
 }
 
-#' readShortRangeLinks
+#' read_ShortRangeLinks
 #'
 #' @param sr_links_path path to saved sr_links.tsv file
 #'
@@ -52,15 +52,33 @@ readLongRangeLinks = function(lr_links_path, links_from_spydrpick = F, sr_dist =
 #' @examples
 #' \dontrun{
 #' sr_links_path = "<path_to_sr_links.tsv_file>"
-#' sr_links = readShortRangeLinks(sr_links_path)
+#' sr_links = read_ShortRangeLinks(sr_links_path)
 #' }
 #' @export
-readShortRangeLinks = function(sr_links_path){
+read_ShortRangeLinks = function(sr_links_path){
   sr_links = read.table(sr_links_path, sep = "\t", header = F, quote = "", comment.char = "")
   colnames(sr_links) = c("clust_c", "pos1", "pos2", "clust1", "clust2", "len", "MI", "srp_max", "ARACNE")
 
   return(sr_links)
 }
+
+#' read_AnnotatedLinks
+#'
+#' @param annotated_links_path path to saved <sr> or <lr>_annotated_links.tsv file
+#'
+#' @return Annotated links as a data.frame
+#'
+#' @examples
+#' \dontrun{
+#' sr_annotated_links_path = "<path_to_annotated_sr_links.tsv_file>"
+#' sr_links_ann = read_AnnotatedLinks(sr_annotated_links_path)
+#' }
+#' @export
+read_AnnotatedLinks = function(annotated_links_path){
+  annotated_links = read.table(annotated_links_path, sep = "\t", quote = "", comment.char = "", header = T)
+  return(annotated_links)
+}
+
 
 #' runARACNE
 #'

@@ -250,13 +250,13 @@ add_annotations_to_links = function(links_red, ann, links_annotated_path, links_
                          ARACNE = links_red$ARACNE,
                          MI = links_red$MI,
                          srp = links_red$srp_max,
-                         pos1_ad = ann$allele_dist[pos1_idx],
-                         pos2_ad = ann$allele_dist[pos2_idx],
-                         pos1_genreg = ann$cds[pos1_idx],
-                         pos2_genreg = ann$cds[pos2_idx],
                          pos1_ann = ann$description[pos1_idx],
                          pos2_ann = ann$description[pos2_idx],
-                         links = paste(ann$code[pos1_idx], ann$code[pos2_idx], sep = "X"))
+                         pos1_genreg = ann$cds[pos1_idx],
+                         pos2_genreg = ann$cds[pos2_idx],
+                         links = paste(ann$code[pos1_idx], ann$code[pos2_idx], sep = "X"),
+                         pos1_ad = ann$allele_dist[pos1_idx],
+                         pos2_ad = ann$allele_dist[pos2_idx])
 
     # saving annotated links
     # sort these links here
@@ -268,13 +268,13 @@ add_annotations_to_links = function(links_red, ann, links_annotated_path, links_
                          len = links_red$len,
                          ARACNE = links_red$ARACNE,
                          MI = links_red$MI,
-                         pos1_ad = ann$allele_dist[pos1_idx],
-                         pos2_ad = ann$allele_dist[pos2_idx],
-                         pos1_genreg = ann$cds[pos1_idx],
-                         pos2_genreg = ann$cds[pos2_idx],
                          pos1_ann = ann$description[pos1_idx],
                          pos2_ann = ann$description[pos2_idx],
-                         links = paste(ann$code[pos1_idx], ann$code[pos2_idx], sep = "X"))
+                         pos1_genreg = ann$cds[pos1_idx],
+                         pos2_genreg = ann$cds[pos2_idx],
+                         links = paste(ann$code[pos1_idx], ann$code[pos2_idx], sep = "X"),
+                         pos1_ad = ann$allele_dist[pos1_idx],
+                         pos2_ad = ann$allele_dist[pos2_idx])
 
     # saving annotated links
     # sort these links here

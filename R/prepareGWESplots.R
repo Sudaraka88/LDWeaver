@@ -39,7 +39,7 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
     if(!is.data.frame(lr_links)){ #lr_links can be a path to the TSV or a data.frame
       # lr_links must be a path then
       if(file.exists(lr_links)){
-        lr_links = read.table(lr_links, sep = '\t', header = F, quote = "", comment.char = "")
+        lr_links = BacGWES::read_LongRangeLinks(lr_links)
       } else { # nothing at the given path
         lr_links_ready = F
       }
@@ -74,7 +74,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
     if(!is.data.frame(sr_links)){ #sr_links can be a path to the TSV or a data.frame
       # sr_links must be a path then
       if(file.exists(sr_links)){
-        sr_links = read.table(sr_links, sep = '\t', header = F, quote = "", comment.char = "")
+        # sr_links = read.table(sr_links, sep = '\t', header = F, quote = "", comment.char = "")
+        sr_links = BacGWES::read_ShortRangeLinks(sr_links_path = sr_links)
       } else { # nothing at the given path
         sr_links_ready = F
       }

@@ -45,10 +45,10 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   }
 
   # lr_links_path = "~/Desktop/BacGWES_RUN/maela/lr_links.tsv"
-  lr_links = BacGWES::readLongRangeLinks(lr_links_path)
+  lr_links = BacGWES::read_LongRangeLinks(lr_links_path)
 
   # sr_links_path = "~/Desktop/BacGWES_RUN/maela/sr_links.tsv"
-  sr_links = readShortRangeLinks(sr_links_path)
+  sr_links = read_ShortRangeLinks(sr_links_path)
   # sr_links = BacGWES::readShortRangeLinks(sr_links_path)
 
   q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Global threshold
@@ -90,7 +90,7 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     ggplot2::theme_light() #+
   # ggplot2::facet_wrap('~clust')
 
-  ggplot2::ggsave(plot = p1, filename = lr_plt_path, width = 2200, height = 1200, units = "px")
+  ggplot2::ggsave(plot = p1, filename = lr_plt_path, width = 4800, height = 1200, units = "px")
   if(SnpEff_Annotate == F){
     cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
   } else {

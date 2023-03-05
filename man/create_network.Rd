@@ -6,19 +6,19 @@
 \usage{
 create_network(
   tophits,
-  netplot_path,
+  netplot_path = NULL,
   plot_title = NULL,
   separator = ":",
   max_plot_nodes = NULL,
   plot_w = 6000,
   plot_h = 4000,
-  links_type = "SR"
+  min_links_to_include = 2
 )
 }
 \arguments{
 \item{tophits}{data frame with top short or long range GWES links, returned from BacGWES::perform_snpEff_annotations()}
 
-\item{netplot_path}{folder to save the network}
+\item{netplot_path}{folder to save the network (default = NULL, return ggplot object)}
 
 \item{plot_title}{title for the network plot (default = NULL)}
 
@@ -30,10 +30,10 @@ create_network(
 
 \item{plot_h}{specify plot height in pixels (default = 4000)}
 
-\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
+\item{min_links_to_include}{specify the minimum number of links required to retain the node in the plot (default = 2)}
 }
 \value{
-none
+Network plots (ggplot object)
 }
 \description{
 Function to generate a network view of top GWES hits
