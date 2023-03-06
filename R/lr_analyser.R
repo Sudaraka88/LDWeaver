@@ -45,26 +45,30 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   }
 
   # lr_links_path = "~/Desktop/BacGWES_RUN/maela/lr_links.tsv"
+  cat("Reading long range links... ")
   lr_links = BacGWES::read_LongRangeLinks(lr_links_path)
-
+  cat("Done \n ")
   # sr_links_path = "~/Desktop/BacGWES_RUN/maela/sr_links.tsv"
-  sr_links = read_ShortRangeLinks(sr_links_path)
+  cat("Reading short range links... ")
+  sr_links = BacGWES::read_ShortRangeLinks(sr_links_path)
   # sr_links = BacGWES::readShortRangeLinks(sr_links_path)
+  cat("Done \n ")
 
-  q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Global threshold
+  q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Quantiles
+  thresholds = q13[2] + q13
 
   # Can we make cluster based plots (doesn't seem to make much sense)
-  clusts = sort(unique(c(lr_links$c1, lr_links$c2))) # these are numeric
-  lr_links$clust = NA
-  for(i in 1:length(clusts)){
-    for(j in i:length(clusts)){
-      lnks = which((lr_links$c1 == i & lr_links$c2 == j) | (lr_links$c2 == i & lr_links$c1 == j))
-      lr_links$clust[lnks] = paste(i,j,sep="")
-      q13 = rbind(q13,
-                  Rfast2::Quantile(lr_links$MI[lnks], probs = c(0.25, 0.75))) # Global threshold
-    }
-  }
-  thresholds = t(apply(q13, 1, function(x) x[2] + (x[2] - x[1])*c(1.5, 3)))
+  # clusts = sort(unique(c(lr_links$c1, lr_links$c2))) # these are numeric
+  # lr_links$clust = NA
+  # for(i in 1:length(clusts)){
+  #   for(j in i:length(clusts)){
+  #     lnks = which((lr_links$c1 == i & lr_links$c2 == j) | (lr_links$c2 == i & lr_links$c1 == j))
+  #     lr_links$clust[lnks] = paste(i,j,sep="")
+  #     q13 = rbind(q13,
+  #                 Rfast2::Quantile(lr_links$MI[lnks], probs = c(0.25, 0.75))) # Global threshold
+  #   }
+  # }
+  # thresholds = t(apply(q13, 1, function(x) x[2] + (x[2] - x[1])*c(1.5, 3)))
 
   lr_links_ARACNE_check = rbind(data.frame(pos1 = lr_links$pos1, pos2 = lr_links$pos2, MI = lr_links$MI),
                                 data.frame(pos1 = sr_links$pos1, pos2 = sr_links$pos2, MI = sr_links$MI))
@@ -123,7 +127,7 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     cat("\n")
 
     netplot_path = file.path(dset, "lr_network_plot.png")
-    BacGWES::create_network(tophits = tophits, netplot_path = netplot_path, links_type = "LR")
+    BacGWES::create_network(tophits = tophits, netplot_path = netplot_path)
 
   }
   cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
