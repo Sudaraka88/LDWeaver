@@ -34,7 +34,10 @@ read_LongRangeLinks = function(lr_links_path, links_from_spydrpick = F, sr_dist 
     lr_links = read.table(lr_links_path, sep = "\t", header = F, quote = "", comment.char = "")
     colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
   } else {
-    stop("Spydrpick links not yet supported")
+    # stop("Spydrpick links not yet supported")
+    lr_links = read.table(lr_links_path, sep = " ", header = F, quote = "", comment.char = "")
+    if(ncol(lr_links) == 5) colnames(lr_links) = c("pos1", "pos2", "len", "ARACNE", "MI")
+    if(ncol(lr_links) == 4) colnames(lr_links) = c("pos1", "pos2", "len", "MI")
   }
 
   drops = lr_links$len < sr_dist

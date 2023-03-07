@@ -14,7 +14,8 @@ analyse_long_range_links(
   gbk_path = NULL,
   snp.dat = NULL,
   cds_var = NULL,
-  max_tophits = 500
+  max_tophits = 500,
+  links_from_spydrpick = F
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ analyse_long_range_links(
 
 \item{max_tophits}{specify the maximum number of long range links to save as <lr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 500)}
+
+\item{links_from_spydrpick}{are the links computed using spydrpick (default = F)}
 }
 \description{
 Function to analyse long range links. These links can be computed using BacGWES or Spydrpick (faster). Spydrpick is recommended for larger datasets.

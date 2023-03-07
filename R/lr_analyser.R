@@ -15,6 +15,7 @@
 #' @param cds_var output from BacGWES::estimate_variation_in_CDS(), not needed if SnpEff_Annotate = F
 #' @param max_tophits specify the maximum number of long range links to save as <lr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 500)
+#' @param links_from_spydrpick are the links computed using spydrpick (default = F)
 #'
 #' @examples
 #' \dontrun{
@@ -22,7 +23,8 @@
 #' }
 #' @export
 analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrlinks_ordered = F, SnpEff_Annotate = F,
-                                    snpeff_jar_path = NULL, gbk_path = NULL, snp.dat = NULL, cds_var = NULL, max_tophits = 500){
+                                    snpeff_jar_path = NULL, gbk_path = NULL, snp.dat = NULL, cds_var = NULL, max_tophits = 500,
+                                    links_from_spydrpick = F){
                                     # tanglegram_break_segments = 5){
 
   # it makes sense to have a larger max_tophits for long range links - there will be a lot more of long-range links compared to short
@@ -46,7 +48,14 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
 
   # lr_links_path = "~/Desktop/BacGWES_RUN/maela/lr_links.tsv"
   cat("Reading long range links... ")
-  lr_links = BacGWES::read_LongRangeLinks(lr_links_path)
+
+  if(links_from_spydrpick){
+    lr_links = BacGWES::read_LongRangeLinks(lr_links_path, links_from_spydrpick = T)
+  } else {
+    lr_links = BacGWES::read_LongRangeLinks(lr_links_path)
+  }
+
+
   cat("Done \n ")
   # sr_links_path = "~/Desktop/BacGWES_RUN/maela/sr_links.tsv"
   cat("Reading short range links... ")
@@ -55,7 +64,8 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   cat("Done \n ")
 
   q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Quantiles
-  thresholds = q13[2] + q13
+  IQR = diff(q13)
+  thresholds = q13[2] + c(1.5, 3)*IQR
 
   # Can we make cluster based plots (doesn't seem to make much sense)
   # clusts = sort(unique(c(lr_links$c1, lr_links$c2))) # these are numeric
@@ -70,14 +80,17 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   # }
   # thresholds = t(apply(q13, 1, function(x) x[2] + (x[2] - x[1])*c(1.5, 3)))
 
-  lr_links_ARACNE_check = rbind(data.frame(pos1 = lr_links$pos1, pos2 = lr_links$pos2, MI = lr_links$MI),
-                                data.frame(pos1 = sr_links$pos1, pos2 = sr_links$pos2, MI = sr_links$MI))
-
-  lr_links_ARACNE_check = lr_links_ARACNE_check[lr_links_ARACNE_check$MI > min(thresholds), ]
-
   lr_links_red = lr_links[lr_links$MI > min(thresholds), ] # we only care about outliers
 
-  lr_links_red$ARACNE = runARACNE(lr_links_red, lr_links_ARACNE_check)
+  if(!("ARACNE" %in% names(lr_links))){ # ARACNE not run yet
+
+    lr_links_ARACNE_check = rbind(data.frame(pos1 = lr_links$pos1, pos2 = lr_links$pos2, MI = lr_links$MI),
+                                  data.frame(pos1 = sr_links$pos1, pos2 = sr_links$pos2, MI = sr_links$MI))
+
+    lr_links_ARACNE_check = lr_links_ARACNE_check[lr_links_ARACNE_check$MI > min(thresholds), ]
+
+    lr_links_red$ARACNE = runARACNE(lr_links_red, lr_links_ARACNE_check)
+  }
 
   # sr_links are sorted (largest to smallest)
   if(!are_lrlinks_ordered){ # if they are not sorted, sort below
