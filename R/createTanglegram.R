@@ -8,22 +8,27 @@
 #' @importFrom plyr . ddply
 #' @importFrom chromoMap chromoMap
 #'
-#' @param tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
-#' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
+#' @param tophits data frame with top short range GWES links, returned from LDWeaver::perform_snpEff_annotations()
+#' @param gbk output from parsing the genbank file using LDWeaver::parse_genbank_file() (default = NULL), only provide either GFF3 or GBK annotation
+#' @param gff output from parsing the gff3 file using LDWeaver::parse_gff_file() (default = NULL), only provide either GFF3 or GBK annotation
 #' @param tanglegram_folder folder to save tanglegram(s)
 #' @param break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5)
-#' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR")
+#' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR"). A tanglegram may not be suitable to visualise long range links!
 #'
 #' @return none
 #'
 #' @examples
 #' \dontrun{
-#' gbk = BacGWES::parse_genbank_file("path_to_genbank_file", length_check = F)
+#' gbk = LDWeaver::parse_genbank_file("path_to_genbank_file", length_check = F)
 #' create_tanglegram(tophits, gbk, "save_folder")
 #' }
 #'
 #' @export
-create_tanglegram = function(tophits, gbk, tanglegram_folder, break_segments = 5, links_type = "SR"){
+create_tanglegram = function(tophits, gbk = NULL, gff = NULL, tanglegram_folder, break_segments = 5, links_type = "SR"){
+  if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")
+
+  # if(!is.null(gff)) return(0) # temporary hold for gff until the function is ready
+
   p1a = p2a = NULL # avoid plyr NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
   if(!file.exists(tanglegram_folder)) dir.create(tanglegram_folder)
   cat("Preparing Tanglegrams ... ")
@@ -80,70 +85,8 @@ create_tanglegram = function(tophits, gbk, tanglegram_folder, break_segments = 5
     loc_strt_end = matrix(rep(NA, length(all_locs)*2), ncol = 2)
 
     all_locs_notfound = c()
-    for(loc_idx in 1:length(all_locs)){
-      idx = c()
-      # Let's search through the gbk file for the locus
-      if(length(gbk@genes@elementMetadata$locus_tag)){
-        idx = grep(all_locs[loc_idx], gbk@genes@elementMetadata@listData$locus_tag)
-        if(length(idx) > 0) {
-          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
-          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
-          next
-        }
-      }
-      if(length(gbk@cds@elementMetadata$locus_tag)){
-        idx = grep(all_locs[loc_idx], gbk@cds@elementMetadata@listData$locus_tag)
-        if(length(idx) > 0) {
-          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
-          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
-          next
-        }
-      }
-      if(length(gbk@exons@elementMetadata$locus_tag)){
-        idx = grep(all_locs[loc_idx], gbk@exons@elementMetadata@listData$locus_tag)
-        if(length(idx) > 0) {
-          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
-          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
-          next
-        }
-      }
-      if(length(gbk@transcripts@elementMetadata$locus_tag)){
-        idx = grep(all_locs[loc_idx], gbk@transcripts@elementMetadata@listData$locus_tag)
-        if(length(idx) > 0) {
-          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
-          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
-          next
-        }
-      }
-      if(length(gbk@other_features@elementMetadata$locus_tag)){
-        idx = grep(all_locs[loc_idx], gbk@other_features@elementMetadata@listData$locus_tag)
-        if(length(idx) > 0) {
-          loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
-          loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
-          next
-        }
-      }
-
-      if(length(idx) == 0) {
-        warning(paste("Could not locate", all_locs[loc_idx], 'in the genbankr parsed gbk file, these link will be dropped from the tanglegram...'))
-        all_locs_notfound = c(all_locs_notfound, all_locs[loc_idx])
-      }
-    }
-
-    # prune df_uq if any locs are missing
-    if(length(all_locs_notfound) > 0){
-      prune_rows = c()
-      for(rmidx in 1:length(all_locs_notfound)){
-        prune_rows = c(prune_rows, c(grep(all_locs_notfound[rmidx], df_uq$p1a), grep(all_locs_notfound[rmidx], df_uq$p2a)))
-      }
-      prune_rows = sort(unique(prune_rows))
-      df_uq = df_uq[-prune_rows, ]
-
-      # prune all_locs
-      # This is a quick hack, redo the loc_strt_end if any items end up missing in the data
-      all_locs = unique(c(df_uq$p1a, df_uq$p2a))
-
-      loc_strt_end = matrix(rep(NA, length(all_locs)*2), ncol = 2)
+    #### GBK VERSION
+    if(!is.null(gbk)){
       for(loc_idx in 1:length(all_locs)){
         idx = c()
         # Let's search through the gbk file for the locus
@@ -187,7 +130,118 @@ create_tanglegram = function(tophits, gbk, tanglegram_folder, break_segments = 5
             next
           }
         }
+
+        if(length(idx) == 0) {
+          warning(paste("Could not locate", all_locs[loc_idx], 'in the genbankr parsed gbk file, these link will be dropped from the tanglegram...'))
+          all_locs_notfound = c(all_locs_notfound, all_locs[loc_idx])
+        }
       }
+
+    }
+    #### GFF VERSION
+    if(!is.null(gff)){
+      for(loc_idx in 1:length(all_locs)){
+        idx = c()
+        # Let's search through the gbk file for the locus
+        # Note: For the GFF based annotations, missing genes are replaced with a tag starting with <GENE_>, sub it out
+
+        idx = grep(gsub('GENE_', '', all_locs[loc_idx]), gff$gff$attributes)
+        if(length(idx) > 0) {
+          loc_strt_end[loc_idx, 1] = unique(gff$gff$start[idx])[1]
+          loc_strt_end[loc_idx, 2] = unique(gff$gff$end[idx])[1]
+          next
+        }
+      }
+
+      if(length(idx) == 0) {
+        warning(paste("Could not locate", all_locs[loc_idx], 'in the genbankr parsed gbk file, these link will be dropped from the tanglegram...'))
+        all_locs_notfound = c(all_locs_notfound, all_locs[loc_idx])
+      }
+    }
+
+
+
+    # prune df_uq if any locs are missing
+    if(length(all_locs_notfound) > 0){
+      prune_rows = c()
+      for(rmidx in 1:length(all_locs_notfound)){
+        prune_rows = c(prune_rows, c(grep(all_locs_notfound[rmidx], df_uq$p1a), grep(all_locs_notfound[rmidx], df_uq$p2a)))
+      }
+      prune_rows = sort(unique(prune_rows))
+      df_uq = df_uq[-prune_rows, ]
+
+      # prune all_locs
+      # This is a quick hack, redo the loc_strt_end if any items end up missing in the data
+      all_locs = unique(c(df_uq$p1a, df_uq$p2a))
+
+      loc_strt_end = matrix(rep(NA, length(all_locs)*2), ncol = 2)
+
+      #### GBK VERSION
+      if(!is.null(gbk)){
+        for(loc_idx in 1:length(all_locs)){
+          idx = c()
+          # Let's search through the gbk file for the locus
+          if(length(gbk@genes@elementMetadata$locus_tag)){
+            idx = grep(all_locs[loc_idx], gbk@genes@elementMetadata@listData$locus_tag)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+              next
+            }
+          }
+          if(length(gbk@cds@elementMetadata$locus_tag)){
+            idx = grep(all_locs[loc_idx], gbk@cds@elementMetadata@listData$locus_tag)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+              next
+            }
+          }
+          if(length(gbk@exons@elementMetadata$locus_tag)){
+            idx = grep(all_locs[loc_idx], gbk@exons@elementMetadata@listData$locus_tag)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+              next
+            }
+          }
+          if(length(gbk@transcripts@elementMetadata$locus_tag)){
+            idx = grep(all_locs[loc_idx], gbk@transcripts@elementMetadata@listData$locus_tag)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+              next
+            }
+          }
+          if(length(gbk@other_features@elementMetadata$locus_tag)){
+            idx = grep(all_locs[loc_idx], gbk@other_features@elementMetadata@listData$locus_tag)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gbk@genes@ranges@start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gbk@genes@ranges@start[idx] + gbk@genes@ranges@width[idx] - 1)[1]
+              next
+            }
+          }
+        }
+      }
+
+      #### GFF VERSION
+      if(!is.null(gff)){
+        for(loc_idx in 1:length(all_locs)){
+          idx = c()
+          # Let's search through the gbk file for the locus
+          # Note: For the GFF based annotations, missing genes are replaced with a tag starting with <GENE_>, sub it out
+
+          if(nrow(gff$gff) > 0){
+            idx = grep(gsub('GENE_', '', all_locs[loc_idx]), gff$gff$attributes)
+            if(length(idx) > 0) {
+              loc_strt_end[loc_idx, 1] = unique(gff$gff$start[idx])[1]
+              loc_strt_end[loc_idx, 2] = unique(gff$gff$end[idx])[1]
+              next
+            }
+          }
+        }
+      }
+
     }
 
     # let's map back to annotations
@@ -217,11 +271,6 @@ create_tanglegram = function(tophits, gbk, tanglegram_folder, break_segments = 5
                                       V2 = c(rep("p", length(all_locs)),  rep("q", length(all_locs))),
                                       V3 = loc_strt_end[,1],
                                       V4 = loc_strt_end[,2])
-
-    # unclear what this does (yet)
-    # shrt_links = which(ann_file[[clustidx]]$V3 < chr_file[[clustidx]]$V2)
-
-    # if(length(length(shrt_links) > 0) ann_file$V3 = chr_file$V2
 
 
     link_data[[clustidx]] = data.frame(V1 = paste("p_", df_uq$p1a, sep = ""), V2 = 1,

@@ -18,9 +18,9 @@
 #' @importFrom utils txtProgressBar
 #' @importFrom Rfast2 Quantile
 #'
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
-#' @param hdw vector of Hamming distance weights, output from BacGWES::estimate_Hamming_distance_weights()
-#' @param cds_var output from BacGWES::estimate_variation_in_CDS()
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
+#' @param hdw vector of Hamming distance weights, output from LDWeaver::estimate_Hamming_distance_weights()
+#' @param cds_var output from LDWeaver::estimate_variation_in_CDS()
 #' @param ncores specify the number of cores to use
 #' @param lr_save_path specify the location to save long range MI links as a tsv file (default = NULL, will be auto set)
 #' @param sr_save_path specify the location to save short range MI links as a tsv file (default = NULL, will be auto set), links below srp_cutoff will not be saved
@@ -99,7 +99,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   # sr_links_red = sr_links_df[sr_links_df$srp_max > srp_cutoff, ] # This is an arbitrary filter for a nice plot and quicker processing
 
   if(runARACNE){
-    cat(paste("Running ARACNE on", nrow(sr_links_red), "links... \n"))
+    # cat(paste("Running ARACNE on", nrow(sr_links_red), "links... \n"))
     ARACNE = runARACNE(sr_links_red, sr_links_ARACNE_check)
     sr_links_red$ARACNE = as.numeric(ARACNE)
   } else {

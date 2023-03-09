@@ -289,3 +289,35 @@ List extractSNPs(std::string file, int n_seq, int n_snp, std::vector<int> POS) {
                       Named("j_N") = wrap(m_j_N),
                       Named("x_N") = wrap(m_x_N));
 }
+
+
+// [[Rcpp::export(name = '.extractRef')]]
+List extractRef(std::string file) {
+  Rcout << "Checking reference... ";
+  gzFile fp_;
+  kseq_t *seq;
+
+  int l = 0;
+
+  const char * f = file.c_str();
+  Rcpp::StringVector seq_names;
+
+  fp_ = gzopen(f, "r");
+  seq = kseq_init(fp_);
+  l = kseq_read(seq);
+  int seq_length = strlen(seq->seq.s); // This is the first sequence, while loop reads from the second, re-run below?
+  Rcout << seq_length << " bp seq found!\n";
+
+  Rcpp::String ref = seq->seq.s;
+
+
+  seq_names.push_back(seq->name.s);
+  // seq->seq.s
+
+  kseq_destroy(seq);
+  gzclose(fp_);
+
+  return List::create(Named("seq.name") = seq_names,
+                      Named("seq.length") = seq_length,
+                      Named("seq") = ref);
+}

@@ -8,7 +8,7 @@
 #'
 #' @param lr_links data.frame containing lr_links or the path to saved lr_links TSV file.
 #' Usually output from perform_MI_computation(), (default = NULL). Instead of using this function to generate the lr-gwes plot, use the dedicated
-#' BacGWES::analyse_long_range_links() function for long range link analysis (and plotting).
+#' LDWeaver::analyse_long_range_links() function for long range link analysis (and plotting).
 #' @param sr_links data.frame containing sr_links or the path to saved sr_links TSV file.
 #' Usually output from perform_MI_computation(), (default = NULL)
 #' @param plt_folder specify the folder to save generated plots (default = NULL, will be saved to a folder called PLOTS in getwd())
@@ -39,7 +39,7 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
     if(!is.data.frame(lr_links)){ #lr_links can be a path to the TSV or a data.frame
       # lr_links must be a path then
       if(file.exists(lr_links)){
-        lr_links = BacGWES::read_LongRangeLinks(lr_links)
+        lr_links = LDWeaver::read_LongRangeLinks(lr_links)
       } else { # nothing at the given path
         lr_links_ready = F
       }
@@ -75,7 +75,7 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
       # sr_links must be a path then
       if(file.exists(sr_links)){
         # sr_links = read.table(sr_links, sep = '\t', header = F, quote = "", comment.char = "")
-        sr_links = BacGWES::read_ShortRangeLinks(sr_links_path = sr_links)
+        sr_links = LDWeaver::read_ShortRangeLinks(sr_links_path = sr_links)
       } else { # nothing at the given path
         sr_links_ready = F
       }

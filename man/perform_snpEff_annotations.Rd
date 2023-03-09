@@ -8,11 +8,12 @@ perform_snpEff_annotations(
   dset_name,
   annotation_folder,
   snpeff_jar,
-  gbk,
-  gbk_path,
+  snp.dat,
   cds_var,
   links_df,
-  snp.dat,
+  gbk = NULL,
+  gbk_path = NULL,
+  gff = NULL,
   tophits_path = NULL,
   max_tophits = 250,
   links_type = "SR"
@@ -25,15 +26,17 @@ perform_snpEff_annotations(
 
 \item{snpeff_jar}{path to <snpEff.jar>}
 
-\item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
-\item{gbk_path}{path to genbank file}
-
-\item{cds_var}{output from BacGWES::estimate_variation_in_CDS()}
+\item{cds_var}{output from LDWeaver::estimate_variation_in_CDS()}
 
 \item{links_df}{data.frame containing links (reduced links can be used to save time) output from perform_MI_computation()}
 
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+\item{gbk}{output from parsing the genbank file using LDWeaver::parse_genbank_file() (default = NULL), only provide either GFF3 or GBK annotation}
+
+\item{gbk_path}{path to genbank file - plan to omit (default = NULL)}
+
+\item{gff}{output from parsing the gff3 file using LDWeaver::parse_gff_file() (default = NULL), only provide either GFF3 or GBK annotation}
 
 \item{tophits_path}{specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv}
 

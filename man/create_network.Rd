@@ -16,7 +16,7 @@ create_network(
 )
 }
 \arguments{
-\item{tophits}{data frame with top short or long range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short or long range GWES links, returned from LDWeaver::perform_snpEff_annotations()}
 
 \item{netplot_path}{folder to save the network (default = NULL, return ggplot object)}
 

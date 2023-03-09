@@ -7,7 +7,7 @@
 estimate_Hamming_distance_weights(snp.dat, threshold = 0.1)
 }
 \arguments{
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
 \item{threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%)}
 }

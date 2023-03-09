@@ -14,7 +14,7 @@ make_gwes_plots(
 \arguments{
 \item{lr_links}{data.frame containing lr_links or the path to saved lr_links TSV file.
 Usually output from perform_MI_computation(), (default = NULL). Instead of using this function to generate the lr-gwes plot, use the dedicated
-BacGWES::analyse_long_range_links() function for long range link analysis (and plotting).}
+LDWeaver::analyse_long_range_links() function for long range link analysis (and plotting).}
 
 \item{sr_links}{data.frame containing sr_links or the path to saved sr_links TSV file.
 Usually output from perform_MI_computation(), (default = NULL)}

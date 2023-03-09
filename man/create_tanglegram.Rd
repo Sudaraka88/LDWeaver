@@ -6,22 +6,25 @@
 \usage{
 create_tanglegram(
   tophits,
-  gbk,
+  gbk = NULL,
+  gff = NULL,
   tanglegram_folder,
   break_segments = 5,
   links_type = "SR"
 )
 }
 \arguments{
-\item{tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short range GWES links, returned from LDWeaver::perform_snpEff_annotations()}
 
-\item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
+\item{gbk}{output from parsing the genbank file using LDWeaver::parse_genbank_file() (default = NULL), only provide either GFF3 or GBK annotation}
+
+\item{gff}{output from parsing the gff3 file using LDWeaver::parse_gff_file() (default = NULL), only provide either GFF3 or GBK annotation}
 
 \item{tanglegram_folder}{folder to save tanglegram(s)}
 
 \item{break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5)}
 
-\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR")}
+\item{links_type}{specify the links type long-range "LR" or short-range "SR" (default = "SR"). A tanglegram may not be suitable to visualise long range links!}
 }
 \value{
 none
@@ -31,7 +34,7 @@ Function to generate long and short range GWES plots
 }
 \examples{
 \dontrun{
-gbk = BacGWES::parse_genbank_file("path_to_genbank_file", length_check = F)
+gbk = LDWeaver::parse_genbank_file("path_to_genbank_file", length_check = F)
 create_tanglegram(tophits, gbk, "save_folder")
 }
 

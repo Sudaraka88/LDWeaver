@@ -1,19 +1,22 @@
-#' BacGWES
+#' LDWeaver
 #'
-#' Function to run the BacGWES pipeline
+#' Function to run the LDWeaver pipeline
 #'
 #' @importFrom parallel detectCores
 #' @importFrom utils timestamp
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>
 #' @param aln_path path to the multi fasta alignment
-#' @param gbk_path path to genbank file
-#' @param check_gbk_fasta_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
+#' @param gbk_path path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
+#' @param gff3_path path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
+#' @param ref_fasta_path path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
+#' not required for genbank annotations if the file contains the reference sequence.
+#' @param validate_ref_ann_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
 #' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F
-#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - add more?
+#' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal.
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
@@ -35,11 +38,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' sr_links_red = BacGWES(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
+#' sr_links_red = LDWeaver(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
 #' }
 #' @export
-BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_filt_method = "default",
-                   gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
+LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta_path = NULL, validate_ref_ann_lengths = T,
+                   snp_filt_method = "default", gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
                    perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                    max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
                    multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
@@ -54,7 +57,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK8: Tanglegram (depends: chromoMap)
   # BLK9: GWESExplorer (depends: GWESExplorer)
 
-  #TODO: Change lr_retain_level to save #n links
+  #TODO: Add the option to provide genbank file without reference sequence
 
   # # Welcome message
   # timestamp()
@@ -62,8 +65,11 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # Sanity checks
   # annotations
+  if( (is.null(gbk_path) & is.null(gff3_path)) | (!is.null(gbk_path) & !is.null(gff3_path)) ) stop("Either gbk_path or gff3_path must be provided") # only one of gbk or gff can be NULL
+  if(!is.null(gff3_path) & is.null(ref_fasta_path)) stop("Reference fasta file must be provided for gff3 annoations") # only one of gbk or gff can be NULL
+
   if(SnpEff_Annotate == T) {
-    if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, set SnpEff_Annotate = F")
+    if(is.null(snpeff_jar_path)) stop("<snpeff_jar_path> must be provided for annotations. To run without annotations, set SnpEff_Annotate = F")
     if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
     order_links = F # sr_links should be ordered at the end after adding annotations
   } else {
@@ -124,14 +130,17 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # normalise_input_paths
   aln_path = normalizePath(aln_path)
-  gbk_path = normalizePath(gbk_path)
+  if(!is.null(gbk_path)) gbk_path = normalizePath(gbk_path)
+  if(!is.null(gff3_path)) gff3_path = normalizePath(gff3_path)
+  if(!is.null(ref_fasta_path)) ref_fasta_path = normalizePath(ref_fasta_path)
   if(!is.null(snpeff_jar_path)) snpeff_jar_path = normalizePath(snpeff_jar_path)
 
 
   # setup paths
   if(!file.exists(dset)) dir.create(dset) # save everything in here
   ACGTN_snp_path = file.path(dset, "snp_ACGTN.rds")
-  parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
+  if(!is.null(gbk_path)) parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
+  if(!is.null(gff3_path)) parsed_gff_path = file.path(dset, "parsed_gff3.rds")
   cds_var_path = file.path(dset, "cds_var.rds")
   hdw_path = file.path(dset, "hdw.rds")
   clust_plt_path = file.path(dset, "CDS_clustering.png")
@@ -164,7 +173,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
     cat(paste("Top sr-links with -log10(p) >", srp_cutoff, "will be saved \n"))
     cat(paste("Tanglegram/GWESExplorer outputs will illustrate upto:", max_tophits, "top sr-links \n"))
     cat(paste("MI Computation will use a max block size of:", max_blk_sz, "x", max_blk_sz, "SNPs! Reduce <max_blk_sz> if RAM is scarce!\n\n"))
-    cat(paste("~~~~~ https://github.com/Sudaraka88/BacGWES/ ~~~~~"))
+    cat(paste("~~~~~ https://github.com/Sudaraka88/LDWeaver/ ~~~~~"))
   }
   ######## <Welcome message> ########
   t_global = Sys.time() # global timer
@@ -174,7 +183,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(!file.exists(ACGTN_snp_path)) {
     t0 = Sys.time()
     cat(paste("Parsing Alignment:", aln_path ,"\n"))
-    snp.dat = BacGWES::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+    snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
     if(save_additional_outputs){
       cat("Step 5: Savings snp.dat...")
       saveRDS(snp.dat, ACGTN_snp_path)
@@ -188,22 +197,39 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK2
   cat("\n\n #################### BLOCK 2 #################### \n\n")
-  if(!file.exists(parsed_gbk_path)) {
-    cat("Reading the GBK file \n")
-    gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = check_gbk_fasta_lengths) # will return 1 if fails
-    if(save_additional_outputs){
-      saveRDS(gbk, parsed_gbk_path)
+  if(!is.null(gbk_path)){ # genbank file format
+    gff = NULL # alternative set to NULL
+    if(!file.exists(parsed_gbk_path)) {
+      cat("Reading the GBK file \n")
+      gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+      if(save_additional_outputs){
+        saveRDS(gbk, parsed_gbk_path)
+      }
+    } else {
+      cat("Loading parsed gbk file \n")
+      gbk = readRDS(parsed_gbk_path)
     }
-  } else {
-    cat("Loading parsed gbk file \n")
-    gbk = readRDS(parsed_gbk_path)
+  }
+  if(!is.null(gff3_path)){ # gff3 file format
+    gbk = NULL # alternative set to NULL
+    if(!file.exists(parsed_gff_path)) {
+      cat("Reading the gff3 file \n")
+      gff = LDWeaver::parse_gff_file(gff3_path = gff3_path, ref_fasta_path = ref_fasta_path, perform_length_check = validate_ref_ann_lengths) # will stop() if fails!
+      # gff will contain the reference sequence within it, we need to insert the ref to gbk if it is provided separately
+      if(save_additional_outputs){
+        saveRDS(gff, parsed_gff_path)
+      }
+    } else {
+      cat("Loading parsed gff3 file \n")
+      gff = readRDS(parsed_gff_path)
+    }
   }
 
   # BLK3
   cat("\n\n #################### BLOCK 3 #################### \n\n")
   if(!file.exists(cds_var_path)) {
     cat("Estimating the variation in CDS \n")
-    cds_var = BacGWES::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path)
+    cds_var = LDWeaver::estimate_variation_in_CDS(gbk = gbk, gff = gff, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path)
     if(save_additional_outputs){
       saveRDS(cds_var, cds_var_path)
     }
@@ -217,7 +243,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   if(!file.exists(hdw_path)) {
     cat("Estimating per sequence Hamming distance \n")
     # hdw = perform_pop_struct_correction_sparse(snp.matrix = snp.dat$snp.matrix, nsnp = snp.dat$nsnp)
-    hdw = BacGWES::estimate_Hamming_distance_weights(snp.dat = snp.dat, threshold = hdw_threshold)
+    hdw = LDWeaver::estimate_Hamming_distance_weights(snp.dat = snp.dat, threshold = hdw_threshold)
     if(save_additional_outputs){
       saveRDS(hdw, hdw_path)
     }
@@ -235,7 +261,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   } else {
 
     cat("Commencing MI computation \n")
-    sr_links = BacGWES::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
+    sr_links = LDWeaver::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
                                                plt_folder = dset, sr_dist = sr_dist, lr_retain_links = lr_retain_links,
                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
@@ -246,7 +272,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   #   # lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
   #   # colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
   #   lr_links = NULL # in case lr_links are not available
-  #   # print("Long-range GWES links will not be analysed in this pipeline, use BacGWES::analyse_long_range_links()")
+  #   # print("Long-range GWES links will not be analysed in this pipeline, use LDWeaver::analyse_long_range_links()")
   # } else {
   #   lr_links = NULL # in case lr_links are not available
   # }
@@ -259,7 +285,7 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   # BLK6
   cat("\n\n #################### BLOCK 6 #################### \n\n")
   # order links will be false for analyses that require further analysis, make_gwes_plots() will order the links before plotting
-  BacGWES::make_gwes_plots(lr_links = NULL, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
+  LDWeaver::make_gwes_plots(lr_links = NULL, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
 
   # BLK7
   cat("\n\n #################### BLOCK 7 #################### \n\n")
@@ -279,9 +305,9 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
   netplot_path = file.path(dset, "SR_network_plot.png")
 
   if(!file.exists(tophits_path)){
-    tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
+    tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  cds_var = cds_var, links_df = sr_links, snp.dat = snp.dat,
+                                                  cds_var = cds_var, gff = gff, links_df = sr_links, snp.dat = snp.dat,
                                                   tophits_path = tophits_path, max_tophits = max_tophits)
   } else {
     cat("Loading previous top hits \n")
@@ -290,24 +316,24 @@ BacGWES = function(dset, aln_path, gbk_path, check_gbk_fasta_lengths = T, snp_fi
 
   # BLK8
   cat("\n\n #################### BLOCK 8 #################### \n\n")
-  BacGWES::create_tanglegram(tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
+  LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
 
   # BLK9
   cat("\n\n #################### BLOCK 9 #################### \n\n")
-  BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
+  LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
   # BLK10
   cat("\n\n #################### BLOCK 10 #################### \n\n")
-  BacGWES::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
+  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
 
   if(!perform_SR_analysis_only){
     # BLK11
     cat("\n\n #################### BLOCK 11 #################### \n\n")
     if(SnpEff_Annotate){
-      BacGWES::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
-                                        gbk_path = gbk_path, snp.dat = snp.dat, cds_var = cds_var)
+      LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
+                                        gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path)
     } else {
-      BacGWES::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
+      LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
     }
   }
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

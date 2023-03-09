@@ -6,7 +6,7 @@
 #' @importFrom Matrix colSums
 #' @importFrom methods as
 #'
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
 #' @param threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%)
 #'
 #' @return Vector with Hamming distance weights for each sequence that can be used to reweight Mutual Information estimates

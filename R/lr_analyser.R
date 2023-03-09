@@ -1,6 +1,6 @@
 #' analyse_long_range_links
 #'
-#' Function to analyse long range links. These links can be computed using BacGWES or Spydrpick (faster). Spydrpick is recommended for larger datasets.
+#' Function to analyse long range links. These links can be computed using LDWeaver or Spydrpick (faster). Spydrpick is recommended for larger datasets.
 #'
 #' @importFrom Rfast2 Quantile
 #'
@@ -10,9 +10,13 @@
 #' @param are_lrlinks_ordered are the links sorted in descending MI order (default = F), leave at default if unsure
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff (default = F)
 #' @param snpeff_jar_path path to <snpEff.jar> (default = NULL). If annotations are not required, set SnpEff_Annotate = F
-#' @param gbk_path path to genbank file, not needed if SnpEff_Annotate = F
-#' @param snp.dat output from BacGWES::parse_fasta_alignment(), not needed if SnpEff_Annotate = F
-#' @param cds_var output from BacGWES::estimate_variation_in_CDS(), not needed if SnpEff_Annotate = F
+#' @param gbk_path path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
+#' @param gff3_path path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
+#' @param ref_fasta_path path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
+#' not required for genbank annotations if the file contains the reference sequence.
+#' @param validate_ref_ann_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
+#' @param snp.dat output from LDWeaver::parse_fasta_alignment(), not needed if SnpEff_Annotate = F
+#' @param cds_var output from LDWeaver::estimate_variation_in_CDS(), not needed if SnpEff_Annotate = F
 #' @param max_tophits specify the maximum number of long range links to save as <lr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 500)
 #' @param links_from_spydrpick are the links computed using spydrpick (default = F)
@@ -23,10 +27,12 @@
 #' }
 #' @export
 analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrlinks_ordered = F, SnpEff_Annotate = F,
-                                    snpeff_jar_path = NULL, gbk_path = NULL, snp.dat = NULL, cds_var = NULL, max_tophits = 500,
+                                    snpeff_jar_path = NULL, gbk_path = NULL, gff3_path = NULL, ref_fasta_path = NULL,
+                                    validate_ref_ann_lengths = T, snp.dat = NULL, cds_var = NULL, max_tophits = 500,
                                     links_from_spydrpick = F){
                                     # tanglegram_break_segments = 5){
 
+  # TODO: Add the option to pass in the gbk/gff inputs instead of paths
   # it makes sense to have a larger max_tophits for long range links - there will be a lot more of long-range links compared to short
   t_global = Sys.time()
 
@@ -38,29 +44,33 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   # NOTE: spydrpick does not add clusters, add them from paint (requires cds_var)
 
   if(SnpEff_Annotate == T) {
+    if( (is.null(gbk_path) & is.null(gff3_path)) | (!is.null(gbk_path) & !is.null(gff3_path)) ) stop("Either gbk_path or gff3_path must be provided.
+                                                                                                     To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F") # only one of gbk or gff can be NULL
+    if(!is.null(gff3_path) & is.null(ref_fasta_path)) stop("Reference fasta file must be provided for gff3 annoations.
+                                                           To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F") # only one of gbk or gff can be NULL
     if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
     if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
     if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
-    if(is.null(gbk_path)) stop("You must specify <gbk_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
+    # if(is.null(gbk_path)) stop("You must specify <gbk_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
     if(is.null(snp.dat)) stop("You must specify <gbk_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
     if(is.null(cds_var)) stop("You must specify <gbk_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
   }
 
-  # lr_links_path = "~/Desktop/BacGWES_RUN/maela/lr_links.tsv"
+  # lr_links_path = "~/Desktop/LDWeaver_RUN/maela/lr_links.tsv"
   cat("Reading long range links... ")
 
   if(links_from_spydrpick){
-    lr_links = BacGWES::read_LongRangeLinks(lr_links_path, links_from_spydrpick = T)
+    lr_links = LDWeaver::read_LongRangeLinks(lr_links_path, links_from_spydrpick = T)
   } else {
-    lr_links = BacGWES::read_LongRangeLinks(lr_links_path)
+    lr_links = LDWeaver::read_LongRangeLinks(lr_links_path)
   }
 
 
   cat("Done \n ")
-  # sr_links_path = "~/Desktop/BacGWES_RUN/maela/sr_links.tsv"
+  # sr_links_path = "~/Desktop/LDWeaver_RUN/maela/sr_links.tsv"
   cat("Reading short range links... ")
-  sr_links = BacGWES::read_ShortRangeLinks(sr_links_path)
-  # sr_links = BacGWES::readShortRangeLinks(sr_links_path)
+  sr_links = LDWeaver::read_ShortRangeLinks(sr_links_path)
+  # sr_links = LDWeaver::readShortRangeLinks(sr_links_path)
   cat("Done \n ")
 
   q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Quantiles
@@ -112,35 +122,54 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
   } else {
     tophits_path = file.path(dset, "lr_tophits.tsv")
-    parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
-    if(file.exists(parsed_gbk_path)){
-      gbk = readRDS(parsed_gbk_path )
-    } else {
-      cat("Reading the GBK file \n")
-      gbk = BacGWES::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = T) # will return 1 if fails
+
+    if(!is.null(gbk_path)){ # gbk
+      parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
+      gff = NULL # alternative set to NULL
+      if(file.exists(parsed_gbk_path)){
+
+        gbk = readRDS(parsed_gbk_path )
+      } else {
+        cat("Reading the GBK file \n")
+        gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+      }
+    } else if(!is.null(gff3_path)){ # gff
+      parsed_gff_path = file.path(dset, "parsed_gff3.rds")
+      gbk = NULL # alternative set to NULL
+
+      if(file.exists(parsed_gff_path)){
+        gff = readRDS(parsed_gff_path )
+      } else {
+        cat("Reading the GFF file \n")
+        gff = LDWeaver::parse_gff_file(gff3_path = gff3_path, ref_fasta_path = ref_fasta_path, perform_length_check = validate_ref_ann_lengths) # will stop() if fails!
+      }
+
     }
 
-    tophits = BacGWES::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
+
+
+
+    tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  cds_var = cds_var, links_df = lr_links_red, snp.dat = snp.dat,
+                                                  gff = gff, cds_var = cds_var, links_df = lr_links_red, snp.dat = snp.dat,
                                                   tophits_path = tophits_path, max_tophits = max_tophits, links_type = "LR")
 
     # Tanglegram is difficult to read when plotted like this, best to avoid!
     # tanglegram_path = file.path(dset, "LR_Tanglegram")
     # if(!file.exists(tanglegram_path)) dir.create(tanglegram_path)
-    # BacGWES::create_tanglegram(tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path,
+    # LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, tanglegram_folder = tanglegram_path,
     #                            break_segments = tanglegram_break_segments, links_type = "LR")
 
     cat("\n")
     gwesexplorer_path = file.path(dset, "LR_GWESExplorer")
     if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
-    BacGWES::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits,
+    LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits,
                                             gwes_explorer_folder = gwesexplorer_path, links_type = "LR")
 
     cat("\n")
 
     netplot_path = file.path(dset, "lr_network_plot.png")
-    BacGWES::create_network(tophits = tophits, netplot_path = netplot_path)
+    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path)
 
   }
   cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

@@ -8,7 +8,7 @@
 #' @importFrom ggraph ggraph geom_edge_arc2 scale_edge_colour_discrete geom_node_label
 #' @importFrom ggplot2 theme_void theme ggsave
 #'
-#' @param tophits data frame with top short or long range GWES links, returned from BacGWES::perform_snpEff_annotations()
+#' @param tophits data frame with top short or long range GWES links, returned from LDWeaver::perform_snpEff_annotations()
 #' @param netplot_path folder to save the network (default = NULL, return ggplot object)
 #' @param plot_title title for the network plot (default = NULL)
 #' @param separator break pattern in annotation (default = ":", this is the default used by SnpEff)
@@ -158,7 +158,7 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 #' @param min_links_to_include specify the minimum number of links required to retain the node in the plot (default = 2)
 #'
 #'
-#' @return data_frame to use as input for BacGWES::create_network()
+#' @return data_frame to use as input for LDWeaver::create_network()
 #'
 #' @examples
 #' \dontrun{
@@ -176,7 +176,7 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
 
   tophits_df_sr = c()
   if(!is.null(sr_annotated_path)){
-    sr_ann = BacGWES::read_AnnotatedLinks(sr_annotated_path)
+    sr_ann = LDWeaver::read_AnnotatedLinks(sr_annotated_path)
     sr_idx = sort(unique(c(grep(gene_name, sr_ann$pos1_ann), grep(gene_name, sr_ann$pos2_ann))))
     if(length(sr_idx) > 0) {
       sr_links = sr_ann[sr_idx, ]
@@ -192,7 +192,7 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
 
   tophits_df_lr = c()
   if(!is.null(lr_annotated_path)){
-    lr_ann = BacGWES::read_AnnotatedLinks(lr_annotated_path)
+    lr_ann = LDWeaver::read_AnnotatedLinks(lr_annotated_path)
     lr_idx = sort(unique(c(grep(gene_name, lr_ann$pos1_ann), grep(gene_name, lr_ann$pos2_ann))))
     if(length(lr_idx) > 0) {
       lr_links = lr_ann[lr_idx, ]
@@ -277,6 +277,6 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
   if(any(dups)) tophits_df = tophits_df[!dups, ]
 
   return(tophits_df)
-  # BacGWES::create_network(tophits_df, links_type = "LR", min_links_to_include = 5)
+  # LDWeaver::create_network(tophits_df, links_type = "LR", min_links_to_include = 5)
 
 }

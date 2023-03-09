@@ -10,10 +10,11 @@
 #' @importFrom stats kmeans
 #' @importFrom ggplot2 ggplot geom_point aes ggsave
 #'
-#' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
-#' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3)
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
 #' @param ncores specify the number of cores to use
+#' @param gbk output from parsing the genbank file using LDWeaver::parse_genbank_file()
+#' @param gff output from parsing the gff3 file using LDWeaver::parse_gff_file()
+#' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3)
 #' @param clust_plt_path specify path to save CDS variation plot
 #'
 #' @return R list with CDS variation and allele distribution details
@@ -23,18 +24,34 @@
 #' cds_var <- estimate_variation_in_CDS(gbk, snp.dat, ncores = 10)
 #' }
 #' @export
-estimate_variation_in_CDS = function(gbk, snp.dat, ncores, num_clusts_CDS = 3, clust_plt_path = NULL){
+estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, num_clusts_CDS = 3, clust_plt_path = NULL){
   # This method is only approximate, but much MUCH faster and easier on resources
   # TODO: Include the higher accuracy function
   t0 = Sys.time()
-  cds_reg = genbankr::cds(gbk)
-  starts = GenomicRanges::start(cds_reg)
-  widths = GenomicRanges::width(cds_reg)
-  ends = GenomicRanges::end(cds_reg)
+
+  # only one of gbk or gff can be NULL
+  if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")
+
+  # extract the information we need
+  if(!is.null(gbk)){
+    cds_reg = genbankr::cds(gbk)
+    starts = GenomicRanges::start(cds_reg)
+    widths = GenomicRanges::width(cds_reg)
+    ends = GenomicRanges::end(cds_reg)
+    # convert ref to a CharacterVector
+    ref = unlist(unname(strsplit(as.character(genbankr::getSeq(gbk)), '')))[snp.dat$POS]
+  } else if(!is.null(gff)){
+    gff_cds = gff$gff[tolower(gff$gff$type) == "cds", ]
+    starts = gff_cds$start
+    ends = gff_cds$end
+    widths = ends - starts + 1
+
+    ref = gff$ref[snp.dat$POS]
+  }
+
   ncds = length(starts)
   var_estimate = rep(NA, ncds)
-  # convert ref to a CharacterVector
-  ref = unlist(unname(strsplit(as.character(genbankr::getSeq(gbk)), '')))[snp.dat$POS]
+
 
   variation = matrix(c(Matrix::rowSums(snp.dat$snp.matrix_A),
                        Matrix::rowSums(snp.dat$snp.matrix_C),

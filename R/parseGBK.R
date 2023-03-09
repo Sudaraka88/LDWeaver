@@ -1,11 +1,11 @@
-#' parseGenBankFile
+#' parse_genbank_file
 #'
 #' Function to parse the genbank file for the fasta alignment.
 #'
 #' @importFrom genbankr import getSeq
 #'
 #' @param gbk_path path to genbank file
-#' @param g sequence length, available from the BacGWES::parse_fasta_alignment() output (default = NULL),
+#' @param g sequence length, available from the LDWeaver::parse_fasta_alignment() output (default = NULL),
 #' required if <length_check = T>
 #' @param length_check specify whether to check if fasta and gbk sequence lengths are equal (default = T)
 #'
@@ -13,10 +13,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' aln_path <- system.file("extdata", "sample.aln", package = "BacGWES")
+#' aln_path <- system.file("extdata", "sample.aln", package = "LDWeaver")
 #' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
-#' gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
-#' gbk <- parseGenBankFile(gbk_path, snp.dat$g)
+#' gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+#' gbk <- parse_genbank_file(gbk_path, snp.dat$g)
 #' }
 #' @export
 parse_genbank_file = function(gbk_path, g = NULL, length_check = T){

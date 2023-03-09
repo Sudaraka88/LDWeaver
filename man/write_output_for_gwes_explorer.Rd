@@ -12,9 +12,9 @@ write_output_for_gwes_explorer(
 )
 }
 \arguments{
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
-\item{tophits}{data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()}
+\item{tophits}{data frame with top short range GWES links, returned from LDWeaver::perform_snpEff_annotations()}
 
 \item{gwes_explorer_folder}{folder to save the inputs for GWESExplorer}
 

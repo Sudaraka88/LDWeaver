@@ -11,11 +11,11 @@
 #' @param method specify the filtering method 'relaxed' or 'default' (default = 'default')
 #'
 #' @return R list with SNPs in sparse format and additional parameters
-#' @useDynLib BacGWES
+#' @useDynLib LDWeaver
 #'
 #' @examples
 #' \dontrun{
-#' aln_path <- system.file("extdata", "sample.aln", package = "BacGWES")
+#' aln_path <- system.file("extdata", "sample.aln", package = "LDWeaver")
 #' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
 #' }
 #' @export

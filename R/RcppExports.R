@@ -2,30 +2,34 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 .ACGTN2num <- function(nv, cv, ncores) {
-    invisible(.Call('_BacGWES_ACGTN2num', PACKAGE = 'BacGWES', nv, cv, ncores))
+    invisible(.Call('_LDWeaver_ACGTN2num', PACKAGE = 'LDWeaver', nv, cv, ncores))
 }
 
 .fastHadamard <- function(MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores) {
-    invisible(.Call('_BacGWES_fastHadamard', PACKAGE = 'BacGWES', MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores))
+    invisible(.Call('_LDWeaver_fastHadamard', PACKAGE = 'LDWeaver', MIt, den, uq_t, pxy_t, pxpy_t, RXY, pXrX, pYrY, ncores))
 }
 
 .compareToRow <- function(x, y) {
-    .Call('_BacGWES_compareToRow', PACKAGE = 'BacGWES', x, y)
+    .Call('_LDWeaver_compareToRow', PACKAGE = 'LDWeaver', x, y)
 }
 
 .vecPosMatch <- function(x, y) {
-    .Call('_BacGWES_vecPosMatch', PACKAGE = 'BacGWES', x, y)
+    .Call('_LDWeaver_vecPosMatch', PACKAGE = 'LDWeaver', x, y)
 }
 
 .compareTriplet <- function(MI0X, MI0Z, MI0) {
-    .Call('_BacGWES_compareTriplet', PACKAGE = 'BacGWES', MI0X, MI0Z, MI0)
+    .Call('_LDWeaver_compareTriplet', PACKAGE = 'LDWeaver', MI0X, MI0Z, MI0)
 }
 
 .extractAlnParam <- function(file, filter, gap_thresh, maf_thresh) {
-    .Call('_BacGWES_extractAlnParam', PACKAGE = 'BacGWES', file, filter, gap_thresh, maf_thresh)
+    .Call('_LDWeaver_extractAlnParam', PACKAGE = 'LDWeaver', file, filter, gap_thresh, maf_thresh)
 }
 
 .extractSNPs <- function(file, n_seq, n_snp, POS) {
-    .Call('_BacGWES_extractSNPs', PACKAGE = 'BacGWES', file, n_seq, n_snp, POS)
+    .Call('_LDWeaver_extractSNPs', PACKAGE = 'LDWeaver', file, n_seq, n_snp, POS)
+}
+
+.extractRef <- function(file) {
+    .Call('_LDWeaver_extractRef', PACKAGE = 'LDWeaver', file)
 }
 

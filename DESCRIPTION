@@ -1,9 +1,9 @@
-Package: BacGWES
+Package: LDWeaver
 Type: Package
 Title:Genomewide Epistasis Analysis on Bacteria
 Version: 1.0
-Authors@R: person("Sudaraka", "Mallawa Arachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
-Maintainer: Sudaraka Mallawa Arachchi <smallawaarachchi@gmail.com>
+Authors@R: person("Sudaraka", "Mallawaarachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
+Maintainer: Sudaraka Mallawaarachchi <smallawaarachchi@gmail.com>
 Description:Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
 License: GPL (>=3) + file LICENSE
 Encoding: UTF-8
@@ -11,6 +11,7 @@ LazyData: true
 biocViews: Software
 Depends: R (>= 4.0.0),
 Imports: 
+         ape,
          chromoMap,
          data.table,
          dplyr,
@@ -34,5 +35,5 @@ Imports:
          utils
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.2.3
-URL: https://github.com/Sudaraka88/BacGWES
-BugReports: https://github.com/Sudaraka88/BacGWES/issues
+URL: https://github.com/Sudaraka88/LDWeaver
+BugReports: https://github.com/Sudaraka88/LDWeaver/issues

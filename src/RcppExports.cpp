@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // ACGTN2num
 void ACGTN2num(NumericMatrix nv, StringVector cv, int ncores);
-RcppExport SEXP _BacGWES_ACGTN2num(SEXP nvSEXP, SEXP cvSEXP, SEXP ncoresSEXP) {
+RcppExport SEXP _LDWeaver_ACGTN2num(SEXP nvSEXP, SEXP cvSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type nv(nvSEXP);
@@ -25,7 +25,7 @@ END_RCPP
 }
 // fastHadamard
 void fastHadamard(NumericMatrix MIt, NumericMatrix den, NumericMatrix uq_t, NumericMatrix pxy_t, NumericMatrix pxpy_t, NumericMatrix RXY, NumericMatrix pXrX, NumericMatrix pYrY, int ncores);
-RcppExport SEXP _BacGWES_fastHadamard(SEXP MItSEXP, SEXP denSEXP, SEXP uq_tSEXP, SEXP pxy_tSEXP, SEXP pxpy_tSEXP, SEXP RXYSEXP, SEXP pXrXSEXP, SEXP pYrYSEXP, SEXP ncoresSEXP) {
+RcppExport SEXP _LDWeaver_fastHadamard(SEXP MItSEXP, SEXP denSEXP, SEXP uq_tSEXP, SEXP pxy_tSEXP, SEXP pxpy_tSEXP, SEXP RXYSEXP, SEXP pXrXSEXP, SEXP pYrYSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type MIt(MItSEXP);
@@ -43,7 +43,7 @@ END_RCPP
 }
 // compareToRow
 LogicalVector compareToRow(NumericMatrix x, NumericVector y);
-RcppExport SEXP _BacGWES_compareToRow(SEXP xSEXP, SEXP ySEXP) {
+RcppExport SEXP _LDWeaver_compareToRow(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -55,7 +55,7 @@ END_RCPP
 }
 // vecPosMatch
 NumericVector vecPosMatch(NumericVector x, NumericVector y);
-RcppExport SEXP _BacGWES_vecPosMatch(SEXP xSEXP, SEXP ySEXP) {
+RcppExport SEXP _LDWeaver_vecPosMatch(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,7 +67,7 @@ END_RCPP
 }
 // compareTriplet
 bool compareTriplet(NumericVector MI0X, NumericVector MI0Z, double MI0);
-RcppExport SEXP _BacGWES_compareTriplet(SEXP MI0XSEXP, SEXP MI0ZSEXP, SEXP MI0SEXP) {
+RcppExport SEXP _LDWeaver_compareTriplet(SEXP MI0XSEXP, SEXP MI0ZSEXP, SEXP MI0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,7 @@ END_RCPP
 }
 // extractAlnParam
 List extractAlnParam(std::string file, int filter, double gap_thresh, double maf_thresh);
-RcppExport SEXP _BacGWES_extractAlnParam(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
+RcppExport SEXP _LDWeaver_extractAlnParam(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,7 +94,7 @@ END_RCPP
 }
 // extractSNPs
 List extractSNPs(std::string file, int n_seq, int n_snp, std::vector<int> POS);
-RcppExport SEXP _BacGWES_extractSNPs(SEXP fileSEXP, SEXP n_seqSEXP, SEXP n_snpSEXP, SEXP POSSEXP) {
+RcppExport SEXP _LDWeaver_extractSNPs(SEXP fileSEXP, SEXP n_seqSEXP, SEXP n_snpSEXP, SEXP POSSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -106,19 +106,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// extractRef
+List extractRef(std::string file);
+RcppExport SEXP _LDWeaver_extractRef(SEXP fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
+    rcpp_result_gen = Rcpp::wrap(extractRef(file));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BacGWES_ACGTN2num", (DL_FUNC) &_BacGWES_ACGTN2num, 3},
-    {"_BacGWES_fastHadamard", (DL_FUNC) &_BacGWES_fastHadamard, 9},
-    {"_BacGWES_compareToRow", (DL_FUNC) &_BacGWES_compareToRow, 2},
-    {"_BacGWES_vecPosMatch", (DL_FUNC) &_BacGWES_vecPosMatch, 2},
-    {"_BacGWES_compareTriplet", (DL_FUNC) &_BacGWES_compareTriplet, 3},
-    {"_BacGWES_extractAlnParam", (DL_FUNC) &_BacGWES_extractAlnParam, 4},
-    {"_BacGWES_extractSNPs", (DL_FUNC) &_BacGWES_extractSNPs, 4},
+    {"_LDWeaver_ACGTN2num", (DL_FUNC) &_LDWeaver_ACGTN2num, 3},
+    {"_LDWeaver_fastHadamard", (DL_FUNC) &_LDWeaver_fastHadamard, 9},
+    {"_LDWeaver_compareToRow", (DL_FUNC) &_LDWeaver_compareToRow, 2},
+    {"_LDWeaver_vecPosMatch", (DL_FUNC) &_LDWeaver_vecPosMatch, 2},
+    {"_LDWeaver_compareTriplet", (DL_FUNC) &_LDWeaver_compareTriplet, 3},
+    {"_LDWeaver_extractAlnParam", (DL_FUNC) &_LDWeaver_extractAlnParam, 4},
+    {"_LDWeaver_extractSNPs", (DL_FUNC) &_LDWeaver_extractSNPs, 4},
+    {"_LDWeaver_extractRef", (DL_FUNC) &_LDWeaver_extractRef, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_BacGWES(DllInfo *dll) {
+RcppExport void R_init_LDWeaver(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

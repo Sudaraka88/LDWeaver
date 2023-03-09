@@ -6,8 +6,8 @@
 #' @importFrom utils write.table
 #'
 #'
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
-#' @param tophits data frame with top short range GWES links, returned from BacGWES::perform_snpEff_annotations()
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
+#' @param tophits data frame with top short range GWES links, returned from LDWeaver::perform_snpEff_annotations()
 #' @param gwes_explorer_folder folder to save the inputs for GWESExplorer
 #' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR")
 

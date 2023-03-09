@@ -12,6 +12,9 @@ analyse_long_range_links(
   SnpEff_Annotate = F,
   snpeff_jar_path = NULL,
   gbk_path = NULL,
+  gff3_path = NULL,
+  ref_fasta_path = NULL,
+  validate_ref_ann_lengths = T,
   snp.dat = NULL,
   cds_var = NULL,
   max_tophits = 500,
@@ -31,11 +34,18 @@ analyse_long_range_links(
 
 \item{snpeff_jar_path}{path to <snpEff.jar> (default = NULL). If annotations are not required, set SnpEff_Annotate = F}
 
-\item{gbk_path}{path to genbank file, not needed if SnpEff_Annotate = F}
+\item{gbk_path}{path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.}
 
-\item{snp.dat}{output from BacGWES::parse_fasta_alignment(), not needed if SnpEff_Annotate = F}
+\item{gff3_path}{path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.}
 
-\item{cds_var}{output from BacGWES::estimate_variation_in_CDS(), not needed if SnpEff_Annotate = F}
+\item{ref_fasta_path}{path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
+not required for genbank annotations if the file contains the reference sequence.}
+
+\item{validate_ref_ann_lengths}{check if the gbk reference sequence length matches the with fasta alignment (default = T)}
+
+\item{snp.dat}{output from LDWeaver::parse_fasta_alignment(), not needed if SnpEff_Annotate = F}
+
+\item{cds_var}{output from LDWeaver::estimate_variation_in_CDS(), not needed if SnpEff_Annotate = F}
 
 \item{max_tophits}{specify the maximum number of long range links to save as <lr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 500)}
@@ -43,7 +53,7 @@ but only the top <max_tophits> will be used for visualisation (default = 500)}
 \item{links_from_spydrpick}{are the links computed using spydrpick (default = F)}
 }
 \description{
-Function to analyse long range links. These links can be computed using BacGWES or Spydrpick (faster). Spydrpick is recommended for larger datasets.
+Function to analyse long range links. These links can be computed using LDWeaver or Spydrpick (faster). Spydrpick is recommended for larger datasets.
 }
 \examples{
 \dontrun{

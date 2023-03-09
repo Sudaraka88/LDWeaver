@@ -7,11 +7,12 @@
 #' @param dset_name name of the dataset
 #' @param annotation_folder folder to save annotatations
 #' @param snpeff_jar path to <snpEff.jar>
-#' @param gbk output from parsing the genbank file using BacGWES::parse_genbank_file()
-#' @param gbk_path path to genbank file
-#' @param cds_var output from BacGWES::estimate_variation_in_CDS()
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
+#' @param cds_var output from LDWeaver::estimate_variation_in_CDS()
 #' @param links_df data.frame containing links (reduced links can be used to save time) output from perform_MI_computation()
-#' @param snp.dat output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()
+#' @param gbk output from parsing the genbank file using LDWeaver::parse_genbank_file() (default = NULL), only provide either GFF3 or GBK annotation
+#' @param gbk_path path to genbank file - plan to omit (default = NULL)
+#' @param gff output from parsing the gff3 file using LDWeaver::parse_gff_file() (default = NULL), only provide either GFF3 or GBK annotation
 #' @param max_tophits specify the number of top hits to return (all links will be annotated and saved to the annotations_folder)
 #' @param tophits_path specify the path to save tophit links (default = NULL). If NULL, will be saved to annotations_folder/tophits.tsv
 #' @param links_type specify the links type long-range "LR" or short-range "SR" (default = "SR")
@@ -25,8 +26,15 @@
 #' }
 #'
 #' @export
-perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, gbk, gbk_path, cds_var, links_df, snp.dat, tophits_path = NULL, max_tophits = 250,
-                                      links_type = "SR"){
+perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, snp.dat, cds_var, links_df, gbk = NULL,
+                                      gbk_path = NULL, gff = NULL,  tophits_path = NULL, max_tophits = 250, links_type = "SR"){
+
+  #TODO: We don't need both gbk and gbk_path, save gbk_path to the gbk when parsing and read from here (same for gff)
+  #TODO: RUN_SNPEFF = TRUE seems redunant, this function won't be called without the need to RUN_SNPEFF
+
+  # only one of gbk or gff can be NULL
+  if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")
+  if(!is.null(gbk) & is.null(gbk_path)) stop("GBK path must also be provided")
 
   if(links_type == "LR"){
     vcf_annotated_path = file.path(annotation_folder, "lr_snps_ann.vcf")
@@ -46,8 +54,14 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
     stop("Links type must be LR or SR")
   }
 
-  genome_name = gbk@genes@seqinfo@genome
-  snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
+  if(!is.null(gbk)) {
+    genome_name = gbk@genes@seqinfo@genome
+    snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
+  }
+  if(!is.null(gff)) {
+    genome_name = as.character(gff$gff$seqid[1])
+    snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gff_path = gff$gff_path, ref_path = gff$ref_path)
+  }
 
 
   if(snpeff_ready==1){ # ready for annotation?
@@ -90,7 +104,10 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
 }
 
 
-prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_dir, gbk_path){
+prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_dir, gbk_path = NULL, gff_path = NULL, ref_path = NULL){
+  # only one of gbk or gff can be NULL
+  if( (is.null(gbk_path) & is.null(gff_path)) | (!is.null(gbk_path) & !is.null(gff_path)) ) stop("Provide either one of gbk_path or gff_path")
+
   # java -jar snpEff.jar build -genbank -v Enterococcus_faecalis_gcf_000007785.1
   # java -Xmx16G -jar snpEff.jar -v -stats efaecalis_link_annotated.html Enterococcus_faecalis_gcf_000007785.1 ../bac_efaecalis/efaecalis_link_snps.vcf > efaecalis_link_annotated.vcf
   # Enterococcus_faecalis_gcf_000007785.1.genome : Enterococcus_faecalis_gcf_000007785.1
@@ -119,24 +136,35 @@ prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_di
     snpeff_config = file.path(work_dir, "snpEff.config")
     #TODO: How best to place the config file within an R package?
 
-    if(file.exists(snpeff_config)) unlink(snpeff_config)
+    if(file.exists(snpeff_config)) unlink(snpeff_config) # delete the configuration file
     # file.copy("snpEff.template", snpeff_config)
-    snpeff_template_path = system.file("extdata", "snpEff.template", package = "BacGWES")
-    file.copy(snpeff_template_path, snpeff_config)
+    snpeff_template_path = system.file("extdata", "snpEff.template", package = "LDWeaver")
+    file.copy(snpeff_template_path, snpeff_config) # add a new one
 
+    # add the data for this dataset
     write.table(x = paste(dset, '.genome : ', dset, sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
     write.table(x = paste(dset, '.', genome_name, '.codonTable : Bacterial_and_Plant_Plastid', sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
 
+
     snpeff_data = file.path(work_dir, "snpEff_data")
-    if(file.exists(snpeff_data))  unlink(snpeff_data, recursive = T)
-    dir.create(snpeff_data) # create the data file
-    dir.create(file.path(snpeff_data, dset))
-    file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk"))
+    if(file.exists(snpeff_data))  unlink(snpeff_data, recursive = T) # delete the folder
+    dir.create(snpeff_data) # create the data folder
+    dir.create(file.path(snpeff_data, dset)) # create the folder with dset name
 
-    cat(snpeff_data)
+    if(!is.null(ref_path)) file.copy(ref_path, file.path(snpeff_data, dset, "sequences.fa")) # copy the reference fasta if provided (will this clash if the gbk/gff also has the sequence?)
+
+    if(!is.null(gbk_path)) {
+      file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk")) # copy the gff annotation file if not null
+      system(paste('java -jar', snpeff_jar, 'build -genbank -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
+    }
+    if(!is.null(gff_path)) {
+      file.copy(gff_path, file.path(snpeff_data, dset, "genes.gff")) # copy the gff annotation file if not null
+      system(paste('java -jar', snpeff_jar, 'build -gff3 -noCheckCds -noCheckProtein -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
+    }
+
+    # cat(snpeff_data)
 
 
-    system(paste('java -jar', snpeff_jar, 'build -genbank -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
   }
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
   return(status)
@@ -175,10 +203,23 @@ convert_vcfann_to_table = function(vcf_annotated_path, annotations_path, snps_to
   ann = read.table(vcf_annotated_path, quote = "") # we can read the annotated VCF as a table into R
   ann = ann[,c(2,4,5,8)]
   colnames(ann) = c("pos", "REF", "ALT", "ANN")
+  # There can be weird quotes in some annotations, remove them from the ANN field
+  for(x in 1:nrow(ann)){
+    ann$ANN[x] = gsub('[\"]', '',  ann$ANN[x])
+  }
 
   ann = cbind(ann, annotation =  sapply(ann$ANN, function(x) unlist(strsplit(x, "\\|"))[2]))
   ann = cbind(ann, description =  sapply(ann$ANN, function(x) paste(unique(unlist(strsplit(x, "\\|"))[c(4,5,10,11)]), collapse = ":") ))
   ann = cbind(ann, cds =  sapply(ann$ANN,   function(x) unlist(strsplit(x, "\\|"))[5]))
+
+  # There can still be some weird quotes in some annotations, remove them from each field
+  for(x in 1:nrow(ann)){
+    # Possibly redundant?
+    ann$annotation[x] = gsub('[\"]', '',  ann$annotation[x])
+    ann$description[x] = gsub('[\"]', '',  ann$description[x])
+    ann$cds[x] = gsub('[\"]', '',  ann$cds[x])
+  }
+
 
   code = rep("ns", nrow(ann)) # start as everything is ns
   code[grep("synonymous_variant", ann$annotation)] = "sy"
@@ -187,7 +228,7 @@ convert_vcfann_to_table = function(vcf_annotated_path, annotations_path, snps_to
   code[grep("upstream_gene_variant", ann$annotation)] = "ig"
 
   ann$code = code
-  table(ann$code)
+  # table(ann$code)
 
   ann = ann[,-4]
 

@@ -22,11 +22,11 @@ perform_MI_computation(
 )
 }
 \arguments{
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
-\item{hdw}{vector of Hamming distance weights, output from BacGWES::estimate_Hamming_distance_weights()}
+\item{hdw}{vector of Hamming distance weights, output from LDWeaver::estimate_Hamming_distance_weights()}
 
-\item{cds_var}{output from BacGWES::estimate_variation_in_CDS()}
+\item{cds_var}{output from LDWeaver::estimate_variation_in_CDS()}
 
 \item{ncores}{specify the number of cores to use}
 

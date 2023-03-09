@@ -2,14 +2,14 @@
 % Please edit documentation in R/parseGBK.R
 \name{parse_genbank_file}
 \alias{parse_genbank_file}
-\title{parseGenBankFile}
+\title{parse_genbank_file}
 \usage{
 parse_genbank_file(gbk_path, g = NULL, length_check = T)
 }
 \arguments{
 \item{gbk_path}{path to genbank file}
 
-\item{g}{sequence length, available from the BacGWES::parse_fasta_alignment() output (default = NULL),
+\item{g}{sequence length, available from the LDWeaver::parse_fasta_alignment() output (default = NULL),
 required if <length_check = T>}
 
 \item{length_check}{specify whether to check if fasta and gbk sequence lengths are equal (default = T)}
@@ -22,9 +22,9 @@ Function to parse the genbank file for the fasta alignment.
 }
 \examples{
 \dontrun{
-aln_path <- system.file("extdata", "sample.aln", package = "BacGWES")
+aln_path <- system.file("extdata", "sample.aln", package = "LDWeaver")
 snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
-gbk_path <- system.file("extdata", "sample.gbk", package = "BacGWES")
-gbk <- parseGenBankFile(gbk_path, snp.dat$g)
+gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+gbk <- parse_genbank_file(gbk_path, snp.dat$g)
 }
 }

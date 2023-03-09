@@ -5,19 +5,22 @@
 \title{estimate_variation_in_CDS}
 \usage{
 estimate_variation_in_CDS(
-  gbk,
   snp.dat,
   ncores,
+  gbk = NULL,
+  gff = NULL,
   num_clusts_CDS = 3,
   clust_plt_path = NULL
 )
 }
 \arguments{
-\item{gbk}{output from parsing the genbank file using BacGWES::parse_genbank_file()}
-
-\item{snp.dat}{output from parsing the multi fasta alignment using BacGWES::parse_fasta_alignment()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
 \item{ncores}{specify the number of cores to use}
+
+\item{gbk}{output from parsing the genbank file using LDWeaver::parse_genbank_file()}
+
+\item{gff}{output from parsing the gff3 file using LDWeaver::parse_gff_file()}
 
 \item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3)}
 

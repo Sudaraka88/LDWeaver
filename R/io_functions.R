@@ -85,6 +85,9 @@ read_AnnotatedLinks = function(annotated_links_path){
 
 #' runARACNE
 #'
+#' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom Rfast2 Intersect
+#'
 #' @param links_to_check data.frame comprising subset of links to run ARACNE on
 #' @param links_full data.frame with all links
 #' @return Long range links as a data.frame
@@ -98,7 +101,7 @@ read_AnnotatedLinks = function(annotated_links_path){
 #' }
 runARACNE = function(links_to_check, links_full){
   t0 = Sys.time()
-  cat(paste("Running ARACNE\n"))
+  cat(paste("Running ARACNE on", nrow(links_to_check), "links... \n"))
   pos_mat = matrix(c(links_full$pos1, links_full$pos2), nrow = nrow(links_full)) # for the reduced link set
   MIs = matrix(links_full$MI)
 
@@ -140,4 +143,58 @@ runARACNE = function(links_to_check, links_full){
   return(ARACNE)
 }
 
+#' read_ReferenceFasta
+#'
+#' @param ref_fasta_path path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence!
+#'
+#' @return parsed reference sequence with metadata in list format
+#'
+#' @examples
+#' \dontrun{
+#' ref_fa = "<path_to_ref_fasta"
+#' reference = read_ReferenceFasta(ref_fa)
+#' }
+read_ReferenceFasta = function(ref_fasta_path){
+  # This function is usually super quick, a timer is unnecessary
+  ref_fasta_path = normalizePath(ref_fasta_path)
+  if(!file.exists(ref_fasta_path)) stop(paste(ref_fasta_path, "not found!"))
+  parsedRef = .extractRef(ref_fasta_path)
 
+  g = parsedRef$seq.length
+  if(g <= 0) stop("empty sequence!")
+
+  ref = unname(unlist(strsplit(parsedRef$seq, split = "", fixed = T)))
+  if(length(ref) != g) stop("sequence length mismatch!")
+
+  ref_name = parsedRef$seq.name
+  if(is.null(ref_name)) stop("empty sequence!")
+
+  return(list(ref = ref,
+              ref_name = ref_name,
+              g = g))
+}
+
+#' read_GFF3_Annotation
+#'
+#' @importFrom ape read.gff
+#'
+#' @param gff3_path path to gff3_annotation file. This function relies on ape::read.gff() to read in the file,
+#' refer to ?ape::read.gff for additional help
+#'
+#' @return parsed annotation file in list format
+#'
+#' @examples
+#' \dontrun{
+#' gff3_path = "<path_to_gff3_annotation"
+#' gff = read_GFF3_Annotation(gff3_path)
+#' }
+read_GFF3_Annotation = function(gff3_path){
+  gff3_path = normalizePath(gff3_path)
+  if(!file.exists(gff3_path)) stop(paste(gff3_path, "not found!"))
+
+  gff = ape::read.gff(file = gff3_path)
+
+  return(gff)
+}
+
+#TODO: Add a function to create the file saving structure for LDWeaver::LDWeaver

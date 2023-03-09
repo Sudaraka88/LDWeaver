@@ -33,7 +33,7 @@ create_network_for_gene(
 \item{min_links_to_include}{specify the minimum number of links required to retain the node in the plot (default = 2)}
 }
 \value{
-data_frame to use as input for BacGWES::create_network()
+data_frame to use as input for LDWeaver::create_network()
 }
 \description{
 Function to generate a network view of GWES hits for a given gene

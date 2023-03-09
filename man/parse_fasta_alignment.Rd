@@ -28,7 +28,7 @@ Function to extract SNPs from a multi-fasta alignment.
 }
 \examples{
 \dontrun{
-aln_path <- system.file("extdata", "sample.aln", package = "BacGWES")
+aln_path <- system.file("extdata", "sample.aln", package = "LDWeaver")
 snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
 }
 }
