@@ -296,7 +296,10 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   if(lr_present & !perform_SR_analysis_only){ # if only the SR analysis is requested, discard this section
     # disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
     n_lr_links = nrow(MI_df_lr)
-    prob = (1 - ((lr_retain_links * (n_lr_links / lr_links_approx)) / n_lr_links))
+
+    # Following prob works well for most cases where n_lr_links_total >> lr_retain_links (i.e. save 1M out of 1B),
+    # set the minimum to 0
+    prob = min(c(0, (1 - ((lr_retain_links * (n_lr_links / lr_links_approx)) / n_lr_links))))
     disc_thresh = Rfast2::Quantile(MI_df_lr$MI, probs = prob)
     len_filt = MI_df_lr$MI >= disc_thresh
     cat(paste("... Adding ", sum(len_filt) ," LR links with MI>",round(disc_thresh, 3) ," to file ...", sep = "")) # debug
