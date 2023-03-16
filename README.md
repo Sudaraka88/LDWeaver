@@ -1,7 +1,7 @@
 
 <!-- badges: start -->
 
-[![R](https://github.com/Sudaraka88/LDWeaver/workflows/r.yml/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
+[![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
 <!-- badges: end -->
 
 # LDWeaver
@@ -42,11 +42,11 @@ The reads were aligned against the
 <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1" target="_blank">ATCC
 700669 reference genome</a> using
 <a href="https://github.com/tseemann/snippy" target="_blank">snippy</a>.
-Since this is only a part of an alignment, set \<check_gbk_fasta_lengths
-= F\>, forcing LDWeaver to ignore the mismatch in sequence lengths
-between the genbank reference and the fasta alignment. Several
-additional options are also used, see `help(package="LDWeaver")` for
-details.
+Since this is only a part of an alignment, set
+\<validate_ref_ann_lengths = F\>, forcing LDWeaver to ignore the
+mismatch in sequence lengths between the genbank reference and the fasta
+alignment. Several additional options are also used, see
+`help(package="LDWeaver")` for details.
 
 ``` r
 # devtools::install_github("Sudaraka88/LDWeaver")
@@ -55,7 +55,7 @@ dset <- "sample"
 aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 snp_filt_method = "relaxed"
-LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, check_gbk_fasta_lengths = F,
+LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann_lengths = F,
         num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ```
 
