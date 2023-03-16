@@ -30,7 +30,6 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
                                       gbk_path = NULL, gff = NULL,  tophits_path = NULL, max_tophits = 250, links_type = "SR"){
 
   #TODO: We don't need both gbk and gbk_path, save gbk_path to the gbk when parsing and read from here (same for gff)
-  #TODO: RUN_SNPEFF = TRUE seems redunant, this function won't be called without the need to RUN_SNPEFF
 
   # only one of gbk or gff can be NULL
   if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")
@@ -39,14 +38,14 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
   if(links_type == "LR"){
     vcf_annotated_path = file.path(annotation_folder, "lr_snps_ann.vcf")
     vcf_write_path = file.path(annotation_folder, "lr_snps.vcf")
-    stat_path = file.path(annotation_folder, "lr_annotated_stats.html")
+    # stat_path = file.path(annotation_folder, "lr_annotated_stats.html")
     annotations_path = file.path(annotation_folder, "lr_annotations.tsv")
     links_annotated_path = file.path(annotation_folder,  "lr_links_annotated.tsv")
     if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "lr_tophits.tsv")
   } else if(links_type == "SR"){
     vcf_annotated_path = file.path(annotation_folder, "sr_snps_ann.vcf")
     vcf_write_path = file.path(annotation_folder, "sr_snps.vcf")
-    stat_path = file.path(annotation_folder, "sr_annotated_stats.html")
+    # stat_path = file.path(annotation_folder, "sr_annotated_stats.html")
     annotations_path = file.path(annotation_folder, "sr_annotations.tsv")
     links_annotated_path = file.path(annotation_folder,  "sr_links_annotated.tsv")
     if(is.null(tophits_path)) tophits_path = file.path(annotation_folder, "sr_tophits.tsv")
@@ -56,11 +55,11 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
 
   if(!is.null(gbk)) {
     genome_name = gbk@genes@seqinfo@genome
-    snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
+    snpeff_ready = prep_snpEff(dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gbk_path = gbk_path)
   }
   if(!is.null(gff)) {
     genome_name = as.character(gff$gff$seqid[1])
-    snpeff_ready = prep_snpEff(RUN_SNPEFF = TRUE, dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gff_path = gff$gff_path, ref_path = gff$ref_path)
+    snpeff_ready = prep_snpEff(dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder, gff_path = gff$gff_path, ref_path = gff$ref_path)
   }
 
 
@@ -75,12 +74,12 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
     cat(" Done!\n")
   } else {
     # Return with snpeff error
-    warning("snpEff error!")
-    return(-1)
+    stop("snpEff error!")
+    # return(-1)
   }
 
   snpeff_complete = run_snpeff(dset = dset_name, genome_name = genome_name, snpeff_jar = snpeff_jar, work_dir = annotation_folder,
-                               stat_path = stat_path, vcf_write_path = vcf_write_path, vcf_annotated_path = vcf_annotated_path)
+                               vcf_write_path = vcf_write_path, vcf_annotated_path = vcf_annotated_path)
 
   if(snpeff_complete == 1){
     cat("Convert VCF to table ...")
@@ -88,8 +87,8 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
     cat("Done!\n")
   } else {
     # Return with snpeff error
-    warning("snpEff error!")
-    return(-1)
+    stop("snpEff error!")
+    # return(-1)
   }
   cat("Adding annotations to links ...\n")
 
@@ -104,7 +103,10 @@ perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, 
 }
 
 
-prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_dir, gbk_path = NULL, gff_path = NULL, ref_path = NULL){
+prep_snpEff = function(dset, genome_name, snpeff_jar, work_dir, gbk_path = NULL, gff_path = NULL, ref_path = NULL){
+
+  if(length(grep("windows", .Platform$OS.type))) isWin = T else isWin = F # We might need more hacks for other OSes
+
   # only one of gbk or gff can be NULL
   if( (is.null(gbk_path) & is.null(gff_path)) | (!is.null(gbk_path) & !is.null(gff_path)) ) stop("Provide either one of gbk_path or gff_path")
 
@@ -113,61 +115,69 @@ prep_snpEff = function(RUN_SNPEFF = TRUE, dset, genome_name, snpeff_jar, work_di
   # Enterococcus_faecalis_gcf_000007785.1.genome : Enterococcus_faecalis_gcf_000007785.1
   # Enterococcus_faecalis_gcf_000007785.1.NC_004668.1.codonTable : Bacterial_and_Plant_Plastid
 
-  if(!RUN_SNPEFF) return(0) else status = 1 # run snpeff?
   cat(paste("Setting up snpeff for:", dset, "\n"))
   t0 = Sys.time()
 
   if(!file.exists(snpeff_jar)){ # does it point to <snpEff.jar>
-    warning(paste("<snpEff.jar> not available at:", snpeff_jar))
-    status = -1
+    stop(paste("<snpEff.jar> not available at:", snpeff_jar))
   }
 
   options(warn = -1)
-  jout = system(paste('java -jar', snpeff_jar), ignore.stderr = T)
-  options(warn = 0)
-
-  if(jout!=255){ # file missing warning must be given by snpEff, there must be a better way to check this?
-    warning(paste(snpeff_jar, "not functional, please confirm that it is configured correctly..."))
-    status = -1
+  if(isWin){
+    jout = shell(paste('java -jar', snpeff_jar), ignore.stderr = T, translate = T)
+  } else {
+    jout = system(paste('java -jar', snpeff_jar), ignore.stderr = T)
   }
 
-  if(status != -1){
-    # move files around as required for snpEff
-    snpeff_config = file.path(work_dir, "snpEff.config")
-    #TODO: How best to place the config file within an R package?
+  options(warn = 0)
 
-    if(file.exists(snpeff_config)) unlink(snpeff_config) # delete the configuration file
-    # file.copy("snpEff.template", snpeff_config)
-    snpeff_template_path = system.file("extdata", "snpEff.template", package = "LDWeaver")
-    file.copy(snpeff_template_path, snpeff_config) # add a new one
+  if(jout==1){ # for Error:Unable to access jarfile, return value seems to be 1, check for better way (maybe a file.exists would work?)
+    stop(paste(snpeff_jar, "not functional, please confirm that it is configured correctly..."))
+  }
 
-    # add the data for this dataset
-    write.table(x = paste(dset, '.genome : ', dset, sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
-    write.table(x = paste(dset, '.', genome_name, '.codonTable : Bacterial_and_Plant_Plastid', sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
+  # move files around as required for snpEff
+  snpeff_config = file.path(work_dir, "snpEff.config")
+  #TODO: How best to place the config file within an R package?
+
+  if(file.exists(snpeff_config)) unlink(snpeff_config) # delete the configuration file
+  # file.copy("snpEff.template", snpeff_config)
+  snpeff_template_path = system.file("extdata", "snpEff.template", package = "LDWeaver")
+  file.copy(snpeff_template_path, snpeff_config) # add a new one
+
+  # add the data for this dataset
+  write.table(x = paste(dset, '.genome : ', dset, sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
+  write.table(x = paste(dset, '.', genome_name, '.codonTable : Bacterial_and_Plant_Plastid', sep = ""), file = snpeff_config, append = T, col.names = F, row.names = F, quote = F)
 
 
-    snpeff_data = file.path(work_dir, "snpEff_data")
-    if(file.exists(snpeff_data))  unlink(snpeff_data, recursive = T) # delete the folder
-    dir.create(snpeff_data) # create the data folder
-    dir.create(file.path(snpeff_data, dset)) # create the folder with dset name
+  snpeff_data = file.path(work_dir, "snpEff_data")
+  if(file.exists(snpeff_data))  unlink(snpeff_data, recursive = T) # delete the folder
+  dir.create(snpeff_data) # create the data folder
+  dir.create(file.path(snpeff_data, dset)) # create the folder with dset name
 
-    if(!is.null(ref_path)) file.copy(ref_path, file.path(snpeff_data, dset, "sequences.fa")) # copy the reference fasta if provided (will this clash if the gbk/gff also has the sequence?)
+  if(!is.null(ref_path)) file.copy(ref_path, file.path(snpeff_data, dset, "sequences.fa")) # copy the reference fasta if provided (will this clash if the gbk/gff also has the sequence?)
 
-    if(!is.null(gbk_path)) {
-      file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk")) # copy the gff annotation file if not null
+  if(!is.null(gbk_path)) {
+    file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk")) # copy the gff annotation file if not null
+
+    if(isWin){
+      shell(paste('java -jar', normalizePath(snpeff_jar), 'build -genbank -config', normalizePath(snpeff_config), '-dataDir', "snpeff_data", '-v', dset), translate = T) # Build index for snpEff
+    } else {
       system(paste('java -jar', snpeff_jar, 'build -genbank -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
     }
-    if(!is.null(gff_path)) {
-      file.copy(gff_path, file.path(snpeff_data, dset, "genes.gff")) # copy the gff annotation file if not null
+
+  }
+  if(!is.null(gff_path)) {
+    file.copy(gff_path, file.path(snpeff_data, dset, "genes.gff")) # copy the gff annotation file if not null
+    if(isWin){
+      shell(paste('java -jar', normalizePath(snpeff_jar), 'build -gff3 -noCheckCds -noCheckProtein -config', normalizePath(snpeff_config), '-dataDir', "snpeff_data", '-v', dset)) # Build index for snpEff
+    } else {
       system(paste('java -jar', snpeff_jar, 'build -gff3 -noCheckCds -noCheckProtein -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
     }
 
-    # cat(snpeff_data)
-
-
   }
+
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
-  return(status)
+  return(1)
 }
 
 append_vcf_header = function(path, g){
@@ -190,11 +200,18 @@ create_vcf_file = function(genome_name, snps_to_ann, REF, ALT, vcf_write_path){
 }
 
 # annotate with snp_eff
-run_snpeff = function(RUN_SNPEFF = TRUE, dset = NULL, genome_name = NULL, snpeff_jar = NULL, work_dir = NULL, stat_path = NULL, vcf_write_path = NULL, vcf_annotated_path = NULL){
+run_snpeff = function(dset = NULL, genome_name = NULL, snpeff_jar = NULL, work_dir = NULL, vcf_write_path = NULL, vcf_annotated_path = NULL){
   #java -Xmx16G -jar snpEff.jar -v -stats Aus0004_efcm_link_annotated.html Enterococcus_faecium_gcf_000250945.1 ../bac_Efaecium/efcm_link_snps.vcf > Aus0004_efcm_link_annotated.vcf
+  if(length(grep("windows", .Platform$OS.type))) isWin = T else isWin = F # We might need more hacks for other OSes
   snpeff_config = file.path(work_dir, "snpEff.config")
   snpeff_data = file.path(work_dir, "snpEff_data")
-  system(paste('java -Xmx16G -jar', snpeff_jar, '-v -dataDir', snpeff_data, '-config', snpeff_config,'-stats', stat_path, dset, vcf_write_path, '>', vcf_annotated_path))
+
+  if(isWin){
+    shell(paste('java -Xmx16G -jar', normalizePath(snpeff_jar), '-v -dataDir', "snpeff_data", '-config', normalizePath(snpeff_config), dset, vcf_write_path, '>', vcf_annotated_path), translate = T)
+  } else {
+    system(paste('java -Xmx16G -jar', snpeff_jar, '-v -dataDir', snpeff_data, '-config', snpeff_config, dset, vcf_write_path, '>', vcf_annotated_path))
+  }
+
   status = 1
   return(status)
 }

@@ -294,6 +294,16 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     return()
   }
 
+  if(!file.exists(tophits_path)){
+    tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
+                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
+                                                  cds_var = cds_var, gff = gff, links_df = sr_links, snp.dat = snp.dat,
+                                                  tophits_path = tophits_path, max_tophits = max_tophits)
+  } else {
+    cat("Loading previous top hits \n")
+    tophits = read.table(tophits_path, sep = '\t', header = T)
+  }
+
   # Additional paths if annotations are requested
   # tanglegram
   tanglegram_path = file.path(dset, "SR_Tanglegram")
@@ -304,15 +314,6 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   # NetworkPlot
   netplot_path = file.path(dset, "SR_network_plot.png")
 
-  if(!file.exists(tophits_path)){
-    tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
-                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  cds_var = cds_var, gff = gff, links_df = sr_links, snp.dat = snp.dat,
-                                                  tophits_path = tophits_path, max_tophits = max_tophits)
-  } else {
-    cat("Loading previous top hits \n")
-    tophits = read.table(tophits_path, sep = '\t', header = T)
-  }
 
   # BLK8
   cat("\n\n #################### BLOCK 8 #################### \n\n")
