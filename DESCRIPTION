@@ -37,3 +37,4 @@ LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.2.3
 URL: https://github.com/Sudaraka88/LDWeaver
 BugReports: https://github.com/Sudaraka88/LDWeaver/issues
+Biarch: TRUE
