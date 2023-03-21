@@ -92,6 +92,15 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
 
   lr_links_red = lr_links[lr_links$MI > min(thresholds), ] # we only care about outliers
 
+  # The plot looks really bad if we don't have enough LR links, it'll be a good idea to increase the links in lr_links_red in case it's too small
+  if(nrow(lr_links_red) < 5000 & nrow(lr_links) >= 5000){
+    warning("Not enough lr links pass the Tukey criteria, ~5000 top links were retained instead")
+    thresholds = Rfast2::Quantile(lr_links$MI, probs = (1- (1/nrow(lr_links)*c(4000, 5000))) )
+    lr_links_red = lr_links[lr_links$MI > min(thresholds), ] # we only care about outliers
+  }
+
+
+
   if(!("ARACNE" %in% names(lr_links))){ # ARACNE not run yet
 
     lr_links_ARACNE_check = rbind(data.frame(pos1 = lr_links$pos1, pos2 = lr_links$pos2, MI = lr_links$MI),

@@ -21,8 +21,8 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1){
   t0 = Sys.time()
   thresh =  as.integer(snp.dat$nsnp*threshold)
 
-  snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix') # This crashes in linuxMint for some reason!
-  shared.snps = Matrix::crossprod(snpmat_t)
+  # snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix') # This crashes in linux Mint for some reason!
+  # shared.snps = Matrix::crossprod(snpmat_t)
 
   snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
   shared.snps = MatrixExtra::crossprod((snpmat_t))
@@ -39,7 +39,7 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1){
   snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
   shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
 
-  hdw = 1/Matrix::colSums((snp.dat$nsnp - shared.snps) < thresh)
+  hdw = 1/(Matrix::colSums((snp.dat$nsnp - shared.snps) < thresh) + 1)
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
   return(hdw)
 }
