@@ -42,10 +42,10 @@
 #' }
 #' @export
 LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta_path = NULL, validate_ref_ann_lengths = T,
-                   snp_filt_method = "default", gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
-                   perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
-                   max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
-                   multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
+                    snp_filt_method = "default", gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
+                    perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
+                    max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
+                    multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK
@@ -58,6 +58,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   # BLK9: GWESExplorer (depends: GWESExplorer)
 
   #TODO: Add the option to provide genbank file without reference sequence
+  #TODO: Count through blocks and automate the displayed BLOCK NUMBER
 
   # # Welcome message
   # timestamp()
@@ -138,15 +139,28 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
   # setup paths
   if(!file.exists(dset)) dir.create(dset) # save everything in here
-  ACGTN_snp_path = file.path(dset, "snp_ACGTN.rds")
-  if(!is.null(gbk_path)) parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
-  if(!is.null(gff3_path)) parsed_gff_path = file.path(dset, "parsed_gff3.rds")
-  cds_var_path = file.path(dset, "cds_var.rds")
-  hdw_path = file.path(dset, "hdw.rds")
+  add_path = file.path(dset, "Additional_Outputs") # Additional Outputs
+  if(save_additional_outputs) {
+    if(!file.exists(add_path)) dir.create(file.path(dset, "Additional_Outputs"))
+  }
+
+  # Additional paths
+  ACGTN_snp_path = file.path(add_path, "snp_ACGTN.rds")
+  if(!is.null(gbk_path)) parsed_gbk_path = file.path(add_path, "parsed_gbk.rds")
+  if(!is.null(gff3_path)) parsed_gff_path = file.path(add_path, "parsed_gff3.rds")
+  cds_var_path = file.path(add_path, "cds_var.rds")
+  hdw_path = file.path(add_path, "hdw.rds")
+
   clust_plt_path = file.path(dset, "CDS_clustering.png")
+
+  # These files can exist from a previous run, with or without cleaning, choose the correct path
   lr_save_path = file.path(dset, "lr_links.tsv")
   sr_save_path = file.path(dset, "sr_links.tsv")
-  tophits_path = file.path(dset, "sr_tophits.tsv")
+  tophits_path = file.path(dset, "sr_tophits.tsv") # This is for sr only
+
+  if(file.exists(file.path(dset, "Temp/lr_links.tsv"))) lr_save_path = file.path(dset, "Temp/lr_links.tsv")
+  if(file.exists(file.path(dset, "Temp/sr_links.tsv"))) sr_save_path = file.path(dset, "Temp/sr_links.tsv")
+  if(file.exists(file.path(dset, "Tophits/sr_tophits.tsv"))) tophits_path = file.path(dset, "Tophits/sr_tophits.tsv") # This is for sr only
 
   ######## Welcome message ########
   {
@@ -262,10 +276,10 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
     cat("Commencing MI computation \n")
     sr_links = LDWeaver::perform_MI_computation(snp.dat = snp.dat, hdw = hdw, cds_var = cds_var, ncores = ncores,
-                                               lr_save_path = lr_save_path, sr_save_path = sr_save_path,
-                                               plt_folder = dset, sr_dist = sr_dist, lr_retain_links = lr_retain_links,
-                                               max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
-                                               perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
+                                                lr_save_path = lr_save_path, sr_save_path = sr_save_path,
+                                                plt_folder = dset, sr_dist = sr_dist, lr_retain_links = lr_retain_links,
+                                                max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
+                                                perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
   }
 
   # if(file.exists(lr_save_path)){
@@ -296,9 +310,9 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
   if(!file.exists(tophits_path)){
     tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
-                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  cds_var = cds_var, gff = gff, links_df = sr_links, snp.dat = snp.dat,
-                                                  tophits_path = tophits_path, max_tophits = max_tophits)
+                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
+                                                   cds_var = cds_var, gff = gff, links_df = sr_links, snp.dat = snp.dat,
+                                                   tophits_path = tophits_path, max_tophits = max_tophits)
   } else {
     cat("Loading previous top hits \n")
     tophits = read.table(tophits_path, sep = '\t', header = T)
@@ -313,7 +327,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
   # NetworkPlot
   netplot_path = file.path(dset, "SR_network_plot.png")
-
+  gwLDplt_path = file.path(dset, "LD_plot.png")
 
   # BLK8
   cat("\n\n #################### BLOCK 8 #################### \n\n")
@@ -331,12 +345,33 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     # BLK11
     cat("\n\n #################### BLOCK 11 #################### \n\n")
     if(SnpEff_Annotate){
-      LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
-                                        gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path)
+      if( !(  (file.exists(file.path(dset, "lr_tophits.tsv"))) | (file.exists(file.path(dset, "Tophits/lr_tophits.tsv"))) ) ) { # if the annotated_links file exists, no need to run again
+        LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
+                                           gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path)
+      } else {
+        cat("Results from previous LR anlayis exist!")
+      }
     } else {
-      LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
+      if( !(  (file.exists(file.path(dset, "lr_gwes.png"))) | (file.exists(file.path(dset, "GWESPlots/lr_gwes.png"))) ) ) { # if the lr_gwes plot exist, no need to run again
+        LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
+      } else {
+        cat("Results from previous LR anlayis exist!")
+      }
     }
+
+    # BLK12
+    cat("\n\n #################### BLOCK 12 #################### \n\n")
+    LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
+                               plot_title = paste("GW-LD:", dset),
+                               plot_save_path = gwLDplt_path, links_from_spydrpick = F)
   }
+
+
+  # BLK13
+  cat("\n\n########### BLOCK 13 #################### \n\n")
+  LDWeaver::cleanup(dset = dset, delete_after_moving = F)
+
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
+
 
 }

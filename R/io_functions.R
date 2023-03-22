@@ -197,4 +197,111 @@ read_GFF3_Annotation = function(gff3_path){
   return(gff)
 }
 
-#TODO: Add a function to create the file saving structure for LDWeaver::LDWeaver
+#' cleanup
+#'
+#' Function to clean up the files in <dset> folder, this will organise the saved files in to a more sensible folder structure.
+#' If clean up was performed already, nothing will be changed.
+#'
+#' @param dset <dset> folder that requires cleanup.
+#' @param delete_after_moving specify whether the organised files should be deleted from the original location (default = F).
+#' If False, all organised files will be moved to a directory called OLD
+#'
+#'
+#' @examples
+#' \dontrun{
+#' gff3_path = "<path_to_gff3_annotation"
+#' gff = read_GFF3_Annotation(gff3_path)
+#' }
+#' @export
+cleanup = function(dset, delete_after_moving = F){
+  cat("Cleaning up...\n")
+  dset = normalizePath(dset)
+  if(!file.exists(dset)) stop(paste("Dataset:", dset , "not found!"))
+
+  mv_success = c()
+  files = dir(dset)
+
+  #### Fit folder ####
+  idx = c(grep("^c*[:0-999:]_fit.png$", files),  grep("CDS_clustering.png", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Fit")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  #### Annotated_links folder ####
+  idx = grep("*_links_annotated.tsv", files)
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Annotated_links")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  #### GWESPlots ####
+  idx = grep("*_gwes(.+)png", files)
+  if(length(idx) > 0){
+    fldr = file.path(dset, "GWESPlots")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  #### Tophits ####
+  idx = c(grep("*_tophits.tsv", files), grep("*_network_plot.png", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Tophits")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  #### GWESExplorer folder ####
+  idx = c(grep("*_GWESExplorer", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "GWESExplorer")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  #### Temp folder ####
+  idx = c(grep("snpEff", files), grep("*.vcf", files), grep("*annotations.tsv", files), grep("*_links.tsv", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Temp")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+
+  #### Relocate or delete moved files ####
+  moved_idx = sort(unique(mv_success))
+  if(length(moved_idx) > 0){
+    if(!delete_after_moving){
+      fldr = file.path(dset, "OLD")
+      if(!file.exists(fldr)) dir.create(fldr)
+      chk = file.copy(file.path(dset, files[moved_idx]), fldr, overwrite = T, recursive = T)
+    }
+    unlink(file.path(dset, files[moved_idx]), recursive = T)
+  }
+}
+
+#' cleanup_support
+#'
+#' File operations for the cleanup function
+#'
+#' @param files files to copy <from>
+#' @param fldr folder to copy <to>
+#'
+#' @return parsed annotation file in list format
+#'
+#' @examples
+#' \dontrun{
+#' gff3_path = "<path_to_gff3_annotation"
+#' gff = read_GFF3_Annotation(gff3_path)
+#' }
+cleanup_support = function(files, fldr){
+  if(!file.exists(fldr)) dir.create(fldr)
+  chk = file.copy(files, fldr, overwrite = F, recursive = T)
+  if(any(chk==FALSE)){ # failure to copy
+    wrn_chk = files[!chk]
+    for(x in wrn_chk) cat("Not overwriting:", x, "\n")
+  }
+}
+

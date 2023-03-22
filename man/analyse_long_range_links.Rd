@@ -24,7 +24,7 @@ analyse_long_range_links(
 \arguments{
 \item{dset}{name of the dataset, all outputs will be saved to the folder <dset>, possible to use the same dset name used for the short-range analysis}
 
-\item{lr_links_path}{path to saved LR links, generally called <lr_links.tsv> or the SpydrPick links file}
+\item{lr_links_path}{path to saved LR links, generally called <lr_links.tsv> or the SpydrPick edges (links) file}
 
 \item{sr_links_path}{path to saved SR links, generally called <sr_links.tsv>}
 

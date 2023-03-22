@@ -5,7 +5,7 @@
 #' @importFrom Rfast2 Quantile
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>, possible to use the same dset name used for the short-range analysis
-#' @param lr_links_path path to saved LR links, generally called <lr_links.tsv> or the SpydrPick links file
+#' @param lr_links_path path to saved LR links, generally called <lr_links.tsv> or the SpydrPick edges (links) file
 #' @param sr_links_path path to saved SR links, generally called <sr_links.tsv>
 #' @param are_lrlinks_ordered are the links sorted in descending MI order (default = F), leave at default if unsure
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff (default = F)

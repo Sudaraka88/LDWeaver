@@ -20,6 +20,8 @@ Imports:
          GenomicRanges,
          ggplot2,
          ggraph,
+         grDevices,
+         heatmap3,
          htmlwidgets,
          igraph,
          Matrix,
