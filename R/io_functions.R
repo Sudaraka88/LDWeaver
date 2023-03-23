@@ -221,6 +221,14 @@ cleanup = function(dset, delete_after_moving = F){
   mv_success = c()
   files = dir(dset)
 
+  ##### Additional Outputs #####
+  idx = c(grep("*.rds", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Additional_Outputs")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
   #### Fit folder ####
   idx = c(grep("^c*[:0-999:]_fit.png$", files),  grep("CDS_clustering.png", files))
   if(length(idx) > 0){

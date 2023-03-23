@@ -155,7 +155,7 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 #' @param drop_indirect specify whether to drop ARACNE indirect links (default = T)
 #' @param level set 1 for only nearest neighbours, set 2 for an additional layer (default = 1)
 #' @param separator break pattern in annotation (default = ":", this is the default used by SnpEff)
-#' @param min_links_to_include specify the minimum number of links required to retain the node in the plot (default = 2)
+#' @param min_links_to_include specify the minimum number of links required to retain the node in the plot (default = 3)
 #'
 #'
 #' @return data_frame to use as input for LDWeaver::create_network()
@@ -171,7 +171,7 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
                                    min_links_to_include = 3) {
 
 
-  if(is.null(sr_annotated_path) & is.null(sr_annotated_path)) stop("<sr> or <lr> annotated_link tsv file path must be provided!")
+  if(is.null(sr_annotated_path) & is.null(lr_annotated_path)) stop("<sr> or <lr> annotated_link tsv file path must be provided!")
   if(level != 1) if(level != 2) stop('Level must be 1 or 2')
 
   tophits_df_sr = c()
@@ -209,7 +209,10 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
   tophits_df = rbind(tophits_df_sr, tophits_df_lr)
 
   # drop syXsy
-  if(drop_syXsy) tophits_df = tophits_df[-which(tophits_df$links == "syXsy"), ]
+  if(drop_syXsy) {
+    dropidx = which(tophits_df$links == "syXsy")
+    if(length(dropidx) > 0) tophits_df = tophits_df[-dropidx, ]
+  }
   if(drop_indirect) tophits_df = tophits_df[tophits_df$ARACNE == 1, ]
 
 
@@ -268,7 +271,12 @@ create_network_for_gene = function(gene_name, sr_annotated_path = NULL, lr_annot
 
       tophits_df = rbind(tophits_df, tophits_df_sr, tophits_df_lr)
     }
-    if(drop_syXsy) tophits_df = tophits_df[-which(tophits_df$links == "syXsy"), ]
+
+    if(drop_syXsy) {
+      dropidx = which(tophits_df$links == "syXsy")
+      if(length(dropidx) > 0) tophits_df = tophits_df[-dropidx, ]
+    }
+
     if(drop_indirect) tophits_df = tophits_df[tophits_df$ARACNE == 1, ]
 
 

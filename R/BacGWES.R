@@ -144,12 +144,19 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     if(!file.exists(add_path)) dir.create(file.path(dset, "Additional_Outputs"))
   }
 
-  # Additional paths
-  ACGTN_snp_path = file.path(add_path, "snp_ACGTN.rds")
-  if(!is.null(gbk_path)) parsed_gbk_path = file.path(add_path, "parsed_gbk.rds")
-  if(!is.null(gff3_path)) parsed_gff_path = file.path(add_path, "parsed_gff3.rds")
-  cds_var_path = file.path(add_path, "cds_var.rds")
-  hdw_path = file.path(add_path, "hdw.rds")
+  # default paths (will be moved at the end of the run)
+  ACGTN_snp_path = file.path(dset, "snp_ACGTN.rds")
+  if(!is.null(gbk_path)) parsed_gbk_path = file.path(dset, "parsed_gbk.rds")
+  if(!is.null(gff3_path)) parsed_gff_path = file.path(dset, "parsed_gff3.rds")
+  cds_var_path = file.path(dset, "cds_var.rds")
+  hdw_path = file.path(dset, "hdw.rds")
+
+  # a previous computation might exist
+  if(file.exists(file.path(add_path, "snp_ACGTN.rds"))) ACGTN_snp_path = file.path(add_path, "snp_ACGTN.rds")
+  if(!is.null(gbk_path)) if(file.exists(file.path(add_path, "parsed_gbk.rds"))) parsed_gbk_path = file.path(add_path, "parsed_gbk.rds")
+  if(!is.null(gff3_path)) if(file.exists(file.path(add_path, "parsed_gff3.rds"))) parsed_gff_path = file.path(add_path, "parsed_gff3.rds")
+  if(file.exists(file.path(add_path, "cds_var.rds"))) cds_var_path = file.path(add_path, "cds_var.rds")
+  if(file.exists(file.path(add_path, "hdw.rds"))) hdw_path = file.path(add_path, "hdw.rds")
 
   clust_plt_path = file.path(dset, "CDS_clustering.png")
 
