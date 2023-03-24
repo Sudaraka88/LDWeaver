@@ -30,7 +30,7 @@ create_network_for_gene(
 
 \item{separator}{break pattern in annotation (default = ":", this is the default used by SnpEff)}
 
-\item{min_links_to_include}{specify the minimum number of links required to retain the node in the plot (default = 2)}
+\item{min_links_to_include}{specify the minimum number of links required to retain the node in the plot (default = 3)}
 }
 \value{
 data_frame to use as input for LDWeaver::create_network()

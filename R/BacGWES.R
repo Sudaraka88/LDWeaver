@@ -150,6 +150,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(!is.null(gff3_path)) parsed_gff_path = file.path(dset, "parsed_gff3.rds")
   cds_var_path = file.path(dset, "cds_var.rds")
   hdw_path = file.path(dset, "hdw.rds")
+  gwLDplt_path = file.path(dset, "LD_plot.png")
 
   # a previous computation might exist
   if(file.exists(file.path(add_path, "snp_ACGTN.rds"))) ACGTN_snp_path = file.path(add_path, "snp_ACGTN.rds")
@@ -289,6 +290,13 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
                                                 perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
   }
 
+
+
+  # BLK12
+  cat("\n\n #################### BLOCK 6 #################### \n\n")
+  LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
+                             plot_title = paste("GW-LD:", dset),
+                             plot_save_path = gwLDplt_path, links_from_spydrpick = F)
   # if(file.exists(lr_save_path)){
   #   # lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
   #   # colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
@@ -304,12 +312,12 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
 
   # BLK6
-  cat("\n\n #################### BLOCK 6 #################### \n\n")
+  cat("\n\n #################### BLOCK 7 #################### \n\n")
   # order links will be false for analyses that require further analysis, make_gwes_plots() will order the links before plotting
   LDWeaver::make_gwes_plots(lr_links = NULL, sr_links = sr_links, plt_folder = dset, are_srlinks_ordered = order_links)
 
   # BLK7
-  cat("\n\n #################### BLOCK 7 #################### \n\n")
+  cat("\n\n #################### BLOCK 8 #################### \n\n")
   if(SnpEff_Annotate == F){
     cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
     return()
@@ -322,7 +330,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
                                                    tophits_path = tophits_path, max_tophits = max_tophits)
   } else {
     cat("Loading previous top hits \n")
-    tophits = read.table(tophits_path, sep = '\t', header = T)
+    tophits = LDWeaver::read_TopHits(top_hits_path = tophits_path)
   }
 
   # Additional paths if annotations are requested
@@ -334,23 +342,22 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
   # NetworkPlot
   netplot_path = file.path(dset, "SR_network_plot.png")
-  gwLDplt_path = file.path(dset, "LD_plot.png")
 
   # BLK8
-  cat("\n\n #################### BLOCK 8 #################### \n\n")
+  cat("\n\n #################### BLOCK 9 #################### \n\n")
   LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
 
   # BLK9
-  cat("\n\n #################### BLOCK 9 #################### \n\n")
+  cat("\n\n #################### BLOCK 10 #################### \n\n")
   LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
 
   # BLK10
-  cat("\n\n #################### BLOCK 10 #################### \n\n")
+  cat("\n\n #################### BLOCK 11 #################### \n\n")
   LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
 
   if(!perform_SR_analysis_only){
     # BLK11
-    cat("\n\n #################### BLOCK 11 #################### \n\n")
+    cat("\n\n #################### BLOCK 12 #################### \n\n")
     if(SnpEff_Annotate){
       if( !(  (file.exists(file.path(dset, "lr_tophits.tsv"))) | (file.exists(file.path(dset, "Tophits/lr_tophits.tsv"))) ) ) { # if the annotated_links file exists, no need to run again
         LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
@@ -366,16 +373,16 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
       }
     }
 
-    # BLK12
-    cat("\n\n #################### BLOCK 12 #################### \n\n")
-    LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
-                               plot_title = paste("GW-LD:", dset),
-                               plot_save_path = gwLDplt_path, links_from_spydrpick = F)
+    # # BLK12
+    # cat("\n\n #################### BLOCK 12 #################### \n\n")
+    # LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
+    #                            plot_title = paste("GW-LD:", dset),
+    #                            plot_save_path = gwLDplt_path, links_from_spydrpick = F)
   }
 
 
   # BLK13
-  cat("\n\n########### BLOCK 13 #################### \n\n")
+  # cat("\n\n########### BLOCK 13 #################### \n\n")
   LDWeaver::cleanup(dset = dset, delete_after_moving = F)
 
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

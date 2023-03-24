@@ -8,9 +8,11 @@ genomewide_LDMap(
   lr_links_path,
   sr_links_path,
   plot_save_path,
-  plot_title = NULL,
   reducer = NULL,
-  links_from_spydrpick = F
+  plot_title = NULL,
+  links_from_spydrpick = F,
+  from = NULL,
+  to = NULL
 )
 }
 \arguments{
@@ -20,12 +22,14 @@ genomewide_LDMap(
 
 \item{plot_save_path}{path to save the LD Map}
 
-\item{plot_title}{title for the LD Map (default = NULL)}
-
 \item{reducer}{positive value used to reduce the LDMap size (default = NULL, will use length(positions)/1e3).
 The default paramter should work well, reducing the parameter will increase resolution at the cost of resources.}
 
+\item{plot_title}{title for the LD Map (default = NULL)}
+
 \item{links_from_spydrpick}{are the links computed using spydrpick (default = F)}
+
+\item{to}{}
 }
 \description{
 Function to generate the bird's-eye view of the genomewide LD structure (measured as weighted-MI)
