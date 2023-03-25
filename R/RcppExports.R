@@ -33,3 +33,7 @@
     .Call('_LDWeaver_extractRef', PACKAGE = 'LDWeaver', file)
 }
 
+.readFasta <- function(file, pos_len) {
+    .Call('_LDWeaver_readFasta', PACKAGE = 'LDWeaver', file, pos_len)
+}
+

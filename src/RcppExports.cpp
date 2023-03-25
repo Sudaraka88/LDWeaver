@@ -117,6 +117,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// readFasta
+List readFasta(std::string file, int pos_len);
+RcppExport SEXP _LDWeaver_readFasta(SEXP fileSEXP, SEXP pos_lenSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< int >::type pos_len(pos_lenSEXP);
+    rcpp_result_gen = Rcpp::wrap(readFasta(file, pos_len));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_LDWeaver_ACGTN2num", (DL_FUNC) &_LDWeaver_ACGTN2num, 3},
@@ -127,6 +139,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LDWeaver_extractAlnParam", (DL_FUNC) &_LDWeaver_extractAlnParam, 4},
     {"_LDWeaver_extractSNPs", (DL_FUNC) &_LDWeaver_extractSNPs, 4},
     {"_LDWeaver_extractRef", (DL_FUNC) &_LDWeaver_extractRef, 1},
+    {"_LDWeaver_readFasta", (DL_FUNC) &_LDWeaver_readFasta, 2},
     {NULL, NULL, 0}
 };
 

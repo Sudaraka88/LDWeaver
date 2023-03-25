@@ -29,7 +29,9 @@ The default paramter should work well, reducing the parameter will increase reso
 
 \item{links_from_spydrpick}{are the links computed using spydrpick (default = F)}
 
-\item{to}{}
+\item{from}{draw the plot within the region starting <from> (default = NULL)}
+
+\item{to}{draw the plot within the region ending in <to> (default = NULL)}
 }
 \description{
 Function to generate the bird's-eye view of the genomewide LD structure (measured as weighted-MI)
