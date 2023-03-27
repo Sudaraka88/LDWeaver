@@ -6,6 +6,7 @@
 #' @importFrom phytools midpoint.root
 #' @importFrom ggtree ggtree gheatmap
 #' @importFrom ggplot2 ggsave scale_fill_viridis_d
+#' @importFrom ggnewscale new_scale_fill
 #'
 #' @param tree_path Path to tree file (must be readable using ape::read.tree). tip.labels must exactly match the sequence names in the fasta and metadata files.
 #' @param perform_midpoint_rooting Specify wheter the tree should be midpoint rooted (default = T)
@@ -215,7 +216,7 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
   if(nrow(df5) > 0){
     p = ggtree::gheatmap(p, df5, offset = offset_metadata, width = width_metadata, colnames_angle = 0, hjust = 0) +
       ggplot2::scale_fill_viridis_d(option="C", name="Metadata")
-    p = p + new_scale_fill()
+    p = p + ggnewscale::new_scale_fill()
   }
 
 

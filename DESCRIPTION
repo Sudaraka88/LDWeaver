@@ -18,6 +18,7 @@ Imports:
          fitdistrplus,
          genbankr,
          GenomicRanges,
+         ggnewscale,
          ggplot2,
          ggtree,
          ggraph,
