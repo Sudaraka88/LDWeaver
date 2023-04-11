@@ -2,7 +2,7 @@
 #'
 #' Function to parse the genbank file for the fasta alignment.
 #'
-#' @importFrom genbankr import getSeq
+#' @importFrom genbankr readGenBank getSeq
 #'
 #' @param gbk_path path to genbank file
 #' @param g sequence length, available from the LDWeaver::parse_fasta_alignment() output (default = NULL),
@@ -32,7 +32,8 @@ parse_genbank_file = function(gbk_path, g = NULL, length_check = T){
 
   if(!file.exists(gbk_path)) stop(paste("Can't locate file", gbk_path))
 
-  gbk = suppressWarnings(genbankr::import(gbk_path))
+  # gbk = suppressWarnings(genbankr::import(gbk_path))
+  gbk = suppressWarnings(genbankr::readGenBank(gbk_path))
   refseq = genbankr::getSeq(gbk)
   if(length(refseq) != 1){
     stop("The GBK file should contain the reference sequence!\n")
