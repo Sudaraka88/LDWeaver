@@ -59,6 +59,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
   #TODO: Add the option to provide genbank file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
+  #TODO: Add the option to give spydrpick links directly to the pipeline instead of performing LR analysis
 
   # # Welcome message
   # timestamp()
@@ -292,19 +293,17 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
 
 
-  # BLK12
-  cat("\n\n #################### BLOCK 6 #################### \n\n")
-  LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
-                             plot_title = paste("GW-LD:", dset),
-                             plot_save_path = gwLDplt_path, links_from_spydrpick = F)
-  # if(file.exists(lr_save_path)){
-  #   # lr_links = read.table(lr_save_path) # This is written as a tsv file, need to load for plotting
-  #   # colnames(lr_links) = c("pos1", "pos2", "c1", "c2", "len", "MI")
-  #   lr_links = NULL # in case lr_links are not available
-  #   # print("Long-range GWES links will not be analysed in this pipeline, use LDWeaver::analyse_long_range_links()")
-  # } else {
-  #   lr_links = NULL # in case lr_links are not available
-  # }
+  # BLK6
+  # there is no way to provide a genomewide LD map if LR analysis is not provided with the pipeline, can plot later with spydrpick links
+  if(!perform_SR_analysis_only){
+    cat("\n\n #################### BLOCK 6 #################### \n\n")
+    LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
+                               plot_title = paste("GW-LD:", dset),
+                               plot_save_path = gwLDplt_path, links_from_spydrpick = F)
+  } else {
+    cat("Genomewide LD map cannot be plotted with only the short_range analysis. If SpydrPick links are avaialble, use LDWeaver::genomewide_LDMap()")
+  }
+
 
   if(nrow(sr_links) == 0){
     stop("No potentially important sr_links were identified! Cannot continue analysis...")
