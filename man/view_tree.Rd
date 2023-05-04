@@ -8,12 +8,12 @@ view_tree(
   tree_path,
   perform_midpoint_rooting = T,
   metadata_df = NULL,
+  fasta_path,
+  pos_file_path,
   lr_tophits_path = NULL,
-  lr_fasta_path = NULL,
-  lr_pos_path = NULL,
+  lr_annotated_links_path = NULL,
   sr_tophits_path = NULL,
-  sr_fasta_path = NULL,
-  sr_pos_path = NULL,
+  sr_annotated_links_path = NULL,
   ntop_links = 10,
   from = NULL,
   to = NULL,
@@ -33,17 +33,17 @@ view_tree(
 
 \item{metadata_df}{data.frame with metadata. Must contain a column labelled 'id' that exactly matches the sequence names in the fasta file and tip.labels of the tree.}
 
-\item{lr_tophits_path}{Path to Tophits/lr_tophits.tsv file.If LR link tophits should be visualised, the two lr_files (below) must also be provided here.}
+\item{fasta_path}{fasta file comprising the sites associated with links}
 
-\item{lr_fasta_path}{Path to LR_GWESExplorer/snps.aln file.}
+\item{pos_file_path}{position file containing fasta sites}
 
-\item{lr_pos_path}{Path to LR_GWESExplorer/snps.loci file.}
+\item{lr_tophits_path}{Path to the lr_tophits file (typically Tophits/lr_tophits.tsv).}
 
-\item{sr_tophits_path}{Path to Tophits/sr_tophits.tsv file. If SR link tophits should be visualised, the two sr_files (below) must also be provided here.}
+\item{lr_annotated_links_path}{Path to the lr_annotated_links file (typically Annotated_links/lr_links_annotated.tsv).}
 
-\item{sr_fasta_path}{Path to SR_GWESExplorer/snps.aln file.}
+\item{sr_tophits_path}{Path to the lr_tophits file (typically Tophits/sr_tophits.tsv).}
 
-\item{sr_pos_path}{Path to SR_GWESExplorer/snps.loci file.}
+\item{sr_annotated_links_path}{Path to the sr_annotated_links file (typically Annotated_links/sr_links_annotated.tsv).}
 
 \item{ntop_links}{Specify the number of links to plot from tophits file(s). ntop_links will be selected from each file if both LR and SR links should be visualised (default = 10).}
 
@@ -66,7 +66,10 @@ view_tree(
 \item{plot_width}{if saving, specify the plot height in inches (default = 15). Modify these numbers to tune the plot dimensions as required.}
 }
 \description{
-Function to generate the bird's-eye view of the genomewide LD structure (measured as weighted-MI)
+Function to visualise allele distributions and metadata aligned below the tree. The tree file must be readable with ape::read.tree() and <tip.labels> must match the sequence names in the
+provided fasta file(s). Besides the tree file, this function requires minimum three inputs: (1) a links file, (2) a SNP fasta alignment and (3) a position <text> file with each row containing
+the genomic positions of the fasta alignment. The links file is straightforward: it can be either one of <Tophits> or the <Annotated_links> files, both short and long range links
+can be provided. The fasta/position file combo can be generated using LDWeaver::generate_Links_SNPS_fasta(). If metadata is available, they can be visualised along with the allele data in a separate panel.
 }
 \examples{
 \dontrun{

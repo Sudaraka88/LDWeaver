@@ -131,6 +131,11 @@ genomewide_LDMap = function(lr_links_path, sr_links_path, plot_save_path, reduce
 }
 
 #' ._legendfun2
+#' @param legend legend
+#' @param lwd lwd
+#' @param cex cex
+#' @param col col
+#' @param ... ...
 ._legendfun2 <- function (legend = c("Group A", "Group B"), lwd = 3, cex = 1.1,
                         col = c("red", "blue"), ...) {
   plot(0, xaxt = "n", bty = "n", yaxt = "n", type = "n", xlab = "",

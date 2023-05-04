@@ -12,6 +12,17 @@
   ...
 )
 }
+\arguments{
+\item{legend}{legend}
+
+\item{lwd}{lwd}
+
+\item{cex}{cex}
+
+\item{col}{col}
+
+\item{...}{...}
+}
 \description{
 ._legendfun2
 }

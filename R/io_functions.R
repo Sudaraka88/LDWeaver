@@ -313,3 +313,112 @@ cleanup_support = function(files, fldr){
   }
 }
 
+#' snpdat_to_fa
+#'
+#' Create a SNP only fasta or tsv file from snp.dat. The user has the option to include only chosen positions.
+#'
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment(), generally saved to Additional_Outputs/snp_ACGTN.rds
+#' @param aln_path path to save output fasta file or tsv file
+#' @param pos_path path to write the SNP positions, only required for format = "fasta" (default = NULL)
+#' @param pos set of loci to be included in the saved alignment (default = NULL - save everything). <pos> should be a numeric vector comprising a subset of sites in snp.dat$POS and cannot contain duplicates
+#' @param format Output can be presented as a standard fasta file, or an optional tsv (default = "fasta")
+#'
+#' @export
+snpdat_to_fa = function(snp.dat, aln_path, pos_path = NULL, pos = NULL, format = "fasta"){
+  t0 = Sys.time()
+  # sanity check
+  if(format != "fasta" & format != "tsv") {
+    warning(paste("Format", format, "unsupported, has to be: <fasta> or <tsv>. Changed to default <fasta>"))
+    format = "fasta"
+  }
+
+  if(format == "fasta" & is.null(pos_path)) stop("Saving in fasta format requires a path for the pos file <pos_path>")
+
+  snps_idx = c()
+  if(is.null(pos)){ # use all positions
+    snps_idx = 1:length(snp.dat$POS)
+    pos = snp.dat$POS
+  } else { # search through snp.dat$POS for pos value and extract index
+    pos = sort(pos)
+    if(any(duplicated(sort(pos)))) stop("Duplicated entries found in pos")
+    duplicated(pos)
+    for(i in 1:length(pos)){
+      idx = which(snp.dat$POS %in% pos[i])
+      if(length(idx) != 1) stop(paste("pos=", pos[i], "cannot be extracted from snp.dat"))
+      snps_idx = c(snps_idx, idx)
+    }
+    # snps_idx = sapply(pos, function(x) which(snp.dat$POS %in% x))
+  }
+
+  cat("Converting... ")
+  fasta = matrix(rep(NA, snp.dat$nseq*length(snps_idx)), nrow = length(snps_idx))
+  tidx = Matrix::which(snp.dat$snp.matrix_A[snps_idx,] == TRUE); if(length(tidx) > 0) fasta[tidx] = "A"
+  tidx = Matrix::which(snp.dat$snp.matrix_C[snps_idx,] == TRUE); if(length(tidx) > 0) fasta[tidx] = "C"
+  tidx = Matrix::which(snp.dat$snp.matrix_G[snps_idx,] == TRUE); if(length(tidx) > 0) fasta[tidx] = "G"
+  tidx = Matrix::which(snp.dat$snp.matrix_T[snps_idx,] == TRUE); if(length(tidx) > 0) fasta[tidx] = "T"
+  tidx = Matrix::which(snp.dat$snp.matrix_N[snps_idx,] == TRUE); if(length(tidx) > 0) fasta[tidx] = "N"
+  fasta = t(fasta)
+
+  cat("Writing... ")
+  # write fasta+pos file
+  if(format == "fasta"){
+    for(i in 1:snp.dat$nseq){
+      write.table(paste(">", snp.dat$seq.names[i], sep = ""), aln_path, quote = F, col.names = F, row.names = F, append = T)
+      write.table(paste(fasta[i,], collapse = ""), aln_path, quote = F, col.names = F, row.names = F, append = T)
+    }
+    write.table(x = pos, file = pos_path, quote = F, col.names = F, row.names = F)
+  } else if(format == "tsv"){
+    # write tsv file
+    rownames(fasta) = snp.dat$seq.names
+    colnames(fasta) = pos
+    write.table(fasta, "linkSites.tsv", sep = "\t", quote = F)
+
+  } else {
+    stop(paste("unknown save format", format)) # can't come here
+  }
+  cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
+
+}
+
+#' generate_Links_SNPS_fasta
+#'
+#' Create a link SNP only fasta file. This file is required to generate (detailed) tree plots
+#'
+#' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment(), generally saved to Additional_Outputs/snp_ACGTN.rds
+#' @param aln_path path to save output fasta file
+#' @param pos_path path to write the SNP positions
+#' @param lr_tophits_path path to the lr_tophits file (typically Tophits/lr_tophits.tsv).
+#' @param lr_annotated_links_path path to the lr_annotated_links file (typically Annotated_links/lr_links_annotated.tsv).
+#' @param sr_tophits_path path to the lr_tophits file (typically Tophits/sr_tophits.tsv).
+#' @param sr_annotated_links_path path to the sr_annotated_links file (typically Annotated_links/sr_links_annotated.tsv).
+
+#' @export
+generate_Links_SNPS_fasta = function(snp.dat, aln_path, pos_path, lr_tophits_path = NULL, lr_annotated_links_path = NULL,
+                                     sr_tophits_path = NULL, sr_annotated_links_path = NULL){
+
+  if(is.null(lr_tophits_path) & is.null(lr_annotated_links_path) & is.null(sr_tophits_path) & is.null(sr_annotated_links_path)) stop("At least one links file must be provided")
+
+  pos = c()
+  if(!is.null(lr_tophits_path)) {
+    temp = LDWeaver::read_TopHits(normalizePath(lr_tophits_path))
+    pos = c(pos, temp$pos1, temp$pos2)
+  }
+  if(!is.null(sr_tophits_path)) {
+    temp = LDWeaver::read_TopHits(normalizePath(sr_tophits_path))
+    pos = c(pos, temp$pos1, temp$pos2)
+  }
+  if(!is.null(lr_annotated_links_path)) {
+    temp = LDWeaver::read_AnnotatedLinks(normalizePath(lr_annotated_links_path))
+    pos = c(pos, temp$pos1, temp$pos2)
+  }
+  if(!is.null(sr_annotated_links_path)) {
+    temp = LDWeaver::read_AnnotatedLinks(normalizePath(sr_annotated_links_path))
+    pos = c(pos, temp$pos1, temp$pos2)
+  }
+
+  pos = sort(pos); pos = pos[!duplicated(pos)]
+
+  LDWeaver::snpdat_to_fa(snp.dat = snp.dat, aln_path = aln_path, pos_path = pos_path, pos = pos, format = "fasta")
+
+
+}
