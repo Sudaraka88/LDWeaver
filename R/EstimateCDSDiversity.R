@@ -192,7 +192,9 @@ prepare_cluster_plot = function(cds_var, clust_plt_path){
   POS = Variation = Cluster = NULL
   clust_df = data.frame(POS = cds_var$cds_start, Variation = cds_var$var_estimate,
                         Cluster = factor(cds_var$clusts$km_clst_ord))
-  p_clust = ggplot2::ggplot(data = clust_df) + ggplot2::geom_point(ggplot2::aes(x = POS, y = Variation, col = Cluster))
+  p_clust = ggplot2::ggplot(data = clust_df) +
+    ggplot2::geom_point(ggplot2::aes(x = POS, y = Variation, col = Cluster)) +
+    ggplot2::xlab("Genomic starting position of CDS") + ggplot2::ylab("Diversity within CDS")
   ggplot2::ggsave(plot = p_clust, filename = clust_plt_path, width = 2200, height = 1200, units = "px")
 
 }

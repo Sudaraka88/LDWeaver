@@ -106,7 +106,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 1), ], ggplot2::aes(x = len, y = MI, col = srp_max)) +
       ggplot2::scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
       ggplot2::facet_wrap('~clust_c') +
-      ggplot2::theme_light()
+      ggplot2::theme_light() +
+      ggplot2::xlab("Basepair separation")
 
     sr_segregated_plt_path = file.path(plt_folder, "sr_gwes_clust.png")
     ggplot2::ggsave(plot = p1, filename = sr_segregated_plt_path, width = 2200, height = 1200, units = "px")
@@ -115,7 +116,8 @@ make_gwes_plots = function(lr_links=NULL, sr_links = NULL, plt_folder = NULL, ar
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 0), ], ggplot2::aes(x = len, y = MI), col = "#C0C0C0") +
       ggplot2::geom_point(data = sr_links[which(sr_links$ARACNE == 1), ], ggplot2::aes(x = len, y = MI, col = srp_max)) +
       ggplot2::scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
-      ggplot2::theme_light()
+      ggplot2::theme_light() +
+      ggplot2::xlab("Basepair separation")
 
     sr_combined_plt_path = file.path(plt_folder, "sr_gwes_combi.png")
     ggplot2::ggsave(plot = p2, filename = sr_combined_plt_path, width = 2200, height = 1200, units = "px")

@@ -371,7 +371,7 @@ snpdat_to_fa = function(snp.dat, aln_path, pos_path = NULL, pos = NULL, format =
     # write tsv file
     rownames(fasta) = snp.dat$seq.names
     colnames(fasta) = pos
-    write.table(fasta, "linkSites.tsv", sep = "\t", quote = F)
+    write.table(fasta, aln_path, sep = "\t", quote = F)
 
   } else {
     stop(paste("unknown save format", format)) # can't come here

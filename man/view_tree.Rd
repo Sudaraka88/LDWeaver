@@ -10,6 +10,7 @@ view_tree(
   metadata_df = NULL,
   fasta_path,
   pos_file_path,
+  links_df = NULL,
   lr_tophits_path = NULL,
   lr_annotated_links_path = NULL,
   sr_tophits_path = NULL,
@@ -36,6 +37,9 @@ view_tree(
 \item{fasta_path}{fasta file comprising the sites associated with links}
 
 \item{pos_file_path}{position file containing fasta sites}
+
+\item{links_df}{A data.frame comprising a subset of tophits links, if provided, links are not read from the files. NOTE: Each links must (at a minimum) contain the fields: <pos1> & <pos2>.
+If alleles from the <ntop_links> are to be visualised, ensure that the links_df is sorted such that the most important link is at the top.}
 
 \item{lr_tophits_path}{Path to the lr_tophits file (typically Tophits/lr_tophits.tsv).}
 
@@ -67,9 +71,10 @@ view_tree(
 }
 \description{
 Function to visualise allele distributions and metadata aligned below the tree. The tree file must be readable with ape::read.tree() and <tip.labels> must match the sequence names in the
-provided fasta file(s). Besides the tree file, this function requires minimum three inputs: (1) a links file, (2) a SNP fasta alignment and (3) a position <text> file with each row containing
+provided fasta file(s). Besides the tree file, this function requires minimum three inputs: (1) a links file or data.frame, (2) a SNP fasta alignment and (3) a position <text> file with each row containing
 the genomic positions of the fasta alignment. The links file is straightforward: it can be either one of <Tophits> or the <Annotated_links> files, both short and long range links
-can be provided. The fasta/position file combo can be generated using LDWeaver::generate_Links_SNPS_fasta(). If metadata is available, they can be visualised along with the allele data in a separate panel.
+can be provided. A subset of manually chosen links can also be provided as a data.frame. The fasta/position files can be generated using LDWeaver::generate_Links_SNPS_fasta().
+If metadata is available, they can be visualised along with the allele data in a separate panel.
 }
 \examples{
 \dontrun{

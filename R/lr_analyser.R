@@ -32,7 +32,7 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
                                     links_from_spydrpick = F){
                                     # tanglegram_break_segments = 5){
 
-  # TODO: Add the option to pass in the gbk/gff inputs instead of paths
+  #TODO: We are redoing the SnpEff annotation for long-range links, might be better to do it in one run
   # it makes sense to have a larger max_tophits for long range links - there will be a lot more of long-range links compared to short
   t_global = Sys.time()
 
@@ -123,7 +123,8 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   p1 = ggplot2::ggplot() + ggplot2::geom_point(data = lr_links_red[which(lr_links_red$ARACNE == F), ], ggplot2::aes(x = len, y = MI), col = "#C0C0C0") +
     ggplot2::geom_point(data = lr_links_red[which(lr_links_red$ARACNE == 1), ], ggplot2::aes(x = len, y = MI), col = "#0868ac") +
     ggplot2::geom_hline(yintercept = max(thresholds), col = "#db4325") +
-    ggplot2::theme_light() #+
+    ggplot2::theme_light() +
+    ggplot2::xlab("Basepair separation") #+
   # ggplot2::facet_wrap('~clust')
 
   ggplot2::ggsave(plot = p1, filename = lr_plt_path, width = 4800, height = 1200, units = "px")
@@ -178,7 +179,7 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     cat("\n")
 
     netplot_path = file.path(dset, "lr_network_plot.png")
-    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path)
+    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in long-range tophits for", dset))
 
   }
   cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

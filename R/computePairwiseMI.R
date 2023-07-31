@@ -388,7 +388,9 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff)
     p_cf = ggplot2::ggplot(data = maxvls, ggplot2::aes(x = len)) +
       ggplot2::geom_point(ggplot2::aes(y = max)) +
       ggplot2::geom_line(ggplot2::aes(y = fit), col = "red") +
-      ggplot2::ggtitle(paste("Clust", i))
+      ggplot2::ggtitle(paste("Clust", i)) +
+      ggplot2::xlab("Basepair separation") +
+      ggplot2::ylab("MI (95th percentile)")
 
     # print(summary(maxvls$max))
     # plot(maxvls)

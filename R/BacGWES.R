@@ -352,7 +352,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
   # BLK10
   cat("\n\n #################### BLOCK 11 #################### \n\n")
-  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Genome regions with multiple top-hits in", dset))
+  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in short-range tophits for", dset))
 
   if(!perform_SR_analysis_only){
     # BLK11
@@ -360,7 +360,8 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     if(SnpEff_Annotate){
       if( !(  (file.exists(file.path(dset, "lr_tophits.tsv"))) | (file.exists(file.path(dset, "Tophits/lr_tophits.tsv"))) ) ) { # if the annotated_links file exists, no need to run again
         LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
-                                           gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path)
+                                           gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path,
+                                           validate_ref_ann_lengths = validate_ref_ann_lengths)
       } else {
         cat("Results from previous LR anlayis exist!")
       }

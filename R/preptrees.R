@@ -299,14 +299,14 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
             "\n"))
 
   if(nrow(df5) > 0){
-    p = ggtree::gheatmap(p, df5, offset = offset_metadata, width = width_metadata, colnames_angle = 0, colnames_offset_y =0, hjust = 1) +
+    p = ggtree::gheatmap(p, df5, offset = offset_metadata, width = width_metadata, colnames_angle = 0, colnames_offset_y =0, hjust = 1, color = NA) +
       ggplot2::scale_fill_viridis_d(option="C", name="Metadata")
     p = p + ggnewscale::new_scale_fill()
   }
 
 
   if(nrow(df7) > 0){
-    p = ggtree::gheatmap(p, df7, offset = offset_alleles, width = width_alleles, colnames_angle = 0, colnames_offset_y =0, hjust = 1) +
+    p = ggtree::gheatmap(p, df7, offset = offset_alleles, width = width_alleles, colnames_angle = 0, colnames_offset_y =0, hjust = 1, color = NA) +
       ggplot2::scale_fill_viridis_d(option="H", name="Alleles")
   }
 

@@ -7,7 +7,7 @@
 snpdat_to_fa(snp.dat, aln_path, pos_path = NULL, pos = NULL, format = "fasta")
 }
 \arguments{
-\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
+\item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment(), generally saved to Additional_Outputs/snp_ACGTN.rds}
 
 \item{aln_path}{path to save output fasta file or tsv file}
 
