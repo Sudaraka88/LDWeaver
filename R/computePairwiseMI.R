@@ -51,7 +51,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
   if(is.null(sr_save_path)) sr_save_path = file.path(getwd(), "sr_links.tsv")
-  if(is.null(plt_folder)) plt_folder = file.path(getwd(), "PLOTS");
+  if(is.null(plt_folder)) plt_folder = file.path(getwd(), "PLOTS")
 
   if(!file.exists(plt_folder)) dir.create(plt_folder)
 
@@ -331,6 +331,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
 
 }
 
+# tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1]
 computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, ncores){
   # t0 = Sys.time();
   pxy_t = MatrixExtra::tcrossprod(tX, tY) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx

@@ -21,6 +21,7 @@
 #' @export
 parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
   # Check inputs
+  aln_path = normalizePath(aln_path) # C safety (~ character causes crash)
   if(!file.exists(aln_path)) stop(paste("Can't locate file", aln_path))
 
   if(method == "default") {
