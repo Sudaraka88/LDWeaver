@@ -163,6 +163,11 @@ and can be ignored or safely deleted)
   6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
       annotation pipeline
 
+
+## Citation
+
+To cite LDWeaver please use: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
+
 ## Detailed Workthrough using Real Data
 
 The following analysis demonstrates some of the current options available in
