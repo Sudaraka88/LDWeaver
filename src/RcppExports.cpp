@@ -78,6 +78,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fast_intersect
+std::vector<int> fast_intersect(std::vector<int> A, std::vector<int> B);
+RcppExport SEXP _LDWeaver_fast_intersect(SEXP ASEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<int> >::type A(ASEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_intersect(A, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 // extractAlnParam
 List extractAlnParam(std::string file, int filter, double gap_thresh, double maf_thresh);
 RcppExport SEXP _LDWeaver_extractAlnParam(SEXP fileSEXP, SEXP filterSEXP, SEXP gap_threshSEXP, SEXP maf_threshSEXP) {
@@ -136,6 +148,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LDWeaver_compareToRow", (DL_FUNC) &_LDWeaver_compareToRow, 2},
     {"_LDWeaver_vecPosMatch", (DL_FUNC) &_LDWeaver_vecPosMatch, 2},
     {"_LDWeaver_compareTriplet", (DL_FUNC) &_LDWeaver_compareTriplet, 3},
+    {"_LDWeaver_fast_intersect", (DL_FUNC) &_LDWeaver_fast_intersect, 2},
     {"_LDWeaver_extractAlnParam", (DL_FUNC) &_LDWeaver_extractAlnParam, 4},
     {"_LDWeaver_extractSNPs", (DL_FUNC) &_LDWeaver_extractSNPs, 4},
     {"_LDWeaver_extractRef", (DL_FUNC) &_LDWeaver_extractRef, 1},

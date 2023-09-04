@@ -14,9 +14,7 @@
 #' @importFrom stats quantile coef fitted pbeta
 #' @importFrom utils write.table
 #' @importFrom RcppArmadillo fastLm
-#' @importFrom Rfast2 Intersect
 #' @importFrom utils txtProgressBar
-#' @importFrom Rfast2 Quantile
 #'
 #' @param snp.dat output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()
 #' @param hdw vector of Hamming distance weights, output from LDWeaver::estimate_Hamming_distance_weights()
@@ -300,7 +298,8 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
     # Following prob works well for most cases where n_lr_links_total >> lr_retain_links (i.e. save 1M out of 1B),
     # set the maximum to 0 (i.e. no negative values), should we set the max to 1 if prob > 1
     prob = max(c(0, (1 - ((lr_retain_links * (n_lr_links / lr_links_approx)) / n_lr_links))))
-    disc_thresh = Rfast2::Quantile(MI_df_lr$MI, probs = prob)
+    # disc_thresh = Rfast2::Quantile(MI_df_lr$MI, probs = prob)
+    disc_thresh = stats::quantile(MI_df_lr$MI, probs = prob)
     len_filt = MI_df_lr$MI >= disc_thresh
     cat(paste("... Adding ", sum(len_filt) ," LR links with MI>",round(disc_thresh, 3) ," to file ...", sep = "")) # debug
     if(!all(len_filt == FALSE)){
@@ -378,7 +377,7 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff)
     sr_links_t = sr_links_t[(sr_links_t$len > 0), ]
 
     # colnames(sr_links_t) = c("len", "MI")
-    maxvls = sr_links_t %>% dplyr::group_by(len) %>% dplyr::summarise(max = quantile(MI, 0.95))
+    maxvls = sr_links_t %>% dplyr::group_by(len) %>% dplyr::summarise(max = stats::quantile(MI, 0.95))
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
 

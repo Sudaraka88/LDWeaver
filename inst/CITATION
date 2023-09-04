@@ -1,0 +1,23 @@
+citHeader("If you use and find LDWeaver useful, please cite:")
+
+citEntry(entry = "Article",
+title        = "Detecting co-selection through excess linkage disequilibrium in bacterial genomes",
+author       = personList(as.person("Sudaraka Mallawaarachchi"),
+                 as.person("Gerry Tonkin-Hill"),
+                 as.person("Anna K. Pöntinen"),
+                 as.person("Jessica K. Calland"),
+                 as.person("Rebecca A. Gladstone"),
+                 as.person("Sergio Arredondo-Alonso"),
+                 as.person("Neil MacAlasdair"),
+                 as.person("Janetta Top"),
+                 as.person("Samuel K. Sheppard"),
+                 as.person("David Balding"),
+                 as.person("Nicholas J. Croucher"),
+                 as.person("Jukka Corander")),
+journal      = "bioRxiv",
+year         = "2023",
+pages        = "2023.08.04.551407",
+url          = "https://doi.org/10.1101/2023.08.04.551407",
+
+textVersion  = "Sudaraka Mallawaarachchi et al. (2023) Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv https://doi.org/10.1101/2023.08.04.551407."
+)

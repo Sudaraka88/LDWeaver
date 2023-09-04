@@ -21,6 +21,10 @@
     .Call('_LDWeaver_compareTriplet', PACKAGE = 'LDWeaver', MI0X, MI0Z, MI0)
 }
 
+.fast_intersect <- function(A, B) {
+    .Call('_LDWeaver_fast_intersect', PACKAGE = 'LDWeaver', A, B)
+}
+
 .extractAlnParam <- function(file, filter, gap_thresh, maf_thresh) {
     .Call('_LDWeaver_extractAlnParam', PACKAGE = 'LDWeaver', file, filter, gap_thresh, maf_thresh)
 }

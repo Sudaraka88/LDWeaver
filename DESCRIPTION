@@ -1,7 +1,7 @@
 Package: LDWeaver
 Type: Package
 Title:Genomewide Epistasis Analysis on Bacteria
-Version: 1.0
+Version: 1.1
 Authors@R: person("Sudaraka", "Mallawaarachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
 Maintainer: Sudaraka Mallawaarachchi <smallawaarachchi@gmail.com>
 Description:Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
@@ -35,7 +35,6 @@ Imports:
          RColorBrewer,
          Rcpp,
          RcppArmadillo,
-         Rfast2,
          stats,
          utils
 LinkingTo: Rcpp, RcppArmadillo
@@ -43,3 +42,4 @@ RoxygenNote: 7.2.3
 URL: https://github.com/Sudaraka88/LDWeaver
 BugReports: https://github.com/Sudaraka88/LDWeaver/issues
 Biarch: TRUE
+SystemRequirements: C++11

@@ -2,7 +2,7 @@
 #'
 #' Function to analyse long range links. These links can be computed using LDWeaver or Spydrpick (faster). Spydrpick is recommended for larger datasets.
 #'
-#' @importFrom Rfast2 Quantile
+#' @importFrom stats quantile
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>, possible to use the same dset name used for the short-range analysis
 #' @param lr_links_path path to saved LR links, generally called <lr_links.tsv> or the SpydrPick edges (links) file
@@ -73,7 +73,8 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   # sr_links = LDWeaver::readShortRangeLinks(sr_links_path)
   cat("Done \n ")
 
-  q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Quantiles
+  # q13 = Rfast2::Quantile(lr_links$MI, probs = c(0.25, 0.75)) # Quantiles
+  q13 = stats::quantile(lr_links$MI, probs = c(0.25, 0.75))
   IQR = diff(q13)
   thresholds = q13[2] + c(1.5, 3)*IQR
 
@@ -95,7 +96,8 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   # The plot looks really bad if we don't have enough LR links, it'll be a good idea to increase the links in lr_links_red in case it's too small
   if(nrow(lr_links_red) < 5000 & nrow(lr_links) >= 5000){
     warning("Not enough lr links pass the Tukey criteria, ~5000 top links were retained instead")
-    thresholds = Rfast2::Quantile(lr_links$MI, probs = (1- (1/nrow(lr_links)*c(4000, 5000))) )
+    # thresholds = Rfast2::Quantile(lr_links$MI, probs = (1- (1/nrow(lr_links)*c(4000, 5000))) )
+    thresholds = stats::quantile(lr_links$MI, probs = (1- (1/nrow(lr_links)*c(4000, 5000))) )
     lr_links_red = lr_links[lr_links$MI > min(thresholds), ] # we only care about outliers
   }
 

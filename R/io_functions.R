@@ -86,7 +86,6 @@ read_AnnotatedLinks = function(annotated_links_path){
 #' runARACNE
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
-#' @importFrom Rfast2 Intersect
 #'
 #' @param links_to_check data.frame comprising subset of links to run ARACNE on
 #' @param links_full data.frame with all links
@@ -129,9 +128,30 @@ runARACNE = function(links_to_check, links_full){
     idZ = which(.compareToRow(pos_mat, pZ)) #decodeIndex(index[[Z]])
     matZ = c(rbind(pos_mat[idZ,1], pos_mat[idZ,2])); matZ = matZ[matZ != pZ]
 
-    comXZ = Rfast2::Intersect(matX, matZ) # either of matX or matZ should change for a new link, cannot skip!
+    # comXZ = Rfast2::Intersect(matX, matZ) # either of matX or matZ should change for a new link, cannot skip!
+    # comXZ = matZ[LDWeaver:::.fast_intersect(matX, matZ)+1] # replacement function
+    comXZ = .fast_intersect(matX, matZ) # replacement function
+
+    ##############
+    # temporary check block to evaluate .fast_intersect accuracy
+    # comXZ2 = intersect(matX, matZ)
+    # if(length(comXZ) == 0 & length(comXZ) == 0){ # This is fine
+    #
+    # } else {
+    #   if(length(comXZ) != length(comXZ2)){ # values chosen wrongly
+    #     warning(paste("length mismatch: .fast_intersect", comXZ, "intersect", comXZ2))
+    #   } else { # this is fine
+    #     if(all(comXZ != sort(comXZ2))){
+    #       warning(paste("val mismatch: .fast_intersect", comXZ, "intersect", comXZ2))
+    #       cat("matX", matX)
+    #       cat("matZ", matZ)
+    #     }
+    #   }
+    # }
+    ##############
 
     if(length(comXZ) > 0){ # These are the only links
+
       MI0X = MIs[idX[.vecPosMatch(comXZ, matX)], 1]
       MI0Z = MIs[idZ[.vecPosMatch(comXZ, matZ)], 1]
       ARACNE[i] = .compareTriplet(MI0X, MI0Z, MIs_chk[i,1])
@@ -139,7 +159,7 @@ runARACNE = function(links_to_check, links_full){
   }
   close(pb)
   cat(paste("\nDone in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
-  table(ARACNE)
+  # table(ARACNE)
   return(ARACNE)
 }
 
