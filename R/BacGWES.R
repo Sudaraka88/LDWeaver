@@ -223,7 +223,7 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(!is.null(gbk_path)){ # genbank file format
     gff = NULL # alternative set to NULL
     if(!file.exists(parsed_gbk_path)) {
-      cat("Reading the GBK file \n")
+      cat(paste("Reading the GBK file, validate_length_check = ", validate_ref_ann_lengths, "\n"))
       gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
       if(save_additional_outputs){
         saveRDS(gbk, parsed_gbk_path)
