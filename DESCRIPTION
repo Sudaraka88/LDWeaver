@@ -1,7 +1,7 @@
 Package: LDWeaver
 Type: Package
 Title:Genomewide Epistasis Analysis on Bacteria
-Version: 1.1
+Version: 1.1.1
 Authors@R: person("Sudaraka", "Mallawaarachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
 Maintainer: Sudaraka Mallawaarachchi <smallawaarachchi@gmail.com>
 Description:Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
