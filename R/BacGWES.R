@@ -12,7 +12,8 @@
 #' @param ref_fasta_path path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
 #' not required for genbank annotations if the file contains the reference sequence.
 #' @param validate_ref_ann_lengths check if the gbk reference sequence length matches the with fasta alignment (default = T)
-#' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')
+#' @param snp_filt_method specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default'). Unlike default, relaxed mode considers ambiguous/gap characters (N) as minor alleles when applying the
+#' maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively dropped and allowed by 'default' and 'relaxed' methods.
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
 #' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F

@@ -44,7 +44,8 @@ not required for genbank annotations if the file contains the reference sequence
 
 \item{validate_ref_ann_lengths}{check if the gbk reference sequence length matches the with fasta alignment (default = T)}
 
-\item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default')}
+\item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default'). Unlike default, relaxed mode considers ambiguous/gap characters (N) as minor alleles when applying the
+maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively dropped and allowed by 'default' and 'relaxed' methods.}
 
 \item{gap_freq}{sites with a gap frequency >gap_greq will be dropped (default = 0.15)}
 

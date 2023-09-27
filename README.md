@@ -3,6 +3,7 @@
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
 [![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
+[![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
 # LDWeaver
@@ -22,13 +23,34 @@ can be directly used as input for
 for dynamic link visualisation.
 
 ## Installation
-
-`LDWeaver` is currently available on github. It can be installed with
+### Using `devtools`
+`LDWeaver` is available on github. It can be installed with
 `devtools`
 
 ``` r
 install.packages("devtools")
 devtools::install_github("Sudaraka88/LDWeaver")
+```
+### Using `bioconda`
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/r-ldweaver/badges/version.svg)](https://anaconda.org/bioconda/r-ldweaver)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/r-ldweaver/badges/latest_release_date.svg)](https://anaconda.org/bioconda/r-ldweaver)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/r-ldweaver/badges/platforms.svg)](https://anaconda.org/bioconda/r-ldweaver)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/r-ldweaver/badges/downloads.svg)](https://anaconda.org/bioconda/r-ldweaver)
+
+*Preferred Method - using* `mamba` 
+
+If you haven't already, first, you need to install <a href="https://mamba.readthedocs.io/en/latest/mamba-installation.html#mamba-install" target="_blank">mamba</a>. Afterwards, create a new environment and install `r-ldweaver`:
+```conda
+conda create -n r-ldweaver
+conda activate r-ldweaver
+mamba install -c bioconda -c conda-forge r-ldweaver
+```
+
+Alternatively, you can use <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation" target="_blank">conda</a>.
+```conda
+conda create -n r-ldweaver
+conda activate r-ldweaver
+conda install -c bioconda -c conda-forge r-ldweaver
 ```
 
 ## Quick Start
