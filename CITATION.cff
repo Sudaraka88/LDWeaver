@@ -1,13 +1,13 @@
 cff-version: 1.2.0
-message: "If you find LDWeaver helpful, please cite it as below."
+message: If you find LDWeaver helpful, please cite it as below.
+title: LDWeaver
 authors:
-- family-names: "Mallawaarachchi"
-  given-names: "Sudaraka"
-  orcid: "https://orcid.org/0000-0001-8899-3323"
-title: "LDWeaver"
+  - family-names: Mallawaarachchi
+    given-names: Sudaraka
+    orcid: "https://orcid.org/0000-0001-8899-3323"
 version: 1.1.1
-doi: 10.5281/zenodo.8320435
-date-released: 2023-09-07
+doi: "10.5281/zenodo.8320435"
+date-released: "2023-09-07"
 url: "https://github.com/Sudaraka88/LDWeaver"
 preferred-citation:
   type: article
