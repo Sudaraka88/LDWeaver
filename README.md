@@ -43,14 +43,14 @@ If you haven't already, first, you need to install <a href="https://mamba.readth
 ```conda
 conda create -n r-ldweaver
 conda activate r-ldweaver
-mamba install -c bioconda -c conda-forge r-ldweaver
+mamba install -c conda-forge -c bioconda r-ldweaver
 ```
 
 Alternatively, you can use <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation" target="_blank">conda</a>.
 ```conda
 conda create -n r-ldweaver
 conda activate r-ldweaver
-conda install -c bioconda -c conda-forge r-ldweaver
+conda install -c conda-forge -c bioconda r-ldweaver
 ```
 
 ## Quick Start
