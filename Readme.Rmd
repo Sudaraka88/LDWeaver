@@ -27,14 +27,15 @@ devtools::install_github("Sudaraka88/LDWeaver")
 ```
 
 ## Quick Start
-To run LDWeaver, all you need is a fasta alignment (can be gz compressed) and the corresponding genbank annotation file with the reference sequence. A toy dataset is provided in the package itself to confirm that everything is setup correctly.
+To run LDWeaver, all you need is a Fasta multi-sequence alignment (can be gz compressed) and the corresponding genbank annotation file with the reference sequence. You can also use a SNP-only alignment (can be generated from <a href="http://sanger-pathogens.github.io/snp-sites/" target="_blank">snp-sites</a> or <a href="https://github.com/Sudaraka88/FastaR" target="_blank">FastaR</a>) with a numeric vector of SNP positions as per the reference genome. 
+
+A toy dataset is provided in the package itself to confirm that everything is setup correctly.
 
 >**Note** For GWES analysis, it is recommended to use an alignment with a large number of sequences (>500). Such alignments can be several gigabytes in size and not suitable to bundle into an R package.
 
-The toy alignment comprises the first 50kb of 400 *S. pnuemoniae* isolates (randomy selected from the 616 reported <a href="https://www.nature.com/articles/ng.2625" target="_blank">here</a>). The reads were aligned against the <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1" target="_blank">ATCC 700669 reference genome</a> using <a href="https://github.com/tseemann/snippy" target="_blank">snippy</a>. Since this is only a part of an alignment, set <validate_ref_ann_lengths = F>, forcing LDWeaver to ignore the mismatch in sequence lengths between the genbank reference and the fasta alignment. Several additional options are also used, see `help(package="LDWeaver")` for details.
+The toy alignment comprises the first 50kb of 400 *S. pnuemoniae* isolates (randomy selected from the 616 reported <a href="https://www.nature.com/articles/ng.2625" target="_blank">here</a>). The reads were aligned against the <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1" target="_blank">ATCC 700669 reference genome</a> using <a href="https://github.com/tseemann/snippy" target="_blank">snippy</a>. Since this is only a part of an alignment, set `validate_ref_ann_lengths = F`, forcing LDWeaver to ignore the mismatch in sequence lengths between the genbank reference and the fasta alignment. Several additional options are also used, see `help(package="LDWeaver")` for details.
 
 ```{r, eval = FALSE}
-# devtools::install_github("Sudaraka88/LDWeaver")
 library(LDWeaver)
 dset <- "sample"
 aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
@@ -43,6 +44,8 @@ snp_filt_method = "relaxed"
 LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann_lengths = F,
         num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ```
+
+>**Note** If you are using a SNP-only alignment, set `aln_has_all_bases = F` and provide `pos`, a numeric vector of SNP positions. Each SNP in the SNP-only alignment must have a unique SNP position.
 
 ## Basic Outputs
 

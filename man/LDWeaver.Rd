@@ -7,6 +7,8 @@
 LDWeaver(
   dset,
   aln_path,
+  aln_has_all_bases = T,
+  pos = NULL,
   gbk_path = NULL,
   gff3_path = NULL,
   ref_fasta_path = NULL,
@@ -34,6 +36,10 @@ LDWeaver(
 \item{dset}{name of the dataset, all outputs will be saved to the folder <dset>}
 
 \item{aln_path}{path to the multi fasta alignment}
+
+\item{aln_has_all_bases}{specify whether the alignment has all bases in the reference genome (default = T). For example, if it's a SNP only alignment, set to F and provide pos}
+
+\item{pos}{numeric vector of positions for each base in the alignment (default = NULL). Only required if sites are missing from the alignment (e.g. SNP alignment output from snp-sites or https://github.com/Sudaraka88/FastaR)}
 
 \item{gbk_path}{path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.}
 

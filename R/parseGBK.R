@@ -35,29 +35,32 @@ parse_genbank_file = function(gbk_path, g = NULL, length_check = T){
   # gbk = suppressWarnings(genbankr::import(gbk_path))
   gbk = suppressWarnings(genbankr::readGenBank(gbk_path))
   refseq = genbankr::getSeq(gbk)
+
   if(length(refseq) != 1){
     stop("The GBK file should contain the reference sequence!\n")
     # return(-1)
   }
   # the length check is good to check if the alignment matches with the gbk, setting it to F will stop it
+  ref_g = length(refseq[[1]]) # length of the reference sequence
 
   if(length_check){ # perform the length check
-    if(length(refseq[[1]]) != g){ # perform check
+    if(ref_g != g){ # perform check
       stop("Genbank reference sequence length mismatches with the fasta alignment!\n")
       # return(-1)
     }
 
   } else {
     if(!is.null(g)){
-      if(length(refseq[[1]]) != g){
+      if(ref_g != g){
         warning("Fasta length does not match the genbank reference sequence length!\n")
       }
     } else {
-      warning("Similarity between the genbank reference and fasta sequences NOT checked!\n")
+      warning("Similarity between the genbank reference and fasta sequences NOT checked, ignore if <pos> was provided...\n")
     }
   }
   cat(paste("Successfully read gbk file:", gbk_path, "in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s\n"))
 
   # genbankr::seqinfo(gbk)
-  return(gbk)
+  return(list(gbk = gbk,
+              ref_g = ref_g))
 }
