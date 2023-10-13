@@ -5,5 +5,5 @@
 *.so
 *.o
 .DS_Store
-.Rmd
+*.Rmd
 *.win
