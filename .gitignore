@@ -2,9 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-.Rbuildignore
 *.so
 *.o
 .DS_Store
 *.Rmd
-*.win
