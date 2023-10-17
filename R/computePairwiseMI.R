@@ -70,8 +70,10 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   if(!perform_SR_analysis_only){
     # estimate the number of lr_links to decide on a discard threshold using  all or 1% of SNPs
     snp_subset = min(snp.dat$nsnp, round(snp.dat$nsnp*0.1))
+    set.seed(1988) # set a seed, so that the same subset of positions get picked below (not absolutely needed, but good for reproducibility)
     lr_link_count = sapply(snp.dat$POS[sample(snp.dat$nsnp, snp_subset)], function(x) sum((0.5*snp.dat$g - abs((x - snp.dat$POS)%%snp.dat$g  - 0.5*snp.dat$g))>sr_dist))
     lr_links_approx = sum(lr_link_count)/snp_subset*snp.dat$nsnp/2
+
   } else {
     lr_links_approx = NULL
   }
@@ -81,7 +83,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     cat(paste("Block", i, "of", nblcks, "..."))
     from_ = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i]
     to_ = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i]
-
+    # cat("**debug** snp_subset =",snp_subset, " lr_links_approx=",lr_links_approx," lr_retain_links=",lr_retain_links, " **debug**\n")
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var,
                                             lr_save_path = lr_save_path, from = from_, sr_dist = sr_dist,
                                             lr_retain_links = lr_retain_links, to = to_, ncores = ncores, sr_links = sr_links,
@@ -294,12 +296,14 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   if(lr_present & !perform_SR_analysis_only){ # if only the SR analysis is requested, discard this section
     # disc_thresh = stats::quantile(MI_df_lr$MI, lr_retain_level)
     n_lr_links = nrow(MI_df_lr)
-
     # Following prob works well for most cases where n_lr_links_total >> lr_retain_links (i.e. save 1M out of 1B),
     # set the maximum to 0 (i.e. no negative values), should we set the max to 1 if prob > 1
     prob = max(c(0, (1 - ((lr_retain_links * (n_lr_links / lr_links_approx)) / n_lr_links))))
     # disc_thresh = Rfast2::Quantile(MI_df_lr$MI, probs = prob)
     disc_thresh = stats::quantile(MI_df_lr$MI, probs = prob)
+
+    # cat("**debug** n_lr_links =",n_lr_links," prob=",prob, " disc_thresh=",disc_thresh, " **debug**\n")
+
     len_filt = MI_df_lr$MI >= disc_thresh
     cat(paste("... Adding ", sum(len_filt) ," LR links with MI>",round(disc_thresh, 3) ," to file ...", sep = "")) # debug
     if(!all(len_filt == FALSE)){

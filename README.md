@@ -1,4 +1,3 @@
-
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
@@ -57,7 +56,9 @@ conda install -c conda-forge -c bioconda r-ldweaver
 
 To run LDWeaver, all you need is a fasta alignment (can be gz
 compressed) and the corresponding genbank (preferred, or gff3 also supported) 
-annotation file with the reference sequence. A toy dataset is provided in the 
+annotation file with the reference sequence. You can also use a SNP-only alignment (can be generated from <a href="http://sanger-pathogens.github.io/snp-sites/" target="_blank">snp-sites</a> or <a href="https://github.com/Sudaraka88/FastaR" target="_blank">FastaR</a>) with a numeric vector of SNP positions as per the reference genome. 
+
+A toy dataset is provided in the 
 package itself to confirm that everything is setup correctly.
 
 > **Note** For GWES analysis, it is recommended to use an alignment with
@@ -74,7 +75,7 @@ The reads were aligned against the
 700669 reference genome</a> using
 <a href="https://github.com/tseemann/snippy" target="_blank">snippy</a>.
 Since this is only a part of an alignment, we set
-\<validate_ref_ann_lengths = F\>, which forces LDWeaver to ignore the
+`validate_ref_ann_lengths = F`, which forces LDWeaver to ignore the
 mismatch in sequence lengths between the genbank reference sequence and the 
 alignment. Several additional options are also used, see
 `help(package="LDWeaver")` for more details.
@@ -89,6 +90,8 @@ snp_filt_method = "relaxed"
 LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann_lengths = F,
         num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ```
+
+>**Note** If you are using a SNP-only alignment, set `aln_has_all_bases = F` and provide `pos`, a numeric vector of SNP positions. Each SNP in the SNP-only alignment must have a unique SNP position.
 
 ## Basic Outputs
 

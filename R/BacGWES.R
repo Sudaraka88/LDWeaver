@@ -7,6 +7,8 @@
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>
 #' @param aln_path path to the multi fasta alignment
+#' @param aln_has_all_bases specify whether the alignment has all bases in the reference genome (default = T). For example, if it's a SNP only alignment, set to F and provide pos
+#' @param pos numeric vector of positions for each base in the alignment (default = NULL). Only required if sites are missing from the alignment (e.g. SNP alignment output from snp-sites or https://github.com/Sudaraka88/FastaR)
 #' @param gbk_path path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
 #' @param gff3_path path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.
 #' @param ref_fasta_path path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
@@ -42,8 +44,9 @@
 #' sr_links_red = LDWeaver(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
 #' }
 #' @export
-LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta_path = NULL, validate_ref_ann_lengths = T,
-                    snp_filt_method = "default", gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
+LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path = NULL, gff3_path = NULL,
+                    ref_fasta_path = NULL, validate_ref_ann_lengths = T, snp_filt_method = "default",
+                    gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
                     perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                     max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
                     multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
@@ -60,11 +63,8 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
 
   #TODO: Add the option to provide genbank file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
-  #TODO: Add the option to give spydrpick links directly to the pipeline instead of performing LR analysis
 
-  # # Welcome message
-  # timestamp()
-  # cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
+  # # Welcome message # #
 
   # Sanity checks
   # annotations
@@ -77,6 +77,16 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     order_links = F # sr_links should be ordered at the end after adding annotations
   } else {
     order_links = T # sr_links will be ordered and saved without annotations
+  }
+
+  # alignment (now with SNP-only alignment support 2023/10/12)
+  if(aln_has_all_bases == F){ # snp-only alignment, POS must be provided
+    # sanity checks
+    if(is.null(pos)) stop("A numeric vector of 'positions' <pos> must be provided if aln_has_all_bases = F")
+    if(!is.numeric(pos)) stop("Provided pos must be numeric!")
+    if(any(duplicated(pos))) stop("Provided pos contains duplicates!")
+  } else { # This is a full alignment, pos must be NULL
+    if(!is.null(pos)) stop("pos cannot be provided for alignments with all bases! Depending on the use case, either set pos = NULL or aln_has_all_bases = T")
   }
 
   # multicore
@@ -129,6 +139,10 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(max_blk_sz < 1000 | max_blk_sz > 100000) {
     warning(paste("Unable to use the provided value for <max_blk_sz>, using", 10000, "...!If this value is causing the function to crash, consider reducing!..."))
     max_blk_sz = 10000
+  }
+
+  if(aln_has_all_bases == F){ # For snp-only alignments, reference and alignment length checks will fail, stop checking
+    validate_ref_ann_lengths = F
   }
 
   # normalise_input_paths
@@ -207,11 +221,20 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
   if(!file.exists(ACGTN_snp_path)) {
     t0 = Sys.time()
     cat(paste("Parsing Alignment:", aln_path ,"\n"))
-    snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
-    if(save_additional_outputs){
-      cat("Step 5: Savings snp.dat...")
-      saveRDS(snp.dat, ACGTN_snp_path)
+
+    # Adding support for SNP-only alignments
+    if(aln_has_all_bases == T){
+      snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+      if(save_additional_outputs){
+        cat("Step 5: Savings snp.dat...")
+        saveRDS(snp.dat, ACGTN_snp_path)
+      }
+    } else {
+      snp.dat = LDWeaver::parse_fasta_SNP_alignment(aln_path = aln_path, pos = pos, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+      # Note that snp.dat$g = NULL (we cannot measure this, need to get it from the genbank file)
+      # we cannot save snp.dat here due to absent snp.dat$g, moving downstream (block 2)
     }
+
 
     cat(paste("BLOCK 1 complete in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }else{
@@ -225,7 +248,9 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     gff = NULL # alternative set to NULL
     if(!file.exists(parsed_gbk_path)) {
       cat(paste("Reading the GBK file, validate_length_check = ", validate_ref_ann_lengths, "\n"))
-      gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+      gbk_ = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+      gbk = gbk_$gbk # gbk is coming in gbk_$gbk now
+      # For snp-only alignments, g = snp.dat$g = NULL and validate_ref_ann_lengths = F, won't be an issue...
       if(save_additional_outputs){
         saveRDS(gbk, parsed_gbk_path)
       }
@@ -246,6 +271,22 @@ LDWeaver = function(dset, aln_path, gbk_path = NULL, gff3_path = NULL, ref_fasta
     } else {
       cat("Loading parsed gff3 file \n")
       gff = readRDS(parsed_gff_path)
+    }
+  }
+
+  # This is a patch to add snp.dat$g back in case this is a SNP only alignment
+  if(is.null(snp.dat$g)){
+    if(!is.null(gbk_path)){ # input reference is genbank format
+      snp.dat$g = gbk_$ref_g
+      cat("Extracted ref genome length", snp.dat$g, "from genbank...")
+    }
+    if(!is.null(gff3_path)){ # input reference is gff3 format
+      snp.dat$g = gff$g
+    }
+    if(save_additional_outputs){
+      cat("saving snp.dat...\n")
+      saveRDS(snp.dat, ACGTN_snp_path)
+      #### This saved file will have snp.dat$g = NULL ### TODO: Ensure no issues downstream
     }
   }
 
