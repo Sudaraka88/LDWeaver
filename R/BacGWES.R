@@ -83,6 +83,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     ######################################################################################################################
     order_links = F # sr_links should be ordered at the end after adding annotations
   } else {
+    snpeff_jar_path = NULL
     order_links = T # sr_links will be ordered and saved without annotations
   }
 
