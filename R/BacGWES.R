@@ -18,10 +18,9 @@
 #' maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively dropped and allowed by 'default' and 'relaxed' methods.
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
-#' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal.
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
-#' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
+#' @param SnpEff_Annotate specify whether to perform annotations using SnpEff (default = TRUE)
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
 #' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved
 #' @param max_tophits specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
@@ -46,23 +45,27 @@
 #' @export
 LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path = NULL, gff3_path = NULL,
                     ref_fasta_path = NULL, validate_ref_ann_lengths = T, snp_filt_method = "default",
-                    gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
-                    perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
+                    gap_freq = 0.15, maf_freq = 0.01, hdw_threshold = 0.1, perform_SR_analysis_only = F,
+                    SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                     max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
                     multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
-  # BLK2: Parse GBK
+  # BLK2: Parse GBK or GFF+REF
   # BLK3: Estimate diversity within each CDS, cluster and paint < # possible inputs on methods>
   # BLK4: Compute Hamming Distance weights
   # BLK5: Compute MI between all links, sr_links model fitter, ARACNE
-  # BLK6: GWES_plots
-  # BLK7: Snpeff annotation pipeline, dtermine tophits
-  # BLK8: Tanglegram (depends: chromoMap)
-  # BLK9: GWESExplorer (depends: GWESExplorer)
+  # BLK6: Genomewide LD Map
+  # BLK7: GWES_plots
+  # BLK8: Snpeff annotation pipeline, determine tophits
+  # BLK9: Tanglegram (depends: chromoMap)
+  # BLK10: GWESExplorer (depends: GWESExplorer)
+  # BLK11: Cleanup
 
   #TODO: Add the option to provide genbank file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
+
+  #NOTE: SnpEff does not parse the GBK and GFF3 file from the same refseq reference genome the same way. There might be differences between annotations/tophits/etc.
 
   # # Welcome message # #
 
@@ -72,8 +75,12 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   if(!is.null(gff3_path) & is.null(ref_fasta_path)) stop("Reference fasta file must be provided for gff3 annoations") # only one of gbk or gff can be NULL
 
   if(SnpEff_Annotate == T) {
+    # Added snpEff to inst/extdata
+    snpeff_jar_path = system.file("extdata", "snpEff.jar", package = "LDWeaver")
+    ######################################## These checks must be unnecessary now ########################################
     if(is.null(snpeff_jar_path)) stop("<snpeff_jar_path> must be provided for annotations. To run without annotations, set SnpEff_Annotate = F")
     if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
+    ######################################################################################################################
     order_links = F # sr_links should be ordered at the end after adding annotations
   } else {
     order_links = T # sr_links will be ordered and saved without annotations
@@ -189,6 +196,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   ######## Welcome message ########
   {
     timestamp()
+    cat("\n ***** This is LDWeaver", as.character(packageVersion(pkg = "LDWeaver")), " *****")
     if(ncores > 1) cat(paste("\n\n Performing GWES analysis on:", dset, " - using", ncores, "cores\n\n"))
     if(ncores == 1) cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
     if(perform_SR_analysis_only) cat("Only short-range analysis requested. \n")
