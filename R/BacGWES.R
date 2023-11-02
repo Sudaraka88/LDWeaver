@@ -369,6 +369,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   # BLK7
   cat("\n\n #################### BLOCK 8 #################### \n\n")
   if(SnpEff_Annotate == F){
+    LDWeaver::cleanup(dset = dset, delete_after_moving = F)
     cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
     return()
   }
