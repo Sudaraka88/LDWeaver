@@ -66,7 +66,6 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
 
   #NOTE: SnpEff does not parse the GBK and GFF3 file from the same refseq reference genome the same way. There might be differences between annotations/tophits/etc.
-
   # # Welcome message # #
 
   # Sanity checks
