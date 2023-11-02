@@ -398,6 +398,7 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff)
 
     # print(summary(maxvls$max))
     # plot(maxvls)
+    saveRDS(object = maxvls, file = file.path(plt_path, paste("c", i, "_fit_data.rds", sep= "")))
     ggplot2::ggsave(filename = file.path(plt_path, paste("c", i, "_fit.png", sep= "")), plot =  p_cf, width = 2200, height = 1200, units = "px")
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
