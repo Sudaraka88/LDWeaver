@@ -3,7 +3,7 @@
 #' Function to run the LDWeaver pipeline
 #'
 #' @importFrom parallel detectCores
-#' @importFrom utils timestamp
+#' @importFrom utils timestamp packageVersion
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>
 #' @param aln_path path to the multi fasta alignment
