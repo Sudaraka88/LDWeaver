@@ -62,6 +62,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   # BLK10: GWESExplorer (depends: GWESExplorer)
   # BLK11: Cleanup
 
+  #TODO: Provide the option to skip SNP extraction and use the whole provided alignment (redundant if pre-filtered)
   #TODO: Add the option to provide genbank file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
 
