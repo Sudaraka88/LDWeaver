@@ -29,7 +29,7 @@
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 #' and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1), range 0 - 5
-#' @param tanglegram_break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10
+#' @param tanglegram_break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10. Set NULL to skip tanglegram
 #' @param multicore specify whether to use parallel processing (default = T)
 #' @param ncores specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
@@ -139,11 +139,12 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     srp_cutoff = 3
   }
 
-  if(tanglegram_break_segments < 0 | tanglegram_break_segments > 10) {
-    warning(paste("Unable to use the provided value for <tanglegram_break_segments>, using", 5))
-    tanglegram_break_segments = 5
+  if(!is.null(tanglegram_break_segments)){
+    if(tanglegram_break_segments < 0 | tanglegram_break_segments > 10) {
+      warning(paste("Unable to use the provided value for <tanglegram_break_segments>, using", 5))
+      tanglegram_break_segments = 5
+    }
   }
-
   if(max_blk_sz < 1000 | max_blk_sz > 100000) {
     warning(paste("Unable to use the provided value for <max_blk_sz>, using", 10000, "...!If this value is causing the function to crash, consider reducing!..."))
     max_blk_sz = 10000
@@ -395,9 +396,10 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   netplot_path = file.path(dset, "SR_network_plot.png")
 
   # BLK8
-  cat("\n\n #################### BLOCK 9 #################### \n\n")
-  LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
-
+  if(!is.null(tanglegram_break_segments)){
+    cat("\n\n #################### BLOCK 9 #################### \n\n")
+    LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
+  }
   # BLK9
   cat("\n\n #################### BLOCK 10 #################### \n\n")
   LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
