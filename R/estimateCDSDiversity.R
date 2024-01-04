@@ -3,7 +3,6 @@
 #' Function to estimate the variation within each coding region, the output from this function
 #' can be used to segment the genome into diversity-based clusters.
 #'
-#' @importFrom genbankr cds getSeq
 #' @importFrom GenomicRanges start width end
 #' @importFrom Matrix rowSums colSums
 #' @importFrom data.table data.table setattr %between% .I
@@ -25,6 +24,9 @@
 #' }
 #' @export
 estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, num_clusts_CDS = 3, clust_plt_path = NULL){
+  ## NOTE: genbankr depreciation, removed the following import
+  # importFrom genbankr cds getSeq
+
   # This method is only approximate, but much MUCH faster and easier on resources
   # TODO: Include the higher accuracy function
   t0 = Sys.time()
@@ -34,12 +36,14 @@ estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, nu
 
   # extract the information we need
   if(!is.null(gbk)){
-    cds_reg = genbankr::cds(gbk)
+    # cds_reg = genbankr::cds(gbk) # no longer exporting this function after genbankr depreciation
+    cds_reg = gbk@cds
     starts = GenomicRanges::start(cds_reg)
     widths = GenomicRanges::width(cds_reg)
     ends = GenomicRanges::end(cds_reg)
     # convert ref to a CharacterVector
-    ref = unlist(unname(strsplit(as.character(genbankr::getSeq(gbk)), '')))[snp.dat$POS]
+    # ref = unlist(unname(strsplit(as.character(genbankr::getSeq(gbk)), '')))[snp.dat$POS] # no longer exporting this function after genbankr deprecation
+    ref = unlist(unname(strsplit(as.character(gbk@sequence), '')))[snp.dat$POS]
   } else if(!is.null(gff)){
     gff_cds = gff$gff[tolower(gff$gff$type) == "cds", ]
     starts = gff_cds$start

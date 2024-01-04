@@ -4,7 +4,6 @@
 #'
 #' @importFrom htmlwidgets saveWidget
 #' @importFrom stats cutree hclust dist
-#' @importFrom genbankr cds
 #' @importFrom plyr . ddply
 #' @importFrom chromoMap chromoMap
 #'

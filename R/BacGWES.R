@@ -215,7 +215,10 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     cat(paste("All outputs will be saved to:", normalizePath(dset), "\n"))
     cat(paste("\n *** Input paths *** \n\n"))
     cat(paste("* Alignment:", aln_path, "\n"))
-    if(!is.null(gbk_path)) cat(paste("* GenBank Annotation:", gbk_path, "\n"))
+    if(!is.null(gbk_path)) {
+      cat(paste("* GenBank Annotation:", gbk_path, "\n"))
+      cat(paste("* Parser built using genbankr source (https://github.com/gmbecker/genbankr) \n"))
+    }
     if(!is.null(gff3_path)) cat(paste("* GFF3 Annotation:", gff3_path, "\n"))
     if(!is.null(snpeff_jar_path)) cat(paste("* SnpEff Annotations will be performed on short-range links. SnpEff path:", snpeff_jar_path, "\n"))
 

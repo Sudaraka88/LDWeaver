@@ -25,6 +25,7 @@ LDWeaver(
   num_clusts_CDS = 3,
   srp_cutoff = 3,
   tanglegram_break_segments = 5,
+  write_gwesExplorer = T,
   multicore = T,
   max_blk_sz = 10000,
   ncores = NULL,
@@ -75,7 +76,9 @@ but only the top <max_tophits> will be used for visualisation (default = 250), r
 modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1), range 0 - 5}
 
-\item{tanglegram_break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10}
+\item{tanglegram_break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10. Set NULL to skip tanglegram}
+
+\item{write_gwesExplorer}{specify whether output for GWESExplorer is required (default = T)}
 
 \item{multicore}{specify whether to use parallel processing (default = T)}
 
