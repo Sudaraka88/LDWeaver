@@ -1,13 +1,33 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
-message: If you find LDWeaver helpful, please cite it as below.
-type: article
-  authors:
-    name: "Mallawaarachchi, Sudaraka et al."
-    orcid: "https://orcid.org/0000-0001-8899-3323"
-title: "LDWeaver"
-version: 1.4
-doi: "https://doi.org/10.1101/2023.08.04.551407"
-article: "bioRxiv"
-month: August
-title: "Detecting co-selection through excess linkage disequilibrium in bacterial genomes"
-year: 2023
+title: LDWeaver
+message: ' If you find LDWeaver helpful, please cite:'
+type: software
+authors:
+  - given-names: Sudaraka
+    family-names: Mallawa Arachchi
+    email: smallawaarachchi@gmail.com
+    orcid: 'https://orcid.org/0000-0001-8899-3323'
+    affiliation: University of Oslo and University of Melbourne
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.10016711
+    description: Zenodo
+repository-code: 'https://github.com/Sudaraka88/LDWeaver/'
+abstract: >-
+  LDWeaver accepts a sequence alignment (fasta) and its
+  reference annotation (genbank or gff) as inputs and
+  identifies linkage disequilibrium (LD) between pairs of
+  variants (links) that is unusually high given the genomic
+  distance between the pair. This high LD could be the
+  result of co-selection or epistasis.
+keywords:
+  - Microbial Genomics
+  - Linkage Disequilibrium
+  - Epistasis
+  - Gene Interactions
+license: GPL-3.0-or-later
+version: v1.4
+date-released: '2024-01-04'
