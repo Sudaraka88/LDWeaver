@@ -29,7 +29,8 @@
 perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, snp.dat, cds_var, links_df, gbk = NULL,
                                       gbk_path = NULL, gff = NULL,  tophits_path = NULL, max_tophits = 250, links_type = "SR"){
 
-  #TODO: We don't need both gbk and gbk_path, save gbk_path to the gbk when parsing and read from here (same for gff)
+  #TODO: Can we bundle snpEff for local run? Conda version can install SnpEff as a dependency, devtools version can have it in inst/extdata
+    #TODO: We don't need both gbk and gbk_path, save gbk_path to the gbk when parsing and read from here (same for gff)
 
   # only one of gbk or gff can be NULL
   if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")

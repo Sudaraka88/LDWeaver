@@ -18,7 +18,7 @@ required if <length_check = T>}
 GenBankRecord object
 }
 \description{
-Function to parse the genbank file for the fasta alignment.
+Function to parse the genbank file for the fasta alignment. Parser built using genbankr source available here: https://github.com/gmbecker/genbankr.
 }
 \examples{
 \dontrun{

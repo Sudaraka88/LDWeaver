@@ -14,8 +14,8 @@ LDWeaver accepts a sequence alignment (fasta) and its reference annotation
 pairs of variants (links) that is unusually high given the genomic distance 
 between the pair. This high LD could be the result of co-selection or epistasis. 
 Approximate statistical significance is used to rank outlier links and the 
-output is reported in `tsv` format, along with several other helpful figures. 
-Additionally, LDWeaver has functions assist the detection of genomic regions 
+output is reported in `tsv` format, along with several other helpful annotations and figures. 
+Additionally, LDWeaver has functions to assist the detection of genomic regions 
 that have potentially undergone co-selection or epistasis. LDWeaver `tsv` output 
 can be directly used as input for 
 <a href="https://github.com/jurikuronen/GWES-Explorer">GWESExplorer</a>
@@ -140,18 +140,10 @@ folder called `sample`, which should be created in the current working directory
 
 ## Performing Annotations
 
-Additionally, LDWeaver has an interface to perform detailed annotations
-using
-<a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff</a>.
-Once downloaded, set the two options: `SnpEff_Annotate=T` and
-`snpeff_jar_path=<path_to_snpEff.jar_file>`
-
-> **Note** Since the genbank annotation file is provided, LDWeaver only requires
-> the path to the \<snpEff.jar\> file. You can download this by visiting the 
-> <a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff github page</a>.
-
-Once set, this will create these outputs in the \<dset\> folder. Note that `X` in 
-the following outputs refer to **sr** (short range) or **lr** (long range).
+By default, LDWeaver performs detailed annotations on all link SNPs using
+<a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff</a>. 
+This will create the following outputs in \<dset\>. Note that `X` here 
+refers to **sr** (short range) or **lr** (long range).
 
 - Outputs
 
@@ -168,7 +160,7 @@ the following outputs refer to **sr** (short range) or **lr** (long range).
       <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a> 
       (X = sr,lr).
 
-> **Note** The default srp_cutoff is 3 (i.e. p=0.001). Short-range links
+> **Note** The default srp_cutoff is 3 (i.e., p=0.001). Short-range links
 > with p\>0.001 are automatically discarded, this can be modified using
 > the \<srp_cutoff\> option. The default max_tophits value is 250, this
 > can be modified using the \<max_tophits\> option.
@@ -195,17 +187,16 @@ To cite LDWeaver please use: Mallawaarachchi, Sudaraka et al. Detecting co-selec
 
 ## Detailed Workthrough using Real Data
 
-The following analysis demonstrates some of the current options available in
+The following analysis demonstrates most of the options available in
 LDWeaver. The alignment with 616 *S. pnuemoniae* genomes is available
 <a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">here</a>, and 
-the same sample.gbk annotation was used to generate this alignment. This annotation is also available
-<a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>.
+the same sample.gbk annotation was used to generate this alignment (also available <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>.
 
 For this example, it is assumed that the current working directory is set to 
 `~/LDWeaver_run` and the
 <a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">alignment</a>
-and \<snpEff.jar\> file (see [above](#performing-annotations)) are available in the same folder. Please note that file paths here are written for Linux and macOS operating systems, 
-windows users will need to modify as required. 
+is available in the same folder. Please note that file paths here are written for Linux/macOS operating systems, 
+windows users will need to modify as needed. 
 
 The following few lines of code can perform the complete LDWeaver analysis.
 
@@ -218,19 +209,19 @@ setwd("~/LDWeaver_run")
 dset <- "msch"
 aln_path <- "spn23f_msch.aln.gz"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
-snpeff_jar_path <- "snpEff.jar"
 
 LDWeaver::LDWeaver(dset = dset, 
                    aln_path = aln_path, 
                    gbk_path = gbk_path, 
-                   snpeff_jar_path = snpeff_jar_path,
                    save_additional_outputs = T)
 ```
 
-While the `LDWeaver::LDWeaver()` one-liner function is generally
-versatile for most analyses, it is possible to write a customised
-pipeline using available functions. For a full list of available functions
-and options, see: `help(package="LDWeaver")`.
+`LDWeaver::LDWeaver()` one-liner is versatile for most 
+analyses. If previously created outputs are available in \<dset\>, this
+function will load those instead of repeating possibly time and resource heavy analysis.
+
+It is also possible to write customised pipelines using available functions. For a full list of available functions
+and options, run: `help(package="LDWeaver")`.
 
 ``` r
 library(LDWeaver)
@@ -239,7 +230,6 @@ dir.create(dset) # folder to save outputs
 
 aln_path <- "~/LDWeaver_run/spn23f_msch.aln.gz"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
-snpeff_jar_path <- "~/LDWeaver_run/snpEff.jar"
 ncores = parallel::detectCores()
 
 snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path) # parse the alignment and extract SNPs
@@ -276,8 +266,8 @@ LDWeaver::make_gwes_plots(sr_links = sr_links, plt_folder = dset)
 ``` r
 # Identify the top hits by performing snpEff annotations
 tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset), 
-                                               snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                               cds_var = cds_var, links_df = sr_links, snp.dat = snp.dat,
+                                               gbk = gbk, gbk_path = gbk_path, cds_var = cds_var, 
+                                               links_df = sr_links, snp.dat = snp.dat, 
                                                tophits_path = "msch/sr_tophits.tsv")
 ```
 
@@ -311,8 +301,7 @@ Next step is to analyse the long range links
 # Analyse long range links
 LDWeaver::analyse_long_range_links(dset = dset, lr_links_path = "msch/lr_links.tsv", 
                                    sr_links_path = "msch/sr_links.tsv", SnpEff_Annotate = T,
-                                   snp.dat = snp.dat, snpeff_jar_path = snpeff_jar_path, 
-                                   gbk_path = gbk_path, cds_var = cds_var)
+                                   snp.dat = snp.dat, gbk_path = gbk_path, cds_var = cds_var)
 ```
 ![](inst/sup/lr_gwes.png)
 
@@ -339,10 +328,13 @@ sites and their magnitude can be generated using:
 
 ``` r
 # Generate the Network Plot for pbp genes
-LDWeaver::create_network(LDWeaver::create_network_for_gene("pbp", 
+
+network = LDWeaver::create_network_for_gene("pbp", 
                          sr_annotated_path = "msch/Annotated_links/sr_links_annotated.tsv", 
                          lr_annotated_path = "msch/Annotated_links/lr_links_annotated.tsv", 
-                         level = 2), 
+                         level = 2)
+
+LDWeaver::create_network(network, 
           plot_title = "pbp network", 
           netplot_path = "msch/pbp_network.png", 
           plot_w = 2000, plot_h = 2000)

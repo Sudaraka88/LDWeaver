@@ -242,7 +242,15 @@ cleanup = function(dset, delete_after_moving = F){
   files = dir(dset)
 
   ##### Additional Outputs #####
-  idx = c(grep("*.rds", files))
+  # New fit data 20231102
+  idx = grep("^c*[:0-999:]_fit_data.rds$", files)
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Fit")
+    cleanup_support(files = file.path(dset, files[idx]), fldr)
+    mv_success = c(mv_success, idx)
+  }
+
+  idx = c(grep("cds_var.rds", files), grep("hdw.rds", files), grep("parsed_gbk.rds", files), grep("parsed_gff3.rds", files), grep("snp_ACGTN.rds", files))
   if(length(idx) > 0){
     fldr = file.path(dset, "Additional_Outputs")
     cleanup_support(files = file.path(dset, files[idx]), fldr)
@@ -290,7 +298,7 @@ cleanup = function(dset, delete_after_moving = F){
   }
 
   #### Temp folder ####
-  idx = c(grep("snpEff", files), grep("*.vcf", files), grep("*annotations.tsv", files), grep("*_links.tsv", files))
+  idx = c(grep("snpEff", files), grep("*.vcf", files), grep("*annotations.tsv", files), grep("*_links.tsv", files), grep("LDW_run_*", files))
   if(length(idx) > 0){
     fldr = file.path(dset, "Temp")
     cleanup_support(files = file.path(dset, files[idx]), fldr)

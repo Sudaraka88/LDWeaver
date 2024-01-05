@@ -16,7 +16,6 @@ LDWeaver(
   snp_filt_method = "default",
   gap_freq = 0.15,
   maf_freq = 0.01,
-  snpeff_jar_path = NULL,
   hdw_threshold = 0.1,
   perform_SR_analysis_only = F,
   SnpEff_Annotate = T,
@@ -26,6 +25,7 @@ LDWeaver(
   num_clusts_CDS = 3,
   srp_cutoff = 3,
   tanglegram_break_segments = 5,
+  write_gwesExplorer = T,
   multicore = T,
   max_blk_sz = 10000,
   ncores = NULL,
@@ -57,13 +57,11 @@ maf_freq filter. Eg: Under default filter values, a site with allele frequencies
 
 \item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
-\item{snpeff_jar_path}{path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F}
-
 \item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal.}
 
 \item{perform_SR_analysis_only}{specify whether to only perform the short range link analysis (default = FALSE)}
 
-\item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff}
+\item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff (default = TRUE)}
 
 \item{sr_dist}{links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.}
 
@@ -78,7 +76,9 @@ but only the top <max_tophits> will be used for visualisation (default = 250), r
 modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1), range 0 - 5}
 
-\item{tanglegram_break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10}
+\item{tanglegram_break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10. Set NULL to skip tanglegram}
+
+\item{write_gwesExplorer}{specify whether output for GWESExplorer is required (default = T)}
 
 \item{multicore}{specify whether to use parallel processing (default = T)}
 

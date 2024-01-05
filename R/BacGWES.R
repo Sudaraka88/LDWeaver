@@ -3,7 +3,7 @@
 #' Function to run the LDWeaver pipeline
 #'
 #' @importFrom parallel detectCores
-#' @importFrom utils timestamp
+#' @importFrom utils timestamp packageVersion
 #'
 #' @param dset name of the dataset, all outputs will be saved to the folder <dset>
 #' @param aln_path path to the multi fasta alignment
@@ -18,10 +18,9 @@
 #' maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively dropped and allowed by 'default' and 'relaxed' methods.
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
-#' @param snpeff_jar_path path to <snpEff.jar>. If unavailable or if annotations are not required, set SnpEff_Annotate = F
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal.
 #' @param perform_SR_analysis_only specify whether to only perform the short range link analysis (default = FALSE)
-#' @param SnpEff_Annotate specify whether to perform annotations using SnpEff
+#' @param SnpEff_Annotate specify whether to perform annotations using SnpEff (default = TRUE)
 #' @param sr_dist links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.
 #' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved
 #' @param max_tophits specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
@@ -30,7 +29,8 @@
 #' @param srp_cutoff specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
 #' modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
 #' and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1), range 0 - 5
-#' @param tanglegram_break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10
+#' @param tanglegram_break_segments specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10. Set NULL to skip tanglegram
+#' @param write_gwesExplorer specify whether output for GWESExplorer is required (default = T)
 #' @param multicore specify whether to use parallel processing (default = T)
 #' @param ncores specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
@@ -46,24 +46,31 @@
 #' @export
 LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path = NULL, gff3_path = NULL,
                     ref_fasta_path = NULL, validate_ref_ann_lengths = T, snp_filt_method = "default",
-                    gap_freq = 0.15, maf_freq = 0.01, snpeff_jar_path = NULL, hdw_threshold = 0.1,
-                    perform_SR_analysis_only = F, SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
+                    gap_freq = 0.15, maf_freq = 0.01, hdw_threshold = 0.1, perform_SR_analysis_only = F,
+                    SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                     max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
-                    multicore = T, max_blk_sz = 10000, ncores = NULL, save_additional_outputs = F){
+                    write_gwesExplorer = T, multicore = T, max_blk_sz = 10000, ncores = NULL,
+                    save_additional_outputs = F){
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
-  # BLK2: Parse GBK
+  # BLK2: Parse GBK or GFF+REF
   # BLK3: Estimate diversity within each CDS, cluster and paint < # possible inputs on methods>
   # BLK4: Compute Hamming Distance weights
   # BLK5: Compute MI between all links, sr_links model fitter, ARACNE
-  # BLK6: GWES_plots
-  # BLK7: Snpeff annotation pipeline, dtermine tophits
-  # BLK8: Tanglegram (depends: chromoMap)
-  # BLK9: GWESExplorer (depends: GWESExplorer)
+  # BLK6: Genomewide LD Map
+  # BLK7: GWES_plots
+  # BLK8: Snpeff annotation pipeline, determine tophits
+  # BLK9: Tanglegram (depends: chromoMap)
+  # BLK10: GWESExplorer (depends: GWESExplorer)
+  # BLK11: Cleanup
 
+  #TODO: Provide the option to skip SNP extraction and use the whole provided alignment (redundant if pre-filtered)
   #TODO: Add the option to provide genbank file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
+  #TODO: genbankr is being droped from the newest bioconductor, add alternative (https://github.com/gmbecker/genbankr)
+  #TODO: Add Hamming Distance plot, can we have a SNP Tree + Hamming Distance weights to show population structure control?
 
+  #NOTE: SnpEff does not parse the GBK and GFF3 file from the same refseq reference genome the same way. There might be differences between annotations/tophits/etc.
   # # Welcome message # #
 
   # Sanity checks
@@ -72,10 +79,15 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   if(!is.null(gff3_path) & is.null(ref_fasta_path)) stop("Reference fasta file must be provided for gff3 annoations") # only one of gbk or gff can be NULL
 
   if(SnpEff_Annotate == T) {
+    # Added snpEff to inst/extdata
+    snpeff_jar_path = system.file("extdata", "snpEff.jar", package = "LDWeaver")
+    ######################################## These checks must be unnecessary now ########################################
     if(is.null(snpeff_jar_path)) stop("<snpeff_jar_path> must be provided for annotations. To run without annotations, set SnpEff_Annotate = F")
     if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
+    ######################################################################################################################
     order_links = F # sr_links should be ordered at the end after adding annotations
   } else {
+    snpeff_jar_path = NULL
     order_links = T # sr_links will be ordered and saved without annotations
   }
 
@@ -131,11 +143,12 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     srp_cutoff = 3
   }
 
-  if(tanglegram_break_segments < 0 | tanglegram_break_segments > 10) {
-    warning(paste("Unable to use the provided value for <tanglegram_break_segments>, using", 5))
-    tanglegram_break_segments = 5
+  if(!is.null(tanglegram_break_segments)){
+    if(tanglegram_break_segments < 0 | tanglegram_break_segments > 10) {
+      warning(paste("Unable to use the provided value for <tanglegram_break_segments>, using", 5))
+      tanglegram_break_segments = 5
+    }
   }
-
   if(max_blk_sz < 1000 | max_blk_sz > 100000) {
     warning(paste("Unable to use the provided value for <max_blk_sz>, using", 10000, "...!If this value is causing the function to crash, consider reducing!..."))
     max_blk_sz = 10000
@@ -155,6 +168,12 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
 
   # setup paths
   if(!file.exists(dset)) dir.create(dset) # save everything in here
+
+  # Save console output as a text file
+  info_file = file.path(dset, paste("LDW_run_",format(Sys.time(), "%Y%m%d%H%M%S"), ".txt", sep = ""))
+  suppressWarnings(sink(file= NULL))
+  sink(info_file, split = T)
+
   add_path = file.path(dset, "Additional_Outputs") # Additional Outputs
   if(save_additional_outputs) {
     if(!file.exists(add_path)) dir.create(file.path(dset, "Additional_Outputs"))
@@ -189,13 +208,18 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   ######## Welcome message ########
   {
     timestamp()
+    cat("\n ***** This is LDWeaver", as.character(packageVersion(pkg = "LDWeaver")), " *****")
     if(ncores > 1) cat(paste("\n\n Performing GWES analysis on:", dset, " - using", ncores, "cores\n\n"))
     if(ncores == 1) cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
     if(perform_SR_analysis_only) cat("Only short-range analysis requested. \n")
     cat(paste("All outputs will be saved to:", normalizePath(dset), "\n"))
     cat(paste("\n *** Input paths *** \n\n"))
     cat(paste("* Alignment:", aln_path, "\n"))
-    cat(paste("* GenBank Annotation:", gbk_path, "\n"))
+    if(!is.null(gbk_path)) {
+      cat(paste("* GenBank Annotation:", gbk_path, "\n"))
+      cat(paste("* Parser built using genbankr source (https://github.com/gmbecker/genbankr) \n"))
+    }
+    if(!is.null(gff3_path)) cat(paste("* GFF3 Annotation:", gff3_path, "\n"))
     if(!is.null(snpeff_jar_path)) cat(paste("* SnpEff Annotations will be performed on short-range links. SnpEff path:", snpeff_jar_path, "\n"))
 
     cat(paste("\n *** Parameters *** \n\n"))
@@ -348,6 +372,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
 
 
   if(nrow(sr_links) == 0){
+    suppressWarnings(sink(file= NULL)) ### output info to text file
     stop("No potentially important sr_links were identified! Cannot continue analysis...")
   }
 
@@ -360,6 +385,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   # BLK7
   cat("\n\n #################### BLOCK 8 #################### \n\n")
   if(SnpEff_Annotate == F){
+    LDWeaver::cleanup(dset = dset, delete_after_moving = F)
     cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
     return()
   }
@@ -374,25 +400,30 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     tophits = LDWeaver::read_TopHits(top_hits_path = tophits_path)
   }
 
+
+  # BLK8
+  if(!is.null(tanglegram_break_segments)){
+    # tanglegram
+    tanglegram_path = file.path(dset, "SR_Tanglegram")
+    if(!file.exists(tanglegram_path)) dir.create(tanglegram_path)
+    cat("\n\n #################### BLOCK 9 #################### \n\n")
+    LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
+  }
+  # BLK9
+  if(write_gwesExplorer){
+    # GWESExplorer
+    gwesexplorer_path = file.path(dset, "SR_GWESExplorer")
+    if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
+    cat("\n\n #################### BLOCK 10 #################### \n\n")
+    LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
+  }
+
+
+  # BLK10
   # Additional paths if annotations are requested
-  # tanglegram
-  tanglegram_path = file.path(dset, "SR_Tanglegram")
-  if(!file.exists(tanglegram_path)) dir.create(tanglegram_path)
-  # GWESExplorer
-  gwesexplorer_path = file.path(dset, "SR_GWESExplorer")
-  if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
   # NetworkPlot
   netplot_path = file.path(dset, "SR_network_plot.png")
 
-  # BLK8
-  cat("\n\n #################### BLOCK 9 #################### \n\n")
-  LDWeaver::create_tanglegram(tophits = tophits, gbk = gbk, gff = gff, tanglegram_folder = tanglegram_path, break_segments = tanglegram_break_segments)
-
-  # BLK9
-  cat("\n\n #################### BLOCK 10 #################### \n\n")
-  LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
-
-  # BLK10
   cat("\n\n #################### BLOCK 11 #################### \n\n")
   LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in short-range tophits for", dset))
 
