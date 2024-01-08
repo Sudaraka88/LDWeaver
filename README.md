@@ -1,8 +1,3 @@
----
-output:
-  html_document: default
-  pdf_document: default
----
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
