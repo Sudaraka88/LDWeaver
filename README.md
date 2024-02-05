@@ -189,8 +189,10 @@ To cite LDWeaver please use: Mallawaarachchi, Sudaraka et al. Detecting co-selec
 
 The following analysis demonstrates most of the options available in
 LDWeaver. The alignment with 616 *S. pnuemoniae* genomes is available
-<a href="https://cloudstor.aarnet.edu.au/plus/s/KBRnIt1H6XZ2XFR" target="_blank">here</a>, and 
-the same sample.gbk annotation was used to generate this alignment (also available <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>.
+<a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EeLNWOGYDi5Bk4PVY6JZF10BEDM2ckSCMq4nZqX8OGimJg?e=3AfBhf" target="_blank">here</a>, and 
+the same sample.gbk annotation was used to generate this alignment (also available <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>).
+
+> **Note:** Alternatively, since LDWeaver v1.2, you can download and use the <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EdQdnfYv3KRBiuYW73BEGXgBbtZR2SSdty_qiNgjJflp5w?e=vbpeEp" target="_blank">SNP-only alignment</a> with the accompanying <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EZoekLiIyZZKuVAoHoWob1cBk2yBSOfr4MeuLp_VgKJG5g" target="_blank">positions</a> file to generate the same results.
 
 For this example, it is assumed that the current working directory is set to 
 `~/LDWeaver_run` and the
