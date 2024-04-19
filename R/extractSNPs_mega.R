@@ -66,7 +66,7 @@ parse_fasta_alignment_mega <- function(aln_path, gap_freq = 0.15, maf_freq = 0.0
                                  nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
   snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
 
-  snp.matrix_N_spam <- spam::spam(list(i=snp.data$i_A, j=snp.data$j_A, values=as.logical(snp.data$x_A)),
+  snp.matrix_N_spam <- spam::spam(list(i=snp.data$i_N, j=snp.data$j_N, values=as.logical(snp.data$x_N)),
                                  nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
   snp.data = NULL
 
@@ -159,7 +159,7 @@ parse_fasta_SNP_alignment_mega <- function(aln_path, pos, gap_freq = 0.15, maf_f
                                   nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
   snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
 
-  snp.matrix_N_spam <- spam::spam(list(i=snp.data$i_A, j=snp.data$j_A, values=as.logical(snp.data$x_A)),
+  snp.matrix_N_spam <- spam::spam(list(i=snp.data$i_N, j=snp.data$j_N, values=as.logical(snp.data$x_N)),
                                   nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
   snp.data = NULL
 

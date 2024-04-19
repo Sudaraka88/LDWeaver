@@ -6,11 +6,7 @@
 #' can be provided. A subset of manually chosen links can also be provided as a data.frame. The fasta/position files can be generated using LDWeaver::generate_Links_SNPS_fasta().
 #' If metadata is available, they can be visualised along with the allele data in a separate panel.
 #'
-#' @importFrom ape read.tree
-#' @importFrom phytools midpoint.root
-#' @importFrom ggtree ggtree gheatmap
 #' @importFrom ggplot2 ggsave scale_fill_viridis_d
-#' @importFrom ggnewscale new_scale_fill
 #'
 #' @param tree_path Path to tree file (must be readable using ape::read.tree). tip.labels must exactly match the sequence names in the fasta and metadata files.
 #'
@@ -55,6 +51,13 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
                      plot_width = 15){
 
   # Change the file to give an optional fasta + pos file genereated from LDWeaver::snpdat_to_fa()
+
+  ## There is a chance some people don't use LDWeaver to generate these plots, convert these requirements to suggestions
+  if(!requireNamespace("ape") & !requireNamespace("phytools") & !requireNamespace("ggtree") & !requireNamespace("ggnewscale")){
+    message("This feature requires ape, phytools, ggtrree and ggnewscale packages, please make sure they are installed.")
+    return(invisible())
+  }
+
 
 
   # sanity checks and IO

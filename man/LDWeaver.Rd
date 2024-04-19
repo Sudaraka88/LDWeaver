@@ -29,7 +29,8 @@ LDWeaver(
   multicore = T,
   max_blk_sz = 10000,
   ncores = NULL,
-  save_additional_outputs = F
+  save_additional_outputs = F,
+  mega_dset = F
 )
 }
 \arguments{
@@ -87,6 +88,8 @@ and run time for ARACNE. If all links are required to be returned, set to 0 (i.e
 \item{ncores}{specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL}
 
 \item{save_additional_outputs}{specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)}
+
+\item{mega_dset}{To analyse megascale datasets using spam and spam64 packages, set to TRUE (default = F). Only do so if the normal analysis fails (since LDWeaver 1.5)}
 }
 \value{
 Numeric Value 0 if successful (all generated outputs will be saved)

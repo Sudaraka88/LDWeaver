@@ -10,7 +10,7 @@ Encoding: UTF-8
 LazyData: true
 biocViews: Software
 Depends: R (>= 4.0.0),
-Imports: 
+Imports:          
          ape,
          Biostrings,
          chromoMap,
@@ -19,9 +19,7 @@ Imports:
          fitdistrplus,
          GenomicRanges,
          GenomeInfoDb,
-         ggnewscale,
          ggplot2,
-         ggtree,
          ggraph,
          grDevices,
          heatmap3,
@@ -32,7 +30,6 @@ Imports:
          MatrixExtra,
          methods,
          parallel,
-         phytools,
          plyr,
          RColorBrewer,
          Rcpp,
@@ -42,6 +39,9 @@ Imports:
          utils,
          VariantAnnotation
 Suggests:
+         phytools,
+         ggtree,
+         ggnewscale,
          spam,
          spam64
 LinkingTo: Rcpp, RcppArmadillo

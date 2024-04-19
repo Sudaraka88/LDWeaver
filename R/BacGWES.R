@@ -35,7 +35,7 @@
 #' @param ncores specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
 #' @param save_additional_outputs specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)
-#'
+#' @param mega_dset To analyse megascale datasets using spam and spam64 packages, set to TRUE (default = F). Only do so if the normal analysis fails (since LDWeaver 1.5)
 #'
 #' @return Numeric Value 0 if successful (all generated outputs will be saved)
 #'
@@ -50,7 +50,8 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
                     SnpEff_Annotate = T, sr_dist = 20000, lr_retain_links = 1e6,
                     max_tophits = 250, num_clusts_CDS = 3, srp_cutoff = 3, tanglegram_break_segments = 5,
                     write_gwesExplorer = T, multicore = T, max_blk_sz = 10000, ncores = NULL,
-                    save_additional_outputs = F){
+                    save_additional_outputs = F, mega_dset = F){
+
   # Build blocks
   # BLK1: Extract SNPs and create sparse Mx from MSA (fasta)
   # BLK2: Parse GBK or GFF+REF
@@ -65,10 +66,10 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   # BLK11: Cleanup
 
   #TODO: Provide the option to skip SNP extraction and use the whole provided alignment (redundant if pre-filtered)
-  #TODO: Add the option to provide genbank file without reference sequence
+  #TODO: Add the option to provide GFF file without reference sequence
   #TODO: Count through blocks and automate the displayed BLOCK NUMBER
-  #TODO: genbankr is being droped from the newest bioconductor, add alternative (https://github.com/gmbecker/genbankr)
   #TODO: Add Hamming Distance plot, can we have a SNP Tree + Hamming Distance weights to show population structure control?
+  #TODO: Drop ggtree dependency
 
   #NOTE: SnpEff does not parse the GBK and GFF3 file from the same refseq reference genome the same way. There might be differences between annotations/tophits/etc.
   # # Welcome message # #
@@ -157,6 +158,8 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   if(aln_has_all_bases == F){ # For snp-only alignments, reference and alignment length checks will fail, stop checking
     validate_ref_ann_lengths = F
   }
+
+
 
   # normalise_input_paths
   aln_path = normalizePath(aln_path)
@@ -318,7 +321,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   cat("\n\n #################### BLOCK 3 #################### \n\n")
   if(!file.exists(cds_var_path)) {
     cat("Estimating the variation in CDS \n")
-    cds_var = LDWeaver::estimate_variation_in_CDS(gbk = gbk, gff = gff, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path)
+    cds_var = LDWeaver::estimate_variation_in_CDS(gbk = gbk, gff = gff, snp.dat = snp.dat, ncores = ncores, num_clusts_CDS = num_clusts_CDS, clust_plt_path = clust_plt_path, mega_dset = mega_dset)
     if(save_additional_outputs){
       saveRDS(cds_var, cds_var_path)
     }
