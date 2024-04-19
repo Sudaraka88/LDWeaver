@@ -2,7 +2,7 @@
 % Please edit documentation in R/extractSNPs.R
 \name{parse_fasta_alignment}
 \alias{parse_fasta_alignment}
-\title{extractSNPs}
+\title{extractSNP_from_MSA}
 \usage{
 parse_fasta_alignment(
   aln_path,

@@ -1,4 +1,4 @@
-#' extractSNPs
+#' extractSNP_from_MSA
 #'
 #' Function to extract SNPs from a multi-fasta alignment.
 #'
@@ -87,9 +87,9 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
 }
 
 
-#' extractSNPs
+#' extractSNPs_from_SNP_MSA
 #'
-#' Function to extract SNPs from a multi-fasta alignment.
+#' Function to extract SNPs from a SNP only multi-fasta alignment. This will be the output from running snp-sites.
 #'
 #' @importFrom Rcpp sourceCpp
 #' @importFrom Matrix sparseMatrix t
