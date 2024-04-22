@@ -1,4 +1,4 @@
-## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon.jpg' align="right" height="160" />
+## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon.jpg' align="right" height="155" />
 
 <!-- badges: start -->
 
