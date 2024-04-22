@@ -2,14 +2,15 @@
 % Please edit documentation in R/extractSNPs.R
 \name{parse_fasta_SNP_alignment}
 \alias{parse_fasta_SNP_alignment}
-\title{extractSNPs}
+\title{extractSNPs_from_SNP_MSA}
 \usage{
 parse_fasta_SNP_alignment(
   aln_path,
   pos,
   gap_freq = 0.15,
   maf_freq = 0.01,
-  method = "default"
+  method = "default",
+  mega_dset = F
 )
 }
 \arguments{
@@ -22,12 +23,14 @@ parse_fasta_SNP_alignment(
 \item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
 \item{method}{specify the filtering method 'relaxed' or 'default' (default = 'default')}
+
+\item{mega_dset}{set to TRUE for mega scale datasets (default = F)}
 }
 \value{
 R list with SNPs in sparse format and additional parameters
 }
 \description{
-Function to extract SNPs from a multi-fasta alignment.
+Function to extract SNPs from a SNP only multi-fasta alignment. This will be the output from running snp-sites.
 }
 \examples{
 \dontrun{

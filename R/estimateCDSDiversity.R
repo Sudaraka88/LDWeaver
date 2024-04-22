@@ -15,6 +15,7 @@
 #' @param gff output from parsing the gff3 file using LDWeaver::parse_gff_file()
 #' @param num_clusts_CDS parition to genome into num_clusts_CDS regions using k-means (default = 3)
 #' @param clust_plt_path specify path to save CDS variation plot
+#' @param mega_dset set to TRUE for mega scale datasets (default = F)
 #'
 #' @return R list with CDS variation and allele distribution details
 #'
@@ -23,7 +24,7 @@
 #' cds_var <- estimate_variation_in_CDS(gbk, snp.dat, ncores = 10)
 #' }
 #' @export
-estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, num_clusts_CDS = 3, clust_plt_path = NULL){
+estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, num_clusts_CDS = 3, clust_plt_path = NULL, mega_dset = FALSE){
   ## NOTE: genbankr depreciation, removed the following import
   # importFrom genbankr cds getSeq
 
@@ -57,12 +58,28 @@ estimate_variation_in_CDS = function(snp.dat, ncores, gbk = NULL, gff = NULL, nu
   var_estimate = rep(NA, ncds)
 
 
-  variation = matrix(c(Matrix::rowSums(snp.dat$snp.matrix_A),
-                       Matrix::rowSums(snp.dat$snp.matrix_C),
-                       Matrix::rowSums(snp.dat$snp.matrix_G),
-                       Matrix::rowSums(snp.dat$snp.matrix_T),
-                       Matrix::rowSums(snp.dat$snp.matrix_N)),
-                     ncol = snp.dat$nsnp, byrow = T)
+  if(mega_dset){ # Using SPAM
+    if(!requireNamespace("spam") & !requireNamespace("spam64")){
+      message("This feature requires spam and spam64 packages.")
+      return(invisible())
+    }
+    variation = matrix(c(spam::rowSums(snp.dat$snp.matrix_A),
+                         spam::rowSums(snp.dat$snp.matrix_C),
+                         spam::rowSums(snp.dat$snp.matrix_G),
+                         spam::rowSums(snp.dat$snp.matrix_T),
+                         spam::rowSums(snp.dat$snp.matrix_N)),
+                       ncol = snp.dat$nsnp, byrow = T)
+
+  } else { # Using the Matrix package
+    variation = matrix(c(Matrix::rowSums(snp.dat$snp.matrix_A),
+                         Matrix::rowSums(snp.dat$snp.matrix_C),
+                         Matrix::rowSums(snp.dat$snp.matrix_G),
+                         Matrix::rowSums(snp.dat$snp.matrix_T),
+                         Matrix::rowSums(snp.dat$snp.matrix_N)),
+                       ncol = snp.dat$nsnp, byrow = T)
+
+  }
+
 
   # Generate a reference masking mx with 0 at reference allele
   reference = matrix(rep(1, 5*snp.dat$nsnp), nrow = 5); .ACGTN2num(reference, ref, ncores)

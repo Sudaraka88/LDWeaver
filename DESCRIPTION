@@ -1,7 +1,7 @@
 Package: LDWeaver
 Type: Package
 Title: Genomewide Epistasis Analysis on Bacteria
-Version: 1.4
+Version: 1.5
 Authors@R: person("Sudaraka", "Mallawaarachchi", email = "smallawaarachchi@gmail.com", role = c("aut", "cre"))
 Maintainer: Sudaraka Mallawaarachchi <smallawaarachchi@gmail.com>
 Description: Perform genomewide epistasis analysis by evaluating the LD structure in bacteria.
@@ -10,7 +10,7 @@ Encoding: UTF-8
 LazyData: true
 biocViews: Software
 Depends: R (>= 4.0.0),
-Imports: 
+Imports:          
          ape,
          Biostrings,
          chromoMap,
@@ -19,9 +19,7 @@ Imports:
          fitdistrplus,
          GenomicRanges,
          GenomeInfoDb,
-         ggnewscale,
          ggplot2,
-         ggtree,
          ggraph,
          grDevices,
          heatmap3,
@@ -32,7 +30,6 @@ Imports:
          MatrixExtra,
          methods,
          parallel,
-         phytools,
          plyr,
          RColorBrewer,
          Rcpp,
@@ -41,8 +38,14 @@ Imports:
          stats,
          utils,
          VariantAnnotation
+Suggests:
+         phytools,
+         ggtree,
+         ggnewscale,
+         spam,
+         spam64
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://github.com/Sudaraka88/LDWeaver
 BugReports: https://github.com/Sudaraka88/LDWeaver/issues
 Biarch: TRUE

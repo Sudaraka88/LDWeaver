@@ -10,7 +10,8 @@ estimate_variation_in_CDS(
   gbk = NULL,
   gff = NULL,
   num_clusts_CDS = 3,
-  clust_plt_path = NULL
+  clust_plt_path = NULL,
+  mega_dset = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ estimate_variation_in_CDS(
 \item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3)}
 
 \item{clust_plt_path}{specify path to save CDS variation plot}
+
+\item{mega_dset}{set to TRUE for mega scale datasets (default = F)}
 }
 \value{
 R list with CDS variation and allele distribution details

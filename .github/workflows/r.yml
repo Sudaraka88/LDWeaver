@@ -8,7 +8,7 @@ on:
   schedule:
     - cron:  '1 1 1 * *'
 
-name: R-CMD-check
+name: R-CMD-check-hard
 
 jobs:
   R-CMD-check:
@@ -24,14 +24,14 @@ jobs:
           - {os: windows-latest, r: 'release'}
          # - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
-          - {os: ubuntu-latest,   r: 'oldrel-1'}
+         # - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -43,7 +43,13 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          dependencies: '"hard"'
+          cache: false
+          extra-packages: |
+            any::rcmdcheck
+            any::testthat
+            any::knitr
+            any::rmarkdown
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2

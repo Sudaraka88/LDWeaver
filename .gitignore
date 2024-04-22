@@ -7,3 +7,6 @@
 .DS_Store
 *.Rmd
 Makevars
+
+testscripts.R
+testscript_op

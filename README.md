@@ -1,3 +1,5 @@
+## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon.jpg' align="right" height="155" />
+
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
@@ -5,9 +7,7 @@
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
-# LDWeaver
-
-## Genomewide Search for Evidence of Co-selection and Epistasis in Bacteria
+## About
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
@@ -93,97 +93,9 @@ LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann
 
 >**Note** If you are using a SNP-only alignment, set `aln_has_all_bases = F` and provide `pos`, a numeric vector of SNP positions. Each SNP in the SNP-only alignment must have a unique SNP position.
 
-## Basic Outputs
-
-If the above steps worked as expected, the following output will be saved to a 
-folder called `sample`, which should be created in the current working directory.
-(Working directory can be queried using: `getwd()`).
-
-- Figures
-
-  1.  sample/cX_fit.png - shows the distribution and modelling of the
-      background linkage disequilibrium (estimated using weighted Mutual
-      Information) vs. bp-separation within each cluster (X = 1,2 in the
-      example)
-  2.  sample/CDS_clustering.png - shows the genome partitioning, based on 
-      the CDS diversity (compared to the reference sequence)
-  3.  sample/sr_gwes_clust.png - short-range GWES plot for each cluster (2 in
-      this case)
-  4.  sample/sr_gwes_combi.png - combined short-range GWES plot (for links with
-      bp positions spanning two clusters, the max srp_value is used)
-  5.  sample/lr_gwes.png - Long range GWES plot (similar to the output from
-      <a href="https://github.com/santeripuranen/SpydrPick" target="_blank">SpydrPick</a>)
-
-- Outputs
-
-  1.  sample/sr_links.tsv - tab separated file containing details on
-      short-range links (i.e. links \<= sr_dist bp apart)
-  2.  sample/lr_links.tsv - tab separated file containing details on long-range
-      links (i.e. links \> sr_dist bp apart)
-      
-## Additional Outputs
-
-> **Note** The default `sr_dist` value in LDWeaver is 20000bp (user modifiable).
-> This means that by default, links from SNPs <20kb apart are considered short-range.
-
-- Additional Outputs (*not generated*) - can be used to avoid costly re-computations.
-
-  1.  Additional_Outputs/snp_ACGTN.rds - list comprising sparse SNP data from the alignment
-  2.  Additional_Outputs/parsed_gbk.rds - GenBankRecord of the genbank annotation data
-  3.  Additional_Outputs/hdw.rds - named vector comprising Hamming distance weights for
-      each sequence
-  4.  Additional_Outputs/cds_var.rds - list comprising alignment diversity information
-
-> **Note** For very large datsets, the user has the option to set `save_additional_outputs=T`. 
-> When these four files are present in \<dset\>/Additional_Outputs/, the saved information
-> will be used instead of re-computing.
-
-## Performing Annotations
-
-By default, LDWeaver performs detailed annotations on all link SNPs using
-<a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff</a>. 
-This will create the following outputs in \<dset\>. Note that `X` here 
-refers to **sr** (short range) or **lr** (long range).
-
-- Outputs
-
-  1. Annotated_links/X_links_annotated.tsv - tab separated file similar to
-      sample/X_links.tsv with additional SnpEff annotations and allele
-      distribution information
-  2. Tophits/X_tophits.tsv - tab separated file containing the top 250
-      links (user modifiable with `max_tophipts`) . Several filters are applied 
-      to extract the top links from Annotated_links/X_links_annotated.tsv
-  3. SR_Tanglegram - folder compirising html tanglegrams to easily
-      visualise links and the corresponding genomic regions
-  4. GWESExplorer/X_GWESExplorer - folder containing the outputs necessary to dynamically 
-      explore links using
-      <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a> 
-      (X = sr,lr).
-
-> **Note** The default srp_cutoff is 3 (i.e., p=0.001). Short-range links
-> with p\>0.001 are automatically discarded, this can be modified using
-> the \<srp_cutoff\> option. The default max_tophits value is 250, this
-> can be modified using the \<max_tophits\> option.
-
-- Temporary files created during snpEff annotations. These are all written to \<dset\>/Temp 
-and can be ignored or safely deleted)
-
-  1. Temp/snpEff_data - data folder for snpEff
-  2. Temp/snpEff.config - configuration file for snpEff
-  3. Temp/X_annotations.tsv - tab separated file containing full snpEff
-      annotations on each site associated with a short-range GWES link
-      with srp_max \> srp_cutoff
-  4. Temp/X_annotataed_stats.genes.txt - annotations and statistics in tab
-      separated format
-  5. Temp/X_annotated_stats.html - annotations and statistics in html
-      format
-  6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
-      annotation pipeline
-
-
 ## Citation
 
-To cite LDWeaver please use: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
+Please cite LDWeaver using: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
 
 ## Detailed Workthrough using Real Data
 
@@ -342,3 +254,93 @@ LDWeaver::create_network(network,
           plot_w = 2000, plot_h = 2000)
 ```
 ![](inst/sup/network_plot.png)
+
+## Additional Information
+
+### Key Outputs
+
+If the above steps worked as expected, the following output will be saved to a 
+folder called `sample`, which should be created in the current working directory.
+(Working directory can be queried using: `getwd()`).
+
+- Figures
+
+  1.  sample/cX_fit.png - shows the distribution and modelling of the
+      background linkage disequilibrium (estimated using weighted Mutual
+      Information) vs. bp-separation within each cluster (X = 1,2 in the
+      example)
+  2.  sample/CDS_clustering.png - shows the genome partitioning, based on 
+      the CDS diversity (compared to the reference sequence)
+  3.  sample/sr_gwes_clust.png - short-range GWES plot for each cluster (2 in
+      this case)
+  4.  sample/sr_gwes_combi.png - combined short-range GWES plot (for links with
+      bp positions spanning two clusters, the max srp_value is used)
+  5.  sample/lr_gwes.png - Long range GWES plot (similar to the output from
+      <a href="https://github.com/santeripuranen/SpydrPick" target="_blank">SpydrPick</a>)
+
+- Outputs
+
+  1.  sample/sr_links.tsv - tab separated file containing details on
+      short-range links (i.e. links \<= sr_dist bp apart)
+  2.  sample/lr_links.tsv - tab separated file containing details on long-range
+      links (i.e. links \> sr_dist bp apart)
+      
+### Extra Outputs
+
+> **Note** The default `sr_dist` value in LDWeaver is 20000bp (user modifiable).
+> This means that by default, links from SNPs <20kb apart are considered short-range.
+
+- Additional Outputs (*not generated*) - can be used to avoid costly re-computations.
+
+  1.  Additional_Outputs/snp_ACGTN.rds - list comprising sparse SNP data from the alignment
+  2.  Additional_Outputs/parsed_gbk.rds - GenBankRecord of the genbank annotation data
+  3.  Additional_Outputs/hdw.rds - named vector comprising Hamming distance weights for
+      each sequence
+  4.  Additional_Outputs/cds_var.rds - list comprising alignment diversity information
+
+> **Note** For very large datsets, the user has the option to set `save_additional_outputs=T`. 
+> When these four files are present in \<dset\>/Additional_Outputs/, the saved information
+> will be used instead of re-computing.
+
+### Performing Annotations
+
+By default, LDWeaver performs detailed annotations on all link SNPs using
+<a href="https://pcingola.github.io/SnpEff/" target="_blank">SnpEff</a>. 
+This will create the following outputs in \<dset\>. Note that `X` here 
+refers to **sr** (short range) or **lr** (long range).
+
+- Outputs
+
+  1. Annotated_links/X_links_annotated.tsv - tab separated file similar to
+      sample/X_links.tsv with additional SnpEff annotations and allele
+      distribution information
+  2. Tophits/X_tophits.tsv - tab separated file containing the top 250
+      links (user modifiable with `max_tophipts`) . Several filters are applied 
+      to extract the top links from Annotated_links/X_links_annotated.tsv
+  3. SR_Tanglegram - folder compirising html tanglegrams to easily
+      visualise links and the corresponding genomic regions
+  4. GWESExplorer/X_GWESExplorer - folder containing the outputs necessary to dynamically 
+      explore links using
+      <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a> 
+      (X = sr,lr).
+
+> **Note** The default srp_cutoff is 3 (i.e., p=0.001). Short-range links
+> with p\>0.001 are automatically discarded, this can be modified using
+> the \<srp_cutoff\> option. The default max_tophits value is 250, this
+> can be modified using the \<max_tophits\> option.
+
+- Temporary files created during snpEff annotations. These are all written to \<dset\>/Temp 
+and can be ignored or safely deleted)
+
+  1. Temp/snpEff_data - data folder for snpEff
+  2. Temp/snpEff.config - configuration file for snpEff
+  3. Temp/X_annotations.tsv - tab separated file containing full snpEff
+      annotations on each site associated with a short-range GWES link
+      with srp_max \> srp_cutoff
+  4. Temp/X_annotataed_stats.genes.txt - annotations and statistics in tab
+      separated format
+  5. Temp/X_annotated_stats.html - annotations and statistics in html
+      format
+  6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
+      annotation pipeline
+

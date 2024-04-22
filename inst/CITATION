@@ -1,4 +1,4 @@
-citHeader("If you use and find LDWeaver useful, please cite:")
+citHeader("If you find LDWeaver useful, please cite:")
 
 citEntry(entry = "Article",
 title        = "Detecting co-selection through excess linkage disequilibrium in bacterial genomes",

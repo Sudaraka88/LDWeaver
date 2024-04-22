@@ -4,12 +4,14 @@
 \alias{estimate_Hamming_distance_weights}
 \title{estimate_Hamming_distance_weights}
 \usage{
-estimate_Hamming_distance_weights(snp.dat, threshold = 0.1)
+estimate_Hamming_distance_weights(snp.dat, threshold = 0.1, mega_dset = F)
 }
 \arguments{
 \item{snp.dat}{output from parsing the multi fasta alignment using LDWeaver::parse_fasta_alignment()}
 
 \item{threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%)}
+
+\item{mega_dset}{set to TRUE for mega scale datasets (default = F)}
 }
 \value{
 Vector with Hamming distance weights for each sequence that can be used to reweight Mutual Information estimates
