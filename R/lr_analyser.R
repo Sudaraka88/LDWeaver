@@ -141,7 +141,8 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
         gbk = readRDS(parsed_gbk_path )
       } else {
         cat("Reading the GBK file \n")
-        gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+        gbk_ = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g, length_check = validate_ref_ann_lengths) # will return 1 if fails
+        gbk = gbk_$gbk
       }
     } else if(!is.null(gff3_path)){ # gff
       parsed_gff_path = file.path(dset, "parsed_gff3.rds")
@@ -155,9 +156,6 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
       }
 
     }
-
-
-
 
     tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,

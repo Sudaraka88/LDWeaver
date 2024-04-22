@@ -8,7 +8,8 @@ parse_fasta_alignment(
   aln_path,
   gap_freq = 0.15,
   maf_freq = 0.01,
-  method = "default"
+  method = "default",
+  mega_dset = F
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ parse_fasta_alignment(
 \item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
 \item{method}{specify the filtering method 'relaxed' or 'default' (default = 'default')}
+
+\item{mega_dset}{set to TRUE for mega scale datasets (default = F)}
 }
 \value{
 R list with SNPs in sparse format and additional parameters

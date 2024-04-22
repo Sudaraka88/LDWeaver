@@ -9,6 +9,7 @@
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
 #' @param method specify the filtering method 'relaxed' or 'default' (default = 'default')
+#' @param mega_dset set to TRUE for mega scale datasets (default = F)
 #'
 #' @return R list with SNPs in sparse format and additional parameters
 #' @useDynLib LDWeaver
@@ -19,7 +20,7 @@
 #' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
 #' }
 #' @export
-parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
+parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default", mega_dset = F){
 
   # Check inputs
   aln_path = normalizePath(aln_path) # C safety (~ character causes crash)
@@ -45,40 +46,71 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
   seq.names <- gsub("^>","",snp.data$seq.names); snp.data$seq.names = NULL
   uqe = apply(snp.data$ACGTN_table>0, 1, function(x) as.numeric(x>0)); snp.data$ACGTN_table = NULL
 
-  snp.matrix_A <- Matrix::sparseMatrix(i=snp.data$i_A,
-                                       j=snp.data$j_A,
-                                       x=as.logical(snp.data$x_A),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
 
-  snp.matrix_C <- Matrix::sparseMatrix(i=snp.data$i_C,
-                                       j=snp.data$j_C,
-                                       x=as.logical(snp.data$x_C),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
 
-  snp.matrix_G <- Matrix::sparseMatrix(i=snp.data$i_G,
-                                       j=snp.data$j_G,
-                                       x=as.logical(snp.data$x_G),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
+  if(mega_dset){ # Using SPAM
+    if(!requireNamespace("spam") & !requireNamespace("spam64")){
+      message("This feature requires spam and spam64 packages.")
+      return(invisible())
+    } else {
+      snp.matrix_A <- spam::spam(list(i=snp.data$i_A, j=snp.data$j_A, values=as.logical(snp.data$x_A)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
 
-  snp.matrix_T <- Matrix::sparseMatrix(i=snp.data$i_T,
-                                       j=snp.data$j_T,
-                                       x=as.logical(snp.data$x_T),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
+      snp.matrix_C <- spam::spam(list(i=snp.data$i_C, j=snp.data$j_C, values=as.logical(snp.data$x_C)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
 
-  snp.matrix_N <- Matrix::sparseMatrix(i=snp.data$i_N,
-                                       j=snp.data$j_N,
-                                       x=as.logical(snp.data$x_N),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data = NULL
+      snp.matrix_G <- spam::spam(list(i=snp.data$i_G, j=snp.data$j_G, values=as.logical(snp.data$x_G)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
+
+      snp.matrix_T <- spam::spam(list(i=snp.data$i_T, j=snp.data$j_T, values=as.logical(snp.data$x_T)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
+
+      snp.matrix_N <- spam::spam(list(i=snp.data$i_N, j=snp.data$j_N, values=as.logical(snp.data$x_N)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data = NULL
+    }
+  }
+  else {
+    snp.matrix_A <- Matrix::sparseMatrix(i=snp.data$i_A,
+                                         j=snp.data$j_A,
+                                         x=as.logical(snp.data$x_A),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
+
+    snp.matrix_C <- Matrix::sparseMatrix(i=snp.data$i_C,
+                                         j=snp.data$j_C,
+                                         x=as.logical(snp.data$x_C),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
+
+    snp.matrix_G <- Matrix::sparseMatrix(i=snp.data$i_G,
+                                         j=snp.data$j_G,
+                                         x=as.logical(snp.data$x_G),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
+
+    snp.matrix_T <- Matrix::sparseMatrix(i=snp.data$i_T,
+                                         j=snp.data$j_T,
+                                         x=as.logical(snp.data$x_T),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
+
+    snp.matrix_N <- Matrix::sparseMatrix(i=snp.data$i_N,
+                                         j=snp.data$j_N,
+                                         x=as.logical(snp.data$x_N),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data = NULL
+
+  }
 
   return(list(snp.matrix_A=Matrix::t(snp.matrix_A), snp.matrix_C=Matrix::t(snp.matrix_C),
               snp.matrix_G=Matrix::t(snp.matrix_G), snp.matrix_T=Matrix::t(snp.matrix_T),
@@ -99,6 +131,7 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
 #' @param gap_freq sites with a gap frequency >gap_greq will be dropped (default = 0.15)
 #' @param maf_freq sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)
 #' @param method specify the filtering method 'relaxed' or 'default' (default = 'default')
+#' @param mega_dset set to TRUE for mega scale datasets (default = F)
 #'
 #' @return R list with SNPs in sparse format and additional parameters
 #' @useDynLib LDWeaver
@@ -109,7 +142,7 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
 #' snp.dat <- parseFastaAlignment(aln_path, gap_freq = 0.15, maf_freq = 0.01, method = "default")
 #' }
 #' @export
-parse_fasta_SNP_alignment <- function(aln_path, pos, gap_freq = 0.15, maf_freq = 0.01, method = "default"){
+parse_fasta_SNP_alignment <- function(aln_path, pos, gap_freq = 0.15, maf_freq = 0.01, method = "default", mega_dset = F){
 
   ## Update to accept a SNP alignment with a positions files (output from snp-sites or https://github.com/sudaraka88/FastaR)
   # We also input pos <numeric vector> here 2023/10/12
@@ -147,42 +180,68 @@ parse_fasta_SNP_alignment <- function(aln_path, pos, gap_freq = 0.15, maf_freq =
   seq.names <- gsub("^>","",snp.data$seq.names); snp.data$seq.names = NULL
   uqe = apply(snp.data$ACGTN_table>0, 1, function(x) as.numeric(x>0)); snp.data$ACGTN_table = NULL # uqe is not sensitive to SNP positions
 
+  if(mega_dset){ # Using SPAM
+    if(!requireNamespace("spam") & !requireNamespace("spam64")){
+      message("This feature requires spam and spam64 packages.")
+      return(invisible())
+    } else {
+      snp.matrix_A <- spam::spam(list(i=snp.data$i_A, j=snp.data$j_A, values=as.logical(snp.data$x_A)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
 
-  snp.matrix_A <- Matrix::sparseMatrix(i=snp.data$i_A,
-                                       j=snp.data$j_A,
-                                       x=as.logical(snp.data$x_A),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
+      snp.matrix_C <- spam::spam(list(i=snp.data$i_C, j=snp.data$j_C, values=as.logical(snp.data$x_C)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
 
-  snp.matrix_C <- Matrix::sparseMatrix(i=snp.data$i_C,
-                                       j=snp.data$j_C,
-                                       x=as.logical(snp.data$x_C),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
+      snp.matrix_G <- spam::spam(list(i=snp.data$i_G, j=snp.data$j_G, values=as.logical(snp.data$x_G)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
 
-  snp.matrix_G <- Matrix::sparseMatrix(i=snp.data$i_G,
-                                       j=snp.data$j_G,
-                                       x=as.logical(snp.data$x_G),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
+      snp.matrix_T <- spam::spam(list(i=snp.data$i_T, j=snp.data$j_T, values=as.logical(snp.data$x_T)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
 
-  snp.matrix_T <- Matrix::sparseMatrix(i=snp.data$i_T,
-                                       j=snp.data$j_T,
-                                       x=as.logical(snp.data$x_T),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
+      snp.matrix_N <- spam::spam(list(i=snp.data$i_N, j=snp.data$j_N, values=as.logical(snp.data$x_N)),
+                                 nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
+      snp.data = NULL
+    }
+  }
+  else {
+    snp.matrix_A <- Matrix::sparseMatrix(i=snp.data$i_A,
+                                         j=snp.data$j_A,
+                                         x=as.logical(snp.data$x_A),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
 
-  snp.matrix_N <- Matrix::sparseMatrix(i=snp.data$i_N,
-                                       j=snp.data$j_N,
-                                       x=as.logical(snp.data$x_N),
-                                       dims = c(snp.param$num.seqs, snp.param$num.snps),
-                                       dimnames = list(seq.names, snp.param$pos))
-  snp.data = NULL
+    snp.matrix_C <- Matrix::sparseMatrix(i=snp.data$i_C,
+                                         j=snp.data$j_C,
+                                         x=as.logical(snp.data$x_C),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_C = snp.data$j_C = snp.data$x_C = NULL
 
+    snp.matrix_G <- Matrix::sparseMatrix(i=snp.data$i_G,
+                                         j=snp.data$j_G,
+                                         x=as.logical(snp.data$x_G),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_G = snp.data$j_G = snp.data$x_G = NULL
+
+    snp.matrix_T <- Matrix::sparseMatrix(i=snp.data$i_T,
+                                         j=snp.data$j_T,
+                                         x=as.logical(snp.data$x_T),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data$i_T = snp.data$j_T = snp.data$x_T = NULL
+
+    snp.matrix_N <- Matrix::sparseMatrix(i=snp.data$i_N,
+                                         j=snp.data$j_N,
+                                         x=as.logical(snp.data$x_N),
+                                         dims = c(snp.param$num.seqs, snp.param$num.snps),
+                                         dimnames = list(seq.names, snp.param$pos))
+    snp.data = NULL
+  }
   # g is wrong, change to NULL
 
   return(list(snp.matrix_A=Matrix::t(snp.matrix_A), snp.matrix_C=Matrix::t(snp.matrix_C),

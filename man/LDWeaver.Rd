@@ -36,69 +36,80 @@ LDWeaver(
 \arguments{
 \item{dset}{name of the dataset, all outputs will be saved to the folder <dset>}
 
-\item{aln_path}{path to the multi fasta alignment}
+\item{aln_path}{path to the multi fasta alignment - can be a SNP only or full alignment}
 
-\item{aln_has_all_bases}{specify whether the alignment has all bases in the reference genome (default = T). For example, if it's a SNP only alignment, set to F and provide pos}
+\item{aln_has_all_bases}{specify whether the alignment has all bases in the reference genome (default = T). For a SNP only alignment, set to F and provide SNP positions in pos (see example below)}
 
-\item{pos}{numeric vector of positions for each base in the alignment (default = NULL). Only required if sites are missing from the alignment (e.g. SNP alignment output from snp-sites or https://github.com/Sudaraka88/FastaR)}
+\item{pos}{numeric vector of positions for each base in the alignment (default = NULL). Only required for SNP alignments (e.g. Output from snp-sites or FastaR https://github.com/Sudaraka88/FastaR)}
 
-\item{gbk_path}{path to genbank annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.}
+\item{gbk_path}{path to genbank annotations file (default = NULL). Only provide one of genbank or gff3}
 
-\item{gff3_path}{path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3 annotation files.}
+\item{gff3_path}{path to gff3 annotations file (default = NULL). Only provide one of genbank or gff3}
 
-\item{ref_fasta_path}{path to Reference fasta file. The file MUST be in fasta format and contain exactly one sequence! Required for gff3 annotations,
-not required for genbank annotations if the file contains the reference sequence.}
+\item{ref_fasta_path}{path to Reference fasta file. This must be in fasta format and contain exactly one sequence! Only required for gff3 annotations}
 
-\item{validate_ref_ann_lengths}{check if the gbk reference sequence length matches the with fasta alignment (default = T)}
+\item{validate_ref_ann_lengths}{check if the reference sequence length matches with fasta alignment. (default = T for full alignments, = F for snp-only alignments.). Set to F for alignments that only contain a portion of the genome}
 
-\item{snp_filt_method}{specify the filtering method for SNP extraction: 'relaxed' or 'default' (default = 'default'). Unlike default, relaxed mode considers ambiguous/gap characters (N) as minor alleles when applying the
-maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively dropped and allowed by 'default' and 'relaxed' methods.}
+\item{snp_filt_method}{specify SNP filtering method: 'relaxed' or 'default' (default = 'default'). Unlike default, relaxed considers ambiguous/gap characters (N) as minor alleles when applying the
+maf_freq filter. Eg: Under default filter values, a site with allele frequencies A:0.85, C:0.0095, N:0.1405 will be respectively, dropped and allowed by 'default' and 'relaxed'}
 
 \item{gap_freq}{sites with a gap frequency >gap_greq will be dropped (default = 0.15)}
 
 \item{maf_freq}{sites with a minor allele frequency <maf_freq will be dropped (default = 0.01)}
 
-\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal.}
+\item{hdw_threshold}{Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal}
 
-\item{perform_SR_analysis_only}{specify whether to only perform the short range link analysis (default = FALSE)}
+\item{perform_SR_analysis_only}{specify whether to only perform LDWeaver (short-range link) analysis. (default = FALSE) will analyse all links (i.e., LDWeaver + SpydrPick)}
 
 \item{SnpEff_Annotate}{specify whether to perform annotations using SnpEff (default = TRUE)}
 
-\item{sr_dist}{links less than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp.}
+\item{sr_dist}{links shorter than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp}
 
-\item{lr_retain_links}{specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved}
+\item{lr_retain_links}{specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved such approximately this many links will be retained}
 
 \item{max_tophits}{specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000}
 
-\item{num_clusts_CDS}{parition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10}
+\item{num_clusts_CDS}{partition to genome into num_clusts_CDS regions using k-means (default = 3) range 1 - 10 - accounts for within genome heterogeneity in the short-range analysis}
 
-\item{srp_cutoff}{specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame. This setting has no impact on the
-modelling since all links are used. However, setting a threshold > 2 will generally reduce the memory usage, plotting time (default = 3, i.e. corresponding to p = 0.001),
-and run time for ARACNE. If all links are required to be returned, set to 0 (i.e. corresponding to p = 1), range 0 - 5}
+\item{srp_cutoff}{specify the short-range -log10(p) cut-off value to discard short-range links before returning the data.frame (default = 3, i.e., p = 10^-3). This setting has no impact on modelling since all links are used.
+Larger values will reduce memory usage, plotting time and ARACNE run time. If all links are required, set to 0 (i.e. p = 10^0 = 1), range 0 - 5}
 
-\item{tanglegram_break_segments}{specify the number of genome segments to prepare - one tanglegram per segment (default = 5), range 1 - 10. Set NULL to skip tanglegram}
+\item{tanglegram_break_segments}{specify the number of genome tanglegram segments to prepare (default = 5 segments). Set NULL to skip tanglegram. range 1 - 10.}
 
-\item{write_gwesExplorer}{specify whether output for GWESExplorer is required (default = T)}
+\item{write_gwesExplorer}{specify whether to write output for GWESExplorer (default = T)}
 
 \item{multicore}{specify whether to use parallel processing (default = T)}
 
 \item{max_blk_sz}{specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000}
 
-\item{ncores}{specify the number of cores to use for parallel processing (default = NULL), will auto detect if NULL}
+\item{ncores}{specify the number of cores to use for parallel processing. Auto detect (detect = NULL)}
 
 \item{save_additional_outputs}{specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)}
 
-\item{mega_dset}{To analyse megascale datasets using spam and spam64 packages, set to TRUE (default = F). Only do so if the normal analysis fails (since LDWeaver 1.5)}
+\item{mega_dset}{specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is upto 5 times slower, set to TRUE only if the normal analysis fails (default = F)}
 }
 \value{
-Numeric Value 0 if successful (all generated outputs will be saved)
+All generated outputs will be saved to folder <dset>.
 }
 \description{
 Function to run the LDWeaver pipeline
 }
 \examples{
 \dontrun{
-sr_links_red = LDWeaver(dset = "efcm", aln_path = "<efcm_aln>", gbk_path = "<efcm.gbk>")
+# These examples use data included with the package.
+
+# Example 1 - using a full alignment that includes non SNP sites
+dset <- "full_dset"
+gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path, validate_ref_ann_lengths = F)
+
+# Example 2- using a SNP only alignment
+dset <- "snp_dset"
+gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+aln_path <- system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver")
+pos <- as.numeric(readLines(system.file("extdata", "snp_sample.fa.pos", package = "LDWeaver")))
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path, aln_has_all_bases = F, pos = pos, gbk_path = gbk_path)
 }
 }

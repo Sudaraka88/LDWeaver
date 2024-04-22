@@ -32,6 +32,7 @@
 #' @param runARACNE specify whether to run ARACNE on short-range links (default = TRUE), if set to FAULT, all links will be marked as ARACNE=1
 #' @param perform_SR_analysis_only skip the long range link analysis (default = FALSE)
 #' @param order_links return and save links after sorting in short-range p-value order, most to least important (default = T)
+#' @param mega_dset set TRUE for mega scale datasets (default = F)
 #'
 #' @return R data frame with short range GWES links (plots and long range links will be saved)
 #'
@@ -44,7 +45,7 @@
 #' @export
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
                                   sr_dist = 20000, lr_retain_links = 1e6, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
-                                  perform_SR_analysis_only = FALSE, order_links = T){
+                                  perform_SR_analysis_only = FALSE, order_links = T, mega_dset = F){
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -64,8 +65,16 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
 
   # pre-computed parameters
   neff = sum(hdw)
-  hsq = diag(sqrt(hdw))
-
+  hsq = diag(sqrt(hdw)) # For very large datasets this could potentially be a huge matrix! Might have to reconsider this algorithm
+  ### mega datasets
+  if(mega_dset){ # Using SPAM
+    if(!requireNamespace("spam") & !requireNamespace("spam64")){
+      message("This feature requires spam and spam64 packages.")
+      return(invisible())
+    } else {
+      hsq = spam::as.spam(hsq)
+    }
+  }
 
   if(!perform_SR_analysis_only){
     # estimate the number of lr_links to decide on a discard threshold using  all or 1% of SNPs
@@ -87,7 +96,8 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var,
                                             lr_save_path = lr_save_path, from = from_, sr_dist = sr_dist,
                                             lr_retain_links = lr_retain_links, to = to_, ncores = ncores, sr_links = sr_links,
-                                            perform_SR_analysis_only = perform_SR_analysis_only, lr_links_approx = lr_links_approx)
+                                            perform_SR_analysis_only = perform_SR_analysis_only, lr_links_approx = lr_links_approx,
+                                            mega_dset = mega_dset)
 
     cat(paste(" Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s \n"))
   }
@@ -141,7 +151,7 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_links = lr_retain_links, perform_SR_analysis_only = F, lr_links_approx = NULL){
+perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_links = lr_retain_links, perform_SR_analysis_only = F, lr_links_approx = NULL, mega_dset = F){
   # from, to are vectors
 
   # These are static, best passed in here <potential inputs>
@@ -178,29 +188,59 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   rf = snp.dat$r[from]; if(fromISto) rt = rf else rt = snp.dat$r[to]
   uqf = snp.dat$uqe[from, ]; if(fromISto) uqt = uqf else uqt = snp.dat$uqe[to, ]
 
-  # from
-  {
+
+  ### mega datasets
+  if(mega_dset){ # Using SPAM
+    if(!requireNamespace("spam") & !requireNamespace("spam64")){
+      message("This feature requires spam and spam64 packages.")
+      return(invisible())
+    } else {
+      tAfh = spam::tcrossprod(snp.dat$snp.matrix_A[from, ], hsq); pAf = spam::rowSums(tAfh^2)
+      tCfh = spam::tcrossprod(snp.dat$snp.matrix_C[from, ], hsq); pCf = spam::rowSums(tCfh^2)
+      tGfh = spam::tcrossprod(snp.dat$snp.matrix_G[from, ], hsq); pGf = spam::rowSums(tGfh^2)
+      tTfh = spam::tcrossprod(snp.dat$snp.matrix_T[from, ], hsq); pTf = spam::rowSums(tTfh^2)
+      tNfh = spam::tcrossprod(snp.dat$snp.matrix_N[from, ], hsq); pNf = spam::rowSums(tNfh^2)
+
+      if(fromISto){
+        tAth = tAfh; pAt = pAf
+        tCth = tCfh; pCt = pCf
+        tGth = tGfh; pGt = pGf
+        tTth = tTfh; pTt = pTf
+        tNth = tNfh; pNt = pNf
+      } else {
+        # to
+        tAth = spam::tcrossprod(snp.dat$snp.matrix_A[to, ], hsq); pAt = spam::rowSums(tAth^2)#+rt*0.5
+        tCth = spam::tcrossprod(snp.dat$snp.matrix_C[to, ], hsq); pCt = spam::rowSums(tCth^2)#+rt*0.5
+        tGth = spam::tcrossprod(snp.dat$snp.matrix_G[to, ], hsq); pGt = spam::rowSums(tGth^2)#+rt*0.5
+        tTth = spam::tcrossprod(snp.dat$snp.matrix_T[to, ], hsq); pTt = spam::rowSums(tTth^2)#+rt*0.5
+        tNth = spam::tcrossprod(snp.dat$snp.matrix_N[to, ], hsq); pNt = spam::rowSums(tNth^2)#+rt*0.5
+      }
+
+    }
+  } else {
+    ### MATRIX MODE CODE DO NOT CHANGE BELOW
+    # from
     # tAf = as(snp.dat$snp.matrix_A[from, ], 'unpackedMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2) # crashes in linuxMint
     tAf = as(snp.dat$snp.matrix_A[from, ], 'lgeMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
     tCf = as(snp.dat$snp.matrix_C[from, ], 'lgeMatrix'); tCfh = MatrixExtra::tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
     tGf = as(snp.dat$snp.matrix_G[from, ], 'lgeMatrix'); tGfh = MatrixExtra::tcrossprod(tGf, hsq); pGf = Matrix::rowSums(tGfh^2)
     tTf = as(snp.dat$snp.matrix_T[from, ], 'lgeMatrix'); tTfh = MatrixExtra::tcrossprod(tTf, hsq); pTf = Matrix::rowSums(tTfh^2)
     tNf = as(snp.dat$snp.matrix_N[from, ], 'lgeMatrix'); tNfh = MatrixExtra::tcrossprod(tNf, hsq); pNf = Matrix::rowSums(tNfh^2)
-  }
 
-  if(fromISto){
-    tAt = tAf; tAth = tAfh; pAt = pAf
-    tCt = tCf; tCth = tCfh; pCt = pCf
-    tGt = tGf; tGth = tGfh; pGt = pGf
-    tTt = tTf; tTth = tTfh; pTt = pTf
-    tNt = tNf; tNth = tNfh; pNt = pNf
-  } else {
-    # to
-    tAt = as(snp.dat$snp.matrix_A[to, ], 'lgeMatrix'); tAth = MatrixExtra::tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
-    tCt = as(snp.dat$snp.matrix_C[to, ], 'lgeMatrix'); tCth = MatrixExtra::tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
-    tGt = as(snp.dat$snp.matrix_G[to, ], 'lgeMatrix'); tGth = MatrixExtra::tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
-    tTt = as(snp.dat$snp.matrix_T[to, ], 'lgeMatrix'); tTth = MatrixExtra::tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
-    tNt = as(snp.dat$snp.matrix_N[to, ], 'lgeMatrix'); tNth = MatrixExtra::tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
+    if(fromISto){
+      tAt = tAf; tAth = tAfh; pAt = pAf
+      tCt = tCf; tCth = tCfh; pCt = pCf
+      tGt = tGf; tGth = tGfh; pGt = pGf
+      tTt = tTf; tTth = tTfh; pTt = pTf
+      tNt = tNf; tNth = tNfh; pNt = pNf
+    } else {
+      # to
+      tAt = as(snp.dat$snp.matrix_A[to, ], 'lgeMatrix'); tAth = MatrixExtra::tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
+      tCt = as(snp.dat$snp.matrix_C[to, ], 'lgeMatrix'); tCth = MatrixExtra::tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
+      tGt = as(snp.dat$snp.matrix_G[to, ], 'lgeMatrix'); tGth = MatrixExtra::tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
+      tTt = as(snp.dat$snp.matrix_T[to, ], 'lgeMatrix'); tTth = MatrixExtra::tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
+      tNt = as(snp.dat$snp.matrix_N[to, ], 'lgeMatrix'); tNth = MatrixExtra::tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
+    }
   }
 
   den = neff + MatrixExtra::tcrossprod(snp.dat$r[from], snp.dat$r[to]) * 0.5
@@ -209,42 +249,39 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
   rt = 0.5*rt
   # snp_i = 3
   # snp_j = 41
-  {
-    # t0 = Sys.time()
-    MI = matrix(rep(0, length(from)*length(to)), nrow = length(from))
+  # {
+  # t0 = Sys.time()
+  MI = matrix(rep(0, length(from)*length(to)), nrow = length(from))
+  # tX = tAfh; tY = tAth; pX = pAf; pY = pAt; rX = rf; rY = rt; RXY = rft; uqX = uqf[,1]; uqY = uqt[,1]
+  computeMI_Sprase(MI, tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tAfh, tCth, pAf, pCt, rf, rt, rft, uqf[,1], uqt[,2], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tAfh, tGth, pAf, pGt, rf, rt, rft, uqf[,1], uqt[,3], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tAfh, tTth, pAf, pTt, rf, rt, rft, uqf[,1], uqt[,4], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tAfh, tNth, pAf, pNt, rf, rt, rft, uqf[,1], uqt[,5], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
 
-    computeMI_Sprase(MI, tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tAfh, tCth, pAf, pCt, rf, rt, rft, uqf[,1], uqt[,2], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tAfh, tGth, pAf, pGt, rf, rt, rft, uqf[,1], uqt[,3], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tAfh, tTth, pAf, pTt, rf, rt, rft, uqf[,1], uqt[,4], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tAfh, tNth, pAf, pNt, rf, rt, rft, uqf[,1], uqt[,5], den, ncores); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tCfh, tAth, pCf, pAt, rf, rt, rft, uqf[,2], uqt[,1], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tCfh, tCth, pCf, pCt, rf, rt, rft, uqf[,2], uqt[,2], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tCfh, tGth, pCf, pGt, rf, rt, rft, uqf[,2], uqt[,3], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tCfh, tTth, pCf, pTt, rf, rt, rft, uqf[,2], uqt[,4], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tCfh, tNth, pCf, pNt, rf, rt, rft, uqf[,2], uqt[,5], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
 
-    computeMI_Sprase(MI, tCfh, tAth, pCf, pAt, rf, rt, rft, uqf[,2], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tCfh, tCth, pCf, pCt, rf, rt, rft, uqf[,2], uqt[,2], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tCfh, tGth, pCf, pGt, rf, rt, rft, uqf[,2], uqt[,3], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tCfh, tTth, pCf, pTt, rf, rt, rft, uqf[,2], uqt[,4], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tCfh, tNth, pCf, pNt, rf, rt, rft, uqf[,2], uqt[,5], den, ncores); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tGfh, tAth, pGf, pAt, rf, rt, rft, uqf[,3], uqt[,1], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tGfh, tCth, pGf, pCt, rf, rt, rft, uqf[,3], uqt[,2], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tGfh, tGth, pGf, pGt, rf, rt, rft, uqf[,3], uqt[,3], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tGfh, tTth, pGf, pTt, rf, rt, rft, uqf[,3], uqt[,4], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tGfh, tNth, pGf, pNt, rf, rt, rft, uqf[,3], uqt[,5], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
 
-    computeMI_Sprase(MI, tGfh, tAth, pGf, pAt, rf, rt, rft, uqf[,3], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tGfh, tCth, pGf, pCt, rf, rt, rft, uqf[,3], uqt[,2], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tGfh, tGth, pGf, pGt, rf, rt, rft, uqf[,3], uqt[,3], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tGfh, tTth, pGf, pTt, rf, rt, rft, uqf[,3], uqt[,4], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tGfh, tNth, pGf, pNt, rf, rt, rft, uqf[,3], uqt[,5], den, ncores); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tTfh, tAth, pTf, pAt, rf, rt, rft, uqf[,4], uqt[,1], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tTfh, tCth, pTf, pCt, rf, rt, rft, uqf[,4], uqt[,2], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tTfh, tGth, pTf, pGt, rf, rt, rft, uqf[,4], uqt[,3], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tTfh, tTth, pTf, pTt, rf, rt, rft, uqf[,4], uqt[,4], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tTfh, tNth, pTf, pNt, rf, rt, rft, uqf[,4], uqt[,5], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
 
-    computeMI_Sprase(MI, tTfh, tAth, pTf, pAt, rf, rt, rft, uqf[,4], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tTfh, tCth, pTf, pCt, rf, rt, rft, uqf[,4], uqt[,2], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tTfh, tGth, pTf, pGt, rf, rt, rft, uqf[,4], uqt[,3], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tTfh, tTth, pTf, pTt, rf, rt, rft, uqf[,4], uqt[,4], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tTfh, tNth, pTf, pNt, rf, rt, rft, uqf[,4], uqt[,5], den, ncores); #print(MI[snp_i,snp_j])
-
-    computeMI_Sprase(MI, tNfh, tAth, pNf, pAt, rf, rt, rft, uqf[,5], uqt[,1], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tNfh, tCth, pNf, pCt, rf, rt, rft, uqf[,5], uqt[,2], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tNfh, tGth, pNf, pGt, rf, rt, rft, uqf[,5], uqt[,3], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tNfh, tTth, pNf, pTt, rf, rt, rft, uqf[,5], uqt[,4], den, ncores); #print(MI[snp_i,snp_j])
-    computeMI_Sprase(MI, tNfh, tNth, pNf, pNt, rf, rt, rft, uqf[,5], uqt[,5], den, ncores); #print(MI[snp_i,snp_j])
-
-
-  }
+  computeMI_Sprase(MI, tNfh, tAth, pNf, pAt, rf, rt, rft, uqf[,5], uqt[,1], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tNfh, tCth, pNf, pCt, rf, rt, rft, uqf[,5], uqt[,2], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tNfh, tGth, pNf, pGt, rf, rt, rft, uqf[,5], uqt[,3], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tNfh, tTth, pNf, pTt, rf, rt, rft, uqf[,5], uqt[,4], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
+  computeMI_Sprase(MI, tNfh, tNth, pNf, pNt, rf, rt, rft, uqf[,5], uqt[,5], den, ncores, mega_dset = mega_dset); #print(MI[snp_i,snp_j])
 
   # cat("\n")
   # cat(str(MI))
@@ -335,9 +372,22 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
 }
 
 # tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1]
-computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, ncores){
+computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, ncores, mega_dset = F){
+  if(mega_dset){ # Using SPAM
+    ## I'm skipping this test here for efficiency, this is not an exported function, unlikely for anyone to use it wrongly!
+    # if(!requireNamespace("spam") & !requireNamespace("spam64")){
+    #   message("This feature requires spam and spam64 packages.")
+    #   return(invisible())
+    # } else {
+    # }
+    pxy_t = spam::tcrossprod(tX, tY)
+    pxy_t = spam::as.matrix(pxy_t) + 0.5# convert to dense mx (This could potentially be a very large matrix for large datasets, reconsider algorithm?)
+  } else {
+    pxy_t = MatrixExtra::tcrossprod(tX, tY) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx
+  }
+
   # t0 = Sys.time();
-  pxy_t = MatrixExtra::tcrossprod(tX, tY) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx
+
   uq_t = MatrixExtra::tcrossprod(uqX, uqY)
   # rX = 0.5*rX
   # rY = 0.5*rY

@@ -18,7 +18,8 @@ perform_MI_computation(
   srp_cutoff = 3,
   runARACNE = TRUE,
   perform_SR_analysis_only = FALSE,
-  order_links = T
+  order_links = T,
+  mega_dset = F
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ and run time for ARACNE. If all links are required to be returned, set to 0 (i.e
 \item{perform_SR_analysis_only}{skip the long range link analysis (default = FALSE)}
 
 \item{order_links}{return and save links after sorting in short-range p-value order, most to least important (default = T)}
+
+\item{mega_dset}{set TRUE for mega scale datasets (default = F)}
 }
 \value{
 R data frame with short range GWES links (plots and long range links will be saved)

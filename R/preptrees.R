@@ -58,8 +58,6 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
     return(invisible())
   }
 
-
-
   # sanity checks and IO
 
   ### tree_file
