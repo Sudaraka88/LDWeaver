@@ -1,5 +1,3 @@
-## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon.jpg' align="right" height="155" />
-
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
@@ -7,7 +5,8 @@
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
-## About
+## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_dark.jpg' align="right" height="225" />
+
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
@@ -88,7 +87,7 @@ aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 snp_filt_method = "relaxed"
 LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann_lengths = F,
-        num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
+num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ```
 
 >**Note** If you are using a SNP-only alignment, set `aln_has_all_bases = F` and provide `pos`, a numeric vector of SNP positions. Each SNP in the SNP-only alignment must have a unique SNP position.
@@ -125,9 +124,9 @@ aln_path <- "spn23f_msch.aln.gz"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 
 LDWeaver::LDWeaver(dset = dset, 
-                   aln_path = aln_path, 
-                   gbk_path = gbk_path, 
-                   save_additional_outputs = T)
+aln_path = aln_path, 
+gbk_path = gbk_path, 
+save_additional_outputs = T)
 ```
 
 `LDWeaver::LDWeaver()` one-liner is versatile for most 
@@ -149,9 +148,9 @@ ncores = parallel::detectCores()
 snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path) # parse the alignment and extract SNPs
 gbk = LDWeaver::parse_genbank_file(gbk_path = gbk_path, g = snp.dat$g) # parse the annotation
 cds_var = LDWeaver::estimate_variation_in_CDS(gbk = gbk, snp.dat = snp.dat, 
-                                             ncores = ncores, 
-                                             num_clusts_CDS = 3, 
-                                             clust_plt_path = "msch/CDS_clustering.png")
+ncores = ncores, 
+num_clusts_CDS = 3, 
+clust_plt_path = "msch/CDS_clustering.png")
 ```
 
 ![](inst/sup/CDS_clustering.png)
@@ -161,10 +160,10 @@ hdw = LDWeaver::estimate_Hamming_distance_weights(snp.dat = snp.dat) # Hamming d
 
 # Perform MI computation model fitting and ARACNE - this will take some time...
 sr_links = LDWeaver::perform_MI_computation(snp.dat = snp.dat, hdw = hdw,
-                                            cds_var = cds_var, ncores = ncores,
-                                            lr_save_path = "msch/lr_links.tsv", 
-                                            sr_save_path = "msch/sr_links.tsv",
-                                            plt_folder = dset)
+cds_var = cds_var, ncores = ncores,
+lr_save_path = "msch/lr_links.tsv", 
+sr_save_path = "msch/sr_links.tsv",
+plt_folder = dset)
 ```
 
 ![](inst/sup/c1_fit.png) ![](inst/sup/c2_fit.png)
@@ -180,9 +179,9 @@ LDWeaver::make_gwes_plots(sr_links = sr_links, plt_folder = dset)
 ``` r
 # Identify the top hits by performing snpEff annotations
 tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset), 
-                                               gbk = gbk, gbk_path = gbk_path, cds_var = cds_var, 
-                                               links_df = sr_links, snp.dat = snp.dat, 
-                                               tophits_path = "msch/sr_tophits.tsv")
+gbk = gbk, gbk_path = gbk_path, cds_var = cds_var, 
+links_df = sr_links, snp.dat = snp.dat, 
+tophits_path = "msch/sr_tophits.tsv")
 ```
 
 This will generate several outputs comprising annotations into the
@@ -199,7 +198,7 @@ should look like this: ![](inst/sup/Tanglegram_screenshot.png)
 ``` r
 # Generate GWES Explorer outputs
 LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, 
-                                         gwes_explorer_folder = "msch/SR_GWESExplorer")
+gwes_explorer_folder = "msch/SR_GWESExplorer")
 ```
 
 Above line will create three files in \<msch/SR_GWESExplorer/\> that can be
@@ -214,8 +213,8 @@ Next step is to analyse the long range links
 ``` r
 # Analyse long range links
 LDWeaver::analyse_long_range_links(dset = dset, lr_links_path = "msch/lr_links.tsv", 
-                                   sr_links_path = "msch/sr_links.tsv", SnpEff_Annotate = T,
-                                   snp.dat = snp.dat, gbk_path = gbk_path, cds_var = cds_var)
+sr_links_path = "msch/sr_links.tsv", SnpEff_Annotate = T,
+snp.dat = snp.dat, gbk_path = gbk_path, cds_var = cds_var)
 ```
 ![](inst/sup/lr_gwes.png)
 
@@ -230,8 +229,8 @@ LDWeaver::cleanup(dset)
 It is possible to generate a genomewide LD distribution map using the following:
 ``` r
 LDWeaver::genomewide_LDMap(lr_links_path = "msch/Temp/lr_links.tsv", 
-                           sr_links_path = "msch/Temp/sr_links.tsv", 
-                           plot_save_path = "msch/GWLD.png")
+sr_links_path = "msch/Temp/sr_links.tsv", 
+plot_save_path = "msch/GWLD.png")
 ```
 > **Note** The paths have now updated after running LDWeaver::cleanup().
 
@@ -244,18 +243,20 @@ sites and their magnitude can be generated using:
 # Generate the Network Plot for pbp genes
 
 network = LDWeaver::create_network_for_gene("pbp", 
-                         sr_annotated_path = "msch/Annotated_links/sr_links_annotated.tsv", 
-                         lr_annotated_path = "msch/Annotated_links/lr_links_annotated.tsv", 
-                         level = 2)
+sr_annotated_path = "msch/Annotated_links/sr_links_annotated.tsv", 
+lr_annotated_path = "msch/Annotated_links/lr_links_annotated.tsv", 
+level = 2)
 
 LDWeaver::create_network(network, 
-          plot_title = "pbp network", 
-          netplot_path = "msch/pbp_network.png", 
-          plot_w = 2000, plot_h = 2000)
+plot_title = "pbp network", 
+netplot_path = "msch/pbp_network.png", 
+plot_w = 2000, plot_h = 2000)
 ```
 ![](inst/sup/network_plot.png)
 
 ## Additional Information
+
+> **Note** With LDWeaver >1.5, you can analyse mega scale datasets with > 2^(32-1) elements. This requires <a href="https://cran.r-project.org/web/packages/spam/" target="_blank">spam</a> and <a href="https://cran.r-project.org/web/packages/spam64/" target="_blank">spam64</a> packages. Set `mega_dset=T` in `LDWeaver::LDWeaver()` to use this feature. Warning! This is currently considerably slower than the default mode (`mega_dset=F`) and only supports single core operations. There will also be minor discrepancies between the two methods due to floating point errors, however, this should only have a minimal impact on the final link ranking. 
 
 ### Key Outputs
 
@@ -265,26 +266,27 @@ folder called `sample`, which should be created in the current working directory
 
 - Figures
 
-  1.  sample/cX_fit.png - shows the distribution and modelling of the
-      background linkage disequilibrium (estimated using weighted Mutual
-      Information) vs. bp-separation within each cluster (X = 1,2 in the
-      example)
-  2.  sample/CDS_clustering.png - shows the genome partitioning, based on 
-      the CDS diversity (compared to the reference sequence)
-  3.  sample/sr_gwes_clust.png - short-range GWES plot for each cluster (2 in
-      this case)
-  4.  sample/sr_gwes_combi.png - combined short-range GWES plot (for links with
-      bp positions spanning two clusters, the max srp_value is used)
-  5.  sample/lr_gwes.png - Long range GWES plot (similar to the output from
-      <a href="https://github.com/santeripuranen/SpydrPick" target="_blank">SpydrPick</a>)
+1.  sample/cX_fit.png - shows the distribution and modelling of the
+background linkage disequilibrium (estimated using weighted Mutual
+Information) vs. bp-separation within each cluster (X = 1,2 in the
+example)
+2.  sample/CDS_clustering.png - shows the genome partitioning, based on 
+the CDS diversity (compared to the reference sequence)
+3.  sample/sr_gwes_clust.png - short-range GWES plot for each cluster (2 in
+this case)
+4.  sample/sr_gwes_combi.png - combined short-range GWES plot (for links with
+bp positions spanning two clusters, the max srp_value is used)
+5.  sample/lr_gwes.png - Long range GWES plot (similar to the output from
+<a href="https://github.com/santeripuranen/SpydrPick" target="_blank">SpydrPick</a>)
 
 - Outputs
 
-  1.  sample/sr_links.tsv - tab separated file containing details on
-      short-range links (i.e. links \<= sr_dist bp apart)
-  2.  sample/lr_links.tsv - tab separated file containing details on long-range
-      links (i.e. links \> sr_dist bp apart)
-      
+1.  sample/sr_links.tsv - tab separated file containing details on
+short-range links (i.e. links \<= sr_dist bp apart)
+2.  sample/lr_links.tsv - tab separated file containing details on long-range
+links (i.e. links \> sr_dist bp apart)
+
+
 ### Extra Outputs
 
 > **Note** The default `sr_dist` value in LDWeaver is 20000bp (user modifiable).
@@ -292,11 +294,11 @@ folder called `sample`, which should be created in the current working directory
 
 - Additional Outputs (*not generated*) - can be used to avoid costly re-computations.
 
-  1.  Additional_Outputs/snp_ACGTN.rds - list comprising sparse SNP data from the alignment
-  2.  Additional_Outputs/parsed_gbk.rds - GenBankRecord of the genbank annotation data
-  3.  Additional_Outputs/hdw.rds - named vector comprising Hamming distance weights for
-      each sequence
-  4.  Additional_Outputs/cds_var.rds - list comprising alignment diversity information
+1.  Additional_Outputs/snp_ACGTN.rds - list comprising sparse SNP data from the alignment
+2.  Additional_Outputs/parsed_gbk.rds - GenBankRecord of the genbank annotation data
+3.  Additional_Outputs/hdw.rds - named vector comprising Hamming distance weights for
+each sequence
+4.  Additional_Outputs/cds_var.rds - list comprising alignment diversity information
 
 > **Note** For very large datsets, the user has the option to set `save_additional_outputs=T`. 
 > When these four files are present in \<dset\>/Additional_Outputs/, the saved information
@@ -311,18 +313,18 @@ refers to **sr** (short range) or **lr** (long range).
 
 - Outputs
 
-  1. Annotated_links/X_links_annotated.tsv - tab separated file similar to
-      sample/X_links.tsv with additional SnpEff annotations and allele
-      distribution information
-  2. Tophits/X_tophits.tsv - tab separated file containing the top 250
-      links (user modifiable with `max_tophipts`) . Several filters are applied 
-      to extract the top links from Annotated_links/X_links_annotated.tsv
-  3. SR_Tanglegram - folder compirising html tanglegrams to easily
-      visualise links and the corresponding genomic regions
-  4. GWESExplorer/X_GWESExplorer - folder containing the outputs necessary to dynamically 
-      explore links using
-      <a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a> 
-      (X = sr,lr).
+1. Annotated_links/X_links_annotated.tsv - tab separated file similar to
+sample/X_links.tsv with additional SnpEff annotations and allele
+distribution information
+2. Tophits/X_tophits.tsv - tab separated file containing the top 250
+links (user modifiable with `max_tophipts`) . Several filters are applied 
+to extract the top links from Annotated_links/X_links_annotated.tsv
+3. SR_Tanglegram - folder compirising html tanglegrams to easily
+visualise links and the corresponding genomic regions
+4. GWESExplorer/X_GWESExplorer - folder containing the outputs necessary to dynamically 
+explore links using
+<a href="https://github.com/jurikuronen/GWES-Explorer" target="_blank">GWESExplorer</a> 
+(X = sr,lr).
 
 > **Note** The default srp_cutoff is 3 (i.e., p=0.001). Short-range links
 > with p\>0.001 are automatically discarded, this can be modified using
@@ -332,15 +334,14 @@ refers to **sr** (short range) or **lr** (long range).
 - Temporary files created during snpEff annotations. These are all written to \<dset\>/Temp 
 and can be ignored or safely deleted)
 
-  1. Temp/snpEff_data - data folder for snpEff
-  2. Temp/snpEff.config - configuration file for snpEff
-  3. Temp/X_annotations.tsv - tab separated file containing full snpEff
-      annotations on each site associated with a short-range GWES link
-      with srp_max \> srp_cutoff
-  4. Temp/X_annotataed_stats.genes.txt - annotations and statistics in tab
-      separated format
-  5. Temp/X_annotated_stats.html - annotations and statistics in html
-      format
-  6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
-      annotation pipeline
-
+1. Temp/snpEff_data - data folder for snpEff
+2. Temp/snpEff.config - configuration file for snpEff
+3. Temp/X_annotations.tsv - tab separated file containing full snpEff
+annotations on each site associated with a short-range GWES link
+with srp_max \> srp_cutoff
+4. Temp/X_annotataed_stats.genes.txt - annotations and statistics in tab
+separated format
+5. Temp/X_annotated_stats.html - annotations and statistics in html
+format
+6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
+annotation pipeline

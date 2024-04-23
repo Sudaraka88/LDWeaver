@@ -33,7 +33,8 @@
 #' @param ncores specify the number of cores to use for parallel processing. Auto detect (detect = NULL)
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
 #' @param save_additional_outputs specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)
-#' @param mega_dset specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is upto 5 times slower, set to TRUE only if the normal analysis fails (default = F)
+#' @param mega_dset specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is  >5 times slower, set to TRUE only if the normal analysis fails (default = F)
+
 #'
 #' @return All generated outputs will be saved to folder <dset>.
 #'
@@ -53,6 +54,12 @@
 #' aln_path <- system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver")
 #' pos <- as.numeric(readLines(system.file("extdata", "snp_sample.fa.pos", package = "LDWeaver")))
 #' LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path, aln_has_all_bases = F, pos = pos, gbk_path = gbk_path)
+#'
+# Example 3 - Redoing the full analysis as a mega scale dataset
+#' dset <- "full_dset_spam"
+#' gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+#' aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
+#' LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path, validate_ref_ann_lengths = F, mega_dset = T)
 #' }
 #' @export
 LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path = NULL, gff3_path = NULL,
@@ -175,6 +182,9 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
       message("mega_dset is set to TRUE but spam and spam64 dependencies are not installed.")
       return(invisible())
     }
+    message("mega_dset is selected. Warning! This mode has a much slower run time. Setting spam.force64=TRUE (see https://cran.r-project.org/web/packages/spam64/spam64.pdf)")
+    options(spam.force64 = TRUE)
+
   }
 
 
@@ -235,7 +245,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     if(perform_SR_analysis_only) cat("Only short-range analysis requested. \n")
     cat(paste("All outputs will be saved to:", normalizePath(dset), "\n"))
     cat(paste("\n *** Input paths *** \n\n"))
-    cat(paste("* Alignment:", aln_path, "\n"))
+    if(mega_dset) cat(paste("* Mega Alignment:", aln_path, "\n")) else cat(paste("* Alignment:", aln_path, "\n"))
     if(!is.null(gbk_path)) {
       cat(paste("* GenBank Annotation:", gbk_path, "\n"))
       cat(paste("* Parser built using genbankr source (https://github.com/gmbecker/genbankr) \n"))
@@ -254,7 +264,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     cat(paste("Links <=", sr_dist, "bp-apart will be classified as short-range (sr-links) \n"))
     if(!perform_SR_analysis_only) cat(paste("Approx. top", lr_retain_links, "long range links will be saved \n"))
     cat(paste("Top sr-links with -log10(p) >", srp_cutoff, "will be saved \n"))
-    cat(paste("Tanglegram/GWESExplorer outputs will illustrate upto:", max_tophits, "top sr-links \n"))
+    if(!is.null(tanglegram_break_segments)) cat(paste("Tanglegram/GWESExplorer outputs will illustrate upto:", max_tophits, "top sr-links \n"))
     cat(paste("MI Computation will use a max block size of:", max_blk_sz, "x", max_blk_sz, "SNPs! Reduce <max_blk_sz> if RAM is scarce!\n\n"))
     cat(paste("~~~~~ https://github.com/Sudaraka88/LDWeaver/ ~~~~~"))
   }
@@ -269,13 +279,13 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
 
     # Adding support for SNP-only alignments
     if(aln_has_all_bases == T){
-      snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+      snp.dat = LDWeaver::parse_fasta_alignment(aln_path = aln_path, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq, mega_dset = mega_dset)
       if(save_additional_outputs){
         cat("Step 5: Savings snp.dat...")
         saveRDS(snp.dat, ACGTN_snp_path)
       }
     } else {
-      snp.dat = LDWeaver::parse_fasta_SNP_alignment(aln_path = aln_path, pos = pos, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq)
+      snp.dat = LDWeaver::parse_fasta_SNP_alignment(aln_path = aln_path, pos = pos, method = snp_filt_method, gap_freq = gap_freq, maf_freq = maf_freq, mega_dset = mega_dset)
       # Note that snp.dat$g = NULL (we cannot measure this, need to get it from the genbank file)
       # we cannot save snp.dat here due to absent snp.dat$g, moving downstream (block 2)
     }
@@ -375,7 +385,8 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
                                                 lr_save_path = lr_save_path, sr_save_path = sr_save_path,
                                                 plt_folder = dset, sr_dist = sr_dist, lr_retain_links = lr_retain_links,
                                                 max_blk_sz = max_blk_sz, srp_cutoff = srp_cutoff, runARACNE = T,
-                                                perform_SR_analysis_only = perform_SR_analysis_only, order_links = order_links)
+                                                perform_SR_analysis_only = perform_SR_analysis_only,
+                                                order_links = order_links,mega_dset = mega_dset)
   }
 
 
@@ -436,7 +447,9 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     gwesexplorer_path = file.path(dset, "SR_GWESExplorer")
     if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
     cat("\n\n #################### BLOCK 10 #################### \n\n")
-    LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
+    if(mega_dset) {
+      message("GWES Explorer output currently not generated for mega datasets\n")
+      } else LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits, gwes_explorer_folder = gwesexplorer_path)
   }
 
 
@@ -455,13 +468,13 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
       if( !(  (file.exists(file.path(dset, "lr_tophits.tsv"))) | (file.exists(file.path(dset, "Tophits/lr_tophits.tsv"))) ) ) { # if the annotated_links file exists, no need to run again
         LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = T, snpeff_jar_path = snpeff_jar_path,
                                            gbk_path = gbk_path, gff3_path = gff3_path, snp.dat = snp.dat, cds_var = cds_var, ref_fasta_path = ref_fasta_path,
-                                           validate_ref_ann_lengths = validate_ref_ann_lengths)
+                                           validate_ref_ann_lengths = validate_ref_ann_lengths, mega_dset = mega_dset)
       } else {
         cat("Results from previous LR anlayis exist!")
       }
     } else {
       if( !(  (file.exists(file.path(dset, "lr_gwes.png"))) | (file.exists(file.path(dset, "GWESPlots/lr_gwes.png"))) ) ) { # if the lr_gwes plot exist, no need to run again
-        LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F)
+        LDWeaver::analyse_long_range_links(dset = dset, lr_links_path =  lr_save_path, sr_links_path = sr_save_path, SnpEff_Annotate = F, mega_dset = mega_dset)
       } else {
         cat("Results from previous LR anlayis exist!")
       }

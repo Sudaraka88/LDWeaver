@@ -46,6 +46,14 @@
 perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = NULL, sr_save_path = NULL, plt_folder = NULL,
                                   sr_dist = 20000, lr_retain_links = 1e6, max_blk_sz = 10000, srp_cutoff = 3, runARACNE = TRUE,
                                   perform_SR_analysis_only = FALSE, order_links = T, mega_dset = F){
+
+  ## DEBUG LINES - DO NOT DELETE and REMEMBER TO COMMENT
+  # lr_save_path = "testscript_op/lr_links_spam.tsv"
+  # sr_save_path = "testscript_op/sr_links_spam.tsv"
+  # plt_folder = "testscript_op"
+  # sr_dist = 20000; lr_retain_links = 1e6; max_blk_sz = 10000; srp_cutoff = 3
+  # Rcpp::sourceCpp("src/computeMI.cpp"); Rcpp::sourceCpp("src/fintersect.cpp")
+
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")

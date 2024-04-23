@@ -87,7 +87,9 @@ Larger values will reduce memory usage, plotting time and ARACNE run time. If al
 
 \item{save_additional_outputs}{specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)}
 
-\item{mega_dset}{specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is upto 5 times slower, set to TRUE only if the normal analysis fails (default = F)}
+
+\item{mega_dset}{specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is  >5 times slower, set to TRUE only if the normal analysis fails (default = F)}
+
 }
 \value{
 All generated outputs will be saved to folder <dset>.
@@ -111,5 +113,11 @@ gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 aln_path <- system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver")
 pos <- as.numeric(readLines(system.file("extdata", "snp_sample.fa.pos", package = "LDWeaver")))
 LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path, aln_has_all_bases = F, pos = pos, gbk_path = gbk_path)
+
+dset <- "full_dset_spam"
+gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
+aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path, validate_ref_ann_lengths = F, mega_dset = T)
+
 }
 }
