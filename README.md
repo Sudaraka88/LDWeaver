@@ -1,21 +1,11 @@
-## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_light.jpg' align="right" height="155" />
-
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
 [![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
-<div align="center">
-  <h2 style="display:inline-block; vertical-align:middle; white-space:nowrap;">Genomewide Co-selection and Epistasis in Bacteria</h2>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="images/icon_dark.jpg" height="155">
-    <img alt="LDWeaver logo" src="images/icon_light.jpg" height="155">
-    <figcaption>Genomewide Co-selection and Epistasis in Bacteria</figcaption>
-  </picture>
-</div>
 
-## About
+## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_dark.jpg' align="right" height="218" />
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
