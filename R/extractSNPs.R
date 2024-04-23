@@ -56,6 +56,7 @@ parse_fasta_alignment <- function(aln_path, gap_freq = 0.15, maf_freq = 0.01, me
       # We need to make sure we are using spam64, set it quietly
       if(!getOption("spam.force64")) options(spam.force64 = T)
 
+
       snp.matrix_A <- spam::spam(list(i=snp.data$i_A, j=snp.data$j_A, values=as.logical(snp.data$x_A)),
                                  nrow = snp.param$num.seqs, ncol = snp.param$num.snps)
       snp.data$i_A = snp.data$j_A = snp.data$x_A = NULL
@@ -188,6 +189,7 @@ parse_fasta_SNP_alignment <- function(aln_path, pos, gap_freq = 0.15, maf_freq =
       message("This feature requires spam and spam64 packages.")
       return(invisible())
     } else {
+
       # We need to make sure we are using spam64, set it quietly
       if(!getOption("spam.force64")) options(spam.force64 = T)
 

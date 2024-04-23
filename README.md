@@ -7,6 +7,7 @@
 
 ## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_dark.jpg' align="right" height="225" />
 
+
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
 pairs of variants (links) that is unusually high given the genomic distance 
@@ -94,7 +95,6 @@ num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 ## Citation
 
 Please cite LDWeaver using: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
-
 
 ## Detailed Workthrough using Real Data
 
@@ -286,6 +286,7 @@ short-range links (i.e. links \<= sr_dist bp apart)
 2.  sample/lr_links.tsv - tab separated file containing details on long-range
 links (i.e. links \> sr_dist bp apart)
 
+
 ### Extra Outputs
 
 > **Note** The default `sr_dist` value in LDWeaver is 20000bp (user modifiable).
@@ -344,4 +345,3 @@ separated format
 format
 6. Temp/X_snps.vcf, Temp/X_snps_ann.vcf - input and output from the snpEff
 annotation pipeline
-

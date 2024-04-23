@@ -34,6 +34,7 @@
 #' @param max_blk_sz specify maximum block size for MI computation (default = 10000), larger sizes require more RAM, range 1000 - 100000
 #' @param save_additional_outputs specify whether to save outputs such as extracted SNPs and Hamming distance weights. Recommended for very large datasets to save time on re-computation (default = F)
 #' @param mega_dset specify whether the datasets is megascale. This mode requires spam and spam64 packages. This is  >5 times slower, set to TRUE only if the normal analysis fails (default = F)
+
 #'
 #' @return All generated outputs will be saved to folder <dset>.
 #'
@@ -183,6 +184,7 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     }
     message("mega_dset is selected. Warning! This mode has a much slower run time. Setting spam.force64=TRUE (see https://cran.r-project.org/web/packages/spam64/spam64.pdf)")
     options(spam.force64 = TRUE)
+
   }
 
 
