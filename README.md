@@ -1,5 +1,4 @@
-## Genomewide Co-selection and Epistasis in Bacteria
-<picture>
+## Genomewide Co-selection and Epistasis in Bacteria /> <picture>
 <source media="(prefers-color-scheme: dark)" srcset="images/icon_dark.jpg" height="155">
 <img alt="LDWeaver logo" src="images/icon_light.jpg" height="155">
 </picture>
