@@ -7,6 +7,7 @@
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 <div align="center">
+  <h2 style="display:inline-block; vertical-align:middle; white-space:nowrap;">Genomewide Co-selection and Epistasis in Bacteria</h2>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="images/icon_dark.jpg" height="155">
     <img alt="LDWeaver logo" src="images/icon_light.jpg" height="155">
