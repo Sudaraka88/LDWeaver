@@ -1,10 +1,10 @@
-## Genomewide Co-selection and Epistasis in Bacteria 
-<div align="right">
+## Genomewide Co-selection and Epistasis in Bacteria <div align="right">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="images/icon_dark.jpg" height="155">
       <img alt="LDWeaver logo" src="images/icon_light.jpg" height="155">
     </picture>
 </div>
+
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
