@@ -1,8 +1,8 @@
-<div align="right">
-## Genomewide Co-selection and Epistasis in Bacteria 
+<div align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="images/icon_dark.jpg" height="155">
       <img alt="LDWeaver logo" src="images/icon_light.jpg" height="155">
+      <em> Genomewide Co-selection and Epistasis in Bacteria </em>
     </picture>
 </div>
 
