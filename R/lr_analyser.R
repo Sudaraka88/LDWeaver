@@ -20,6 +20,7 @@
 #' @param max_tophits specify the maximum number of long range links to save as <lr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 500)
 #' @param links_from_spydrpick are the links computed using spydrpick (default = F)
+#' @param mega_dset set TRUE for mega scale datasets (default = F)
 #'
 #' @examples
 #' \dontrun{
@@ -29,8 +30,8 @@
 analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrlinks_ordered = F, SnpEff_Annotate = F,
                                     snpeff_jar_path = NULL, gbk_path = NULL, gff3_path = NULL, ref_fasta_path = NULL,
                                     validate_ref_ann_lengths = T, snp.dat = NULL, cds_var = NULL, max_tophits = 500,
-                                    links_from_spydrpick = F){
-                                    # tanglegram_break_segments = 5){
+                                    links_from_spydrpick = F, mega_dset = F){
+  # tanglegram_break_segments = 5){
 
   #TODO: We are redoing the SnpEff annotation for long-range links, might be better to do it in one run
   # it makes sense to have a larger max_tophits for long range links - there will be a lot more of long-range links compared to short
@@ -158,9 +159,9 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     }
 
     tophits = LDWeaver::perform_snpEff_annotations(dset_name = dset, annotation_folder = file.path(getwd(), dset),
-                                                  snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
-                                                  gff = gff, cds_var = cds_var, links_df = lr_links_red, snp.dat = snp.dat,
-                                                  tophits_path = tophits_path, max_tophits = max_tophits, links_type = "LR")
+                                                   snpeff_jar = snpeff_jar_path, gbk = gbk, gbk_path = gbk_path,
+                                                   gff = gff, cds_var = cds_var, links_df = lr_links_red, snp.dat = snp.dat,
+                                                   tophits_path = tophits_path, max_tophits = max_tophits, links_type = "LR")
 
     # Tanglegram is difficult to read when plotted like this, best to avoid!
     # tanglegram_path = file.path(dset, "LR_Tanglegram")
@@ -171,8 +172,12 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     cat("\n")
     gwesexplorer_path = file.path(dset, "LR_GWESExplorer")
     if(!file.exists(gwesexplorer_path)) dir.create(gwesexplorer_path)
-    LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits,
-                                            gwes_explorer_folder = gwesexplorer_path, links_type = "LR")
+    if(mega_dset) {
+      message("GWES Explorer output currently not generated for mega datasets\n")
+    } else LDWeaver::write_output_for_gwes_explorer(snp.dat = snp.dat, tophits = tophits,
+                                                    gwes_explorer_folder = gwesexplorer_path, links_type = "LR")
+
+
 
     cat("\n")
 

@@ -97,6 +97,7 @@ LDWeaver(dset = dset, aln_path = aln_path, gbk_path = gbk_path, validate_ref_ann
 
 Please cite LDWeaver using: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
 
+
 ## Detailed Workthrough using Real Data
 
 The following analysis demonstrates most of the options available in
@@ -256,6 +257,8 @@ LDWeaver::create_network(network,
 ![](inst/sup/network_plot.png)
 
 ## Additional Information
+
+> **Note** With LDWeaver >1.5, you can analyse mega scale datasets with > 2^(32-1) elements. This requires <a href="https://cran.r-project.org/web/packages/spam/" target="_blank">spam</a> and <a href="https://cran.r-project.org/web/packages/spam64/" target="_blank">spam64</a> packages. Set `mega_dset=T` in `LDWeaver::LDWeaver()` to use this feature. Warning! This is currently considerably slower than the default mode (`mega_dset=F`) and only supports single core operations. There will also be minor discrepancies between the two methods due to floating point errors, however, this should only have a minimal impact on the final link ranking. 
 
 ### Key Outputs
 
