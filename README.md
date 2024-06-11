@@ -94,7 +94,7 @@ num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 
 ## Citation
 
-Please cite LDWeaver using: Mallawaarachchi, Sudaraka et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes. bioRxiv 2023.08.04.551407; doi: https://doi.org/10.1101/2023.08.04.551407
+Please cite LDWeaver using: Mallawaarachchi, S. et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes, NAR genom. bioinform., 6(2),lqae061 (2024): https://doi.org/10.1093/nargab/lqae061
 
 ## Detailed Workthrough using Real Data
 

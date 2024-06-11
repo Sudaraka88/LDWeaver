@@ -18,7 +18,8 @@ analyse_long_range_links(
   snp.dat = NULL,
   cds_var = NULL,
   max_tophits = 500,
-  links_from_spydrpick = F
+  links_from_spydrpick = F,
+  mega_dset = F
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ not required for genbank annotations if the file contains the reference sequence
 but only the top <max_tophits> will be used for visualisation (default = 500)}
 
 \item{links_from_spydrpick}{are the links computed using spydrpick (default = F)}
+
+\item{mega_dset}{set TRUE for mega scale datasets (default = F)}
 }
 \description{
 Function to analyse long range links. These links can be computed using LDWeaver or Spydrpick (faster). Spydrpick is recommended for larger datasets.
