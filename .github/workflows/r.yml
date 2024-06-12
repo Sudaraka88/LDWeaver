@@ -31,6 +31,12 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
+      - name: Session info
+        run: Rscript -e 'sessionInfo()'
+
+      - name: Show MatrixExtra namespace
+        run: Rscript -e 'getNamespaceExports("MatrixExtra")'
+
       - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
