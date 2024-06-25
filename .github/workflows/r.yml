@@ -1,4 +1,3 @@
-
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
@@ -44,13 +43,9 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: '"hard"'
+          dependencies: 'hard'
           cache: false
-          extra-packages: |
-            any::rcmdcheck
-            any::testthat
-            any::knitr
-            any::rmarkdown
+          extra-packages: any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
