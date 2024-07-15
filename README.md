@@ -2,7 +2,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_dark.jpg">
   <source media="(prefers-color-scheme: light)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg">
-  <img alt="LDWeaver logo" src="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg" style="width: 50%; max-width: 100%;">
+  <img alt="LDWeaver logo" src="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg" width50% >
 </picture>
 </p>
 
