@@ -5,7 +5,7 @@
 #' compute short-range p-values for each short-range links. If requested, this
 #' function can also run the ARACNE algorithm
 #'
-#' @importFrom MatrixExtra tcrossprod t
+#' @importMethodsFrom MatrixExtra tcrossprod t
 #' @importFrom Matrix rowSums
 #' @importFrom fitdistrplus fitdist
 #' @importFrom data.table as.data.table

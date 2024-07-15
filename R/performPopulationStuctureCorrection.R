@@ -2,7 +2,7 @@
 #'
 #' Function to estimate the similarity between sequences based on the Hamming distance
 #'
-#' @importFrom MatrixExtra crossprod
+#' @importMethodsFrom MatrixExtra crossprod
 #' @importFrom Matrix colSums
 #' @importFrom methods as
 #'
