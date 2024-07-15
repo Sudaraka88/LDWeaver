@@ -41,21 +41,19 @@ jobs:
           # http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install MatrixExtra package
+        run: |
+          R -e 'cat("MatrixExtra Path: ", system.file(package = "MatrixExtra"), "\n"); getNamespaceExports("MatrixExtra")'
+          R -e 'remove.packages("MatrixExtra")'
+          R -e 'install.packages("remotes", dependencies = T); remotes::install_github("https://github.com/david-cortes/MatrixExtra")'
+          R -e 'cat("MatrixExtra Path: ", system.file(package = "MatrixExtra"), "\n"); getNamespaceExports("MatrixExtra")'
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache: false
           extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Install MatrixExtra package
-        run: |
-          R -e 'getOption("repos")'
-          R -e 'getNamespaceExports("MatrixExtra")'
-          R -e 'remove.packages("MatrixExtra")'
-          R -e 'options(repos = c(CRAN = "https://cran.rstudio.com/"))'
-          R -e 'install.packages("remotes", dependencies = T)'
-          R -e 'remotes::install_github("https://github.com/david-cortes/MatrixExtra")'
-          R -e 'getNamespaceExports("MatrixExtra")'
 
       - uses: r-lib/actions/check-r-package@v2
         with:
