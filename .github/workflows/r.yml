@@ -50,7 +50,7 @@ jobs:
       - name: Install MatrixExtra package
         run: |
           R -e 'getNamespaceExports("MatrixExtra")'
-          R -e 'remove.packages("MatrixExtra")'
+          R -e 'remove.packages("MatrixExtra", dependencies = T)'
           R -e 'install.packages("MatrixExtra")'
           R -e 'getNamespaceExports("MatrixExtra")'
 
