@@ -5,8 +5,17 @@
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
-## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_dark.jpg' align="right" height="225" />
 
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg">
+  <img alt="LDWeaver logo" src="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg">
+</picture>
+</p>
+
+
+## Genomewide Co-selection and Epistasis in Bacteria
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 

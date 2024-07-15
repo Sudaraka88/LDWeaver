@@ -199,10 +199,10 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
 
   ### mega datasets
   if(mega_dset){ # Using SPAM
-    if(!requireNamespace("spam") & !requireNamespace("spam64")){
-      message("This feature requires spam and spam64 packages.")
-      return(invisible())
-    } else {
+    # if(!requireNamespace("spam") & !requireNamespace("spam64")){
+    #   message("This feature requires spam and spam64 packages.")
+    #   return(invisible())
+    # } else {
       tAfh = spam::tcrossprod(snp.dat$snp.matrix_A[from, ], hsq); pAf = spam::rowSums(tAfh^2)
       tCfh = spam::tcrossprod(snp.dat$snp.matrix_C[from, ], hsq); pCf = spam::rowSums(tCfh^2)
       tGfh = spam::tcrossprod(snp.dat$snp.matrix_G[from, ], hsq); pGf = spam::rowSums(tGfh^2)
@@ -222,7 +222,7 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
         tGth = spam::tcrossprod(snp.dat$snp.matrix_G[to, ], hsq); pGt = spam::rowSums(tGth^2)#+rt*0.5
         tTth = spam::tcrossprod(snp.dat$snp.matrix_T[to, ], hsq); pTt = spam::rowSums(tTth^2)#+rt*0.5
         tNth = spam::tcrossprod(snp.dat$snp.matrix_N[to, ], hsq); pNt = spam::rowSums(tNth^2)#+rt*0.5
-      }
+      # }
 
     }
   } else {
