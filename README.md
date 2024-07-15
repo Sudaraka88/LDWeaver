@@ -1,10 +1,3 @@
-<!-- badges: start -->
-
-[![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
-[![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
-[![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
-<!-- badges: end -->
-
 <p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_dark.jpg">
@@ -15,6 +8,12 @@
 
 
 ## Genomewide Co-selection and Epistasis in Bacteria
+<!-- badges: start -->
+
+[![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
+[![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
+[![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
+<!-- badges: end -->
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
