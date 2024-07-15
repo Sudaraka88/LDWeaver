@@ -49,8 +49,10 @@ jobs:
 
       - name: Install MatrixExtra package
         run: |
+          R -e 'getOption("repos")'
           R -e 'getNamespaceExports("MatrixExtra")'
           R -e 'remove.packages("MatrixExtra")'
+          R -e 'options(repos = c(CRAN = "https://cran.rstudio.com/"))'
           R -e 'install.packages("MatrixExtra", dependencies = T)'
           R -e 'getNamespaceExports("MatrixExtra")'
 
