@@ -5,7 +5,6 @@
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
-
 <p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_dark.jpg">
@@ -112,7 +111,7 @@ LDWeaver. The alignment with 616 *S. pnuemoniae* genomes is available
 <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EeLNWOGYDi5Bk4PVY6JZF10BEDM2ckSCMq4nZqX8OGimJg?e=3AfBhf" target="_blank">here</a>, and 
 the same sample.gbk annotation was used to generate this alignment (also available <a href="https://www.ncbi.nlm.nih.gov/nuccore/NC_011900.1?report=gbwithparts&log$=seqview" target="_blank">here</a>).
 
-> **Note:** Alternatively, since LDWeaver v1.2, you can download and use the <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EdQdnfYv3KRBiuYW73BEGXgBbtZR2SSdty_qiNgjJflp5w?e=vbpeEp" target="_blank">SNP-only alignment</a> with the accompanying <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EZoekLiIyZZKuVAoHoWob1cBk2yBSOfr4MeuLp_VgKJG5g" target="_blank">positions</a> file to generate the same results.
+> **Note:** Alternatively, you can download and use the <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EdQdnfYv3KRBiuYW73BEGXgBbtZR2SSdty_qiNgjJflp5w?e=vbpeEp" target="_blank">SNP-only alignment</a> with the accompanying <a href="https://uio-my.sharepoint.com/:u:/g/personal/sudarakm_uio_no/EZoekLiIyZZKuVAoHoWob1cBk2yBSOfr4MeuLp_VgKJG5g" target="_blank">positions</a> file to generate the same results.
 
 For this example, it is assumed that the current working directory is set to 
 `~/LDWeaver_run` and the
