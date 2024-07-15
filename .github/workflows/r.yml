@@ -41,15 +41,18 @@ jobs:
           # http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install MatrixExtra package
-        run: |
-          R -e 'install.packages("MatrixExtra")'
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache: false
           extra-packages: any::rcmdcheck
           needs: check
+
+      - name: Install MatrixExtra package
+        run: |
+          R -e 'getNamespaceExports("MatrixExtra")'
+          R -e 'remove.packages("MatrixExtra")'
+          R -e 'install.packages("MatrixExtra")'
+          R -e 'getNamespaceExports("MatrixExtra")'
 
       - uses: r-lib/actions/check-r-package@v2
         with:
