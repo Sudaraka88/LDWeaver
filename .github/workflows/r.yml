@@ -43,8 +43,7 @@ jobs:
 
       - name: Install MatrixExtra package
         run: |
-          R -e 'cat("MatrixExtra Path: ", system.file(package = "MatrixExtra"), "\n"); getNamespaceExports("MatrixExtra")'
-          R -e 'remove.packages("MatrixExtra")'
+          R -e 'cat("MatrixExtra Path: ", system.file(package = "MatrixExtra"), "\n")'
           R -e 'install.packages("remotes", dependencies = T); remotes::install_github("https://github.com/david-cortes/MatrixExtra")'
           R -e 'cat("MatrixExtra Path: ", system.file(package = "MatrixExtra"), "\n"); getNamespaceExports("MatrixExtra")'
 
