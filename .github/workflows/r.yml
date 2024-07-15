@@ -43,7 +43,7 @@ jobs:
 
       - name: Install MatrixExtra package
         run: |
-          install.packages("MatrixExtra")
+          remotes::install_cran("MatrixExtra")
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
