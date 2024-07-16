@@ -22,7 +22,7 @@ LDWeaver::LDWeaver(dset = "std",
 path_to_folder = getwd()
 
 
-idx = sample(100, 10)
+idx = 1:10# sample(100, 10)
 
 ths_mega = LDWeaver::read_TopHits(file.path(path_to_folder, "mega/Tophits/sr_tophits.tsv"))
 ths_std = LDWeaver::read_TopHits(file.path(path_to_folder, "std/Tophits/sr_tophits.tsv"))
