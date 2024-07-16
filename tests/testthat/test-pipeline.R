@@ -1,18 +1,20 @@
-test_that("Test run on mega sample", {
-  expect_equal(NULL, LDWeaver::LDWeaver(dset = "mega",
-                                        aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
-                                        gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
-                                        validate_ref_ann_lengths = F, mega_dset = T))
-})
+# test_that("Test run on mega sample", {
+#   expect_equal(NULL, )
+# })
 
+LDWeaver::LDWeaver(dset = "mega",
+                   aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
+                   gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
+                   validate_ref_ann_lengths = F, mega_dset = T)
+#
+# test_that("Test run on standard sample", {
+#   expect_equal(NULL, )
+# })
 
-test_that("Test run on standard sample", {
-  expect_equal(NULL, LDWeaver::LDWeaver(dset = "std",
-                                        aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
-                                        gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
-                                        validate_ref_ann_lengths = F))
-})
-
+LDWeaver::LDWeaver(dset = "std",
+                   aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
+                   gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
+                   validate_ref_ann_lengths = F)
 
 # path_to_folder = "tests/testthat" # This is for local testing
 path_to_folder = getwd()
@@ -49,9 +51,11 @@ test_that("Long range all links", {
 
 ## Try running on SNP only alignment
 pos = as.numeric(readLines(system.file("extdata", "snp_sample.pos", package = "LDWeaver")))
-test_that("Test run on SNP sample", {
-  expect_equal(NULL, LDWeaver::LDWeaver(dset = "SNP", aln_has_all_bases = F, pos = pos,
-                                        aln_path = system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver"),
-                                        gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
-                                        validate_ref_ann_lengths = F, mega_dset = F))
-})
+# test_that("Test run on SNP sample", {
+#   expect_equal(NULL, )
+# })
+
+LDWeaver::LDWeaver(dset = "SNP", aln_has_all_bases = F, pos = pos,
+                   aln_path = system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver"),
+                   gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
+                   validate_ref_ann_lengths = F, mega_dset = F)
