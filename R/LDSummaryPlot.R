@@ -97,7 +97,8 @@ genomewide_LDMap = function(lr_links_path, sr_links_path, plot_save_path, reduce
     cat(paste("Reducing dimensionality from", length(pos_vec) ,"x", length(pos_vec), "-> "))
     x = .mat(length(pos_vec), reducer)
     cat(paste(ncol(x) ,"x", ncol(x), "...\n"))
-    reduced_mat = MatrixExtra::crossprod(x, MatrixExtra::crossprod(sprs, x))
+    # reduced_mat = MatrixExtra::crossprod(x, MatrixExtra::crossprod(sprs, x))
+    reduced_mat = crossprod(x, crossprod(sprs, x))
     htm = as(reduced_mat, 'matrix')/reducer^2
     nms = as.character(pos_vec[seq(from = 1, to = length(pos_vec), by = reducer-1)])
     colnames(htm) = rownames(htm) = nms[1:nrow(htm)]
