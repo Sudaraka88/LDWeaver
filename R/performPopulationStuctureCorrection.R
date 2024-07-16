@@ -54,7 +54,7 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
   } else {
     snpmat_t = as(snp.dat$snp.matrix_A, 'dgCMatrix')
     # shared.snps = MatrixExtra::crossprod((snpmat_t))
-    shared.snps = MatrixExtra::crossprod((snpmat_t))
+    shared.snps = crossprod((snpmat_t))
 
     snpmat_t = as(snp.dat$snp.matrix_C, 'dgCMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
