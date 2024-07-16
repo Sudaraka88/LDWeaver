@@ -21,6 +21,7 @@ LDWeaver::LDWeaver(dset = "std",
 # path_to_folder = "tests/testthat" # This is for local testing
 path_to_folder = getwd()
 
+
 idx = sample(100, 10)
 
 ths_mega = LDWeaver::read_TopHits(file.path(path_to_folder, "mega/Tophits/sr_tophits.tsv"))
@@ -65,7 +66,7 @@ test_that("Long range all links", {
   # expect_equal(all.equal(al_mega, al_std), TRUE)
   expect_equal(all(apply(cbind(idx, sapply(idx, function(x) c(which((al_mega$pos1[x] == al_std$pos1) & (al_mega$pos2[x] == al_std$pos2)),
                                                               which((al_mega$pos1[x] == al_std$pos2) & (al_mega$pos2[x] == al_std$pos1))))),
-                         1, function(x) all.equal(al_mega[x[1], c(3,5:ncol(al_mega))], al_std[x[2],c(3,5:ncol(al_std))]))), TRUE)
+                         1, function(x) all.equal( as.vector(al_mega[x[1], c(3,5:ncol(al_mega))]), as.vector(al_std[x[2],c(3,5:ncol(al_std))])))), TRUE)
 })
 
 ## Try running on SNP only alignment
