@@ -305,7 +305,6 @@ cleanup = function(dset, delete_after_moving = F){
     mv_success = c(mv_success, idx)
   }
 
-
   #### Relocate or delete moved files ####
   moved_idx = sort(unique(mv_success))
   if(length(moved_idx) > 0){
@@ -315,6 +314,15 @@ cleanup = function(dset, delete_after_moving = F){
       chk = file.copy(file.path(dset, files[moved_idx]), fldr, overwrite = T, recursive = T)
     }
     unlink(file.path(dset, files[moved_idx]), recursive = T)
+  }
+
+  ### Sometimes there are a couple of snpEff files being generated in the working directory, move them to Temp
+  files = dir(getwd())
+  idx = c(grep("snpEff_genes.txt", files), grep("snpEff_summary.html", files))
+  if(length(idx) > 0){
+    fldr = file.path(dset, "Temp")
+    cleanup_support(files = file.path(getwd(), files[idx]), fldr)
+    unlink(file.path(getwd(), files[idx]))
   }
 }
 

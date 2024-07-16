@@ -80,7 +80,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
       message("This feature requires spam and spam64 packages.")
       return(invisible())
     } else {
-      hsq = spam::as.spam(hsq)
+      # hsq = spam::as.spam(hsq)
     }
   }
 
