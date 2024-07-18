@@ -2,7 +2,7 @@
 #'
 #' Function to estimate the similarity between sequences based on the Hamming distance
 #'
-#' @importFrom MatrixExtra crossprod
+#' @importMethodsFrom MatrixExtra crossprod
 #' @importFrom Matrix colSums
 #' @importFrom methods as
 #'
@@ -28,11 +28,17 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
       return(invisible())
     } else {
 
-      shared.snps.spam = spam::crossprod(snp.dat$snp.matrix_A)
-      shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_C)
-      shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_G)
-      shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_T)
-      shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_N)
+      # shared.snps.spam = spam::crossprod(snp.dat$snp.matrix_A)
+      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_C)
+      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_G)
+      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_T)
+      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_N)
+
+      shared.snps.spam = crossprod(snp.dat$snp.matrix_A)
+      shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_C)
+      shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_G)
+      shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_T)
+      shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_N)
 
       ## Is this a bug in the spam package? This should work:
       # hdw.spam = 1/( spam::colSums( (snp.dat$nsnp - shared.snps.spam) < thresh) + 1)
@@ -46,20 +52,21 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
 
     }
   } else {
-    snpmat_t = as(snp.dat$snp.matrix_A, 'dgCMatrix')
-    shared.snps = MatrixExtra::crossprod((snpmat_t))
+    snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
+    # shared.snps = MatrixExtra::crossprod((snpmat_t))
+    shared.snps = crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_C, 'dgCMatrix')
-    shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
+    snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
+    shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_G, 'dgCMatrix')
-    shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
+    snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
+    shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_T, 'dgCMatrix')
-    shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
+    snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
+    shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_N, 'dgCMatrix')
-    shared.snps = shared.snps + MatrixExtra::crossprod((snpmat_t))
+    snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
+    shared.snps = shared.snps + crossprod((snpmat_t))
 
     hdw = 1/( Matrix::colSums( (snp.dat$nsnp - shared.snps) < thresh) + 1)
   }

@@ -1,12 +1,19 @@
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg">
+  <img alt="LDWeaver logo" src="https://github.com/Sudaraka88/LDWeaver/blob/main/images/icon_light.jpg" width=50% >
+</picture>
+</p>
+
+
+## Genomewide Co-selection and Epistasis in Bacteria
 <!-- badges: start -->
 
-[![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
+[![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check-hard/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
 [![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
-
-## Genomewide Co-selection and Epistasis in Bacteria <img src='images/icon_dark.jpg' align="right" height="225" />
-
 
 LDWeaver accepts a sequence alignment (fasta) and its reference annotation 
 (genbank or gff) as inputs and identifies linkage disequilibrium (LD) between 
@@ -94,7 +101,7 @@ num_clusts_CDS = 2, SnpEff_Annotate = F, snp_filt_method = snp_filt_method)
 
 ## Citation
 
-Please cite LDWeaver using: Mallawaarachchi, S. et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes, NAR Genomics and Bioinformatics, Volume 6, Issue 2, June 2024, lqae061, https://doi.org/10.1093/nargab/lqae061
+Please cite LDWeaver using: Mallawaarachchi, S. et al. Detecting co-selection through excess linkage disequilibrium in bacterial genomes, NAR genom. bioinform., 6(2),lqae061 (2024): https://doi.org/10.1093/nargab/lqae061
 
 ## Detailed Workthrough using Real Data
 

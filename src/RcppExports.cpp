@@ -129,6 +129,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_openmp
+void test_openmp();
+RcppExport SEXP _LDWeaver_test_openmp() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    test_openmp();
+    return R_NilValue;
+END_RCPP
+}
 // readFasta
 List readFasta(std::string file, int pos_len);
 RcppExport SEXP _LDWeaver_readFasta(SEXP fileSEXP, SEXP pos_lenSEXP) {
@@ -152,6 +161,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LDWeaver_extractAlnParam", (DL_FUNC) &_LDWeaver_extractAlnParam, 4},
     {"_LDWeaver_extractSNPs", (DL_FUNC) &_LDWeaver_extractSNPs, 4},
     {"_LDWeaver_extractRef", (DL_FUNC) &_LDWeaver_extractRef, 1},
+    {"_LDWeaver_test_openmp", (DL_FUNC) &_LDWeaver_test_openmp, 0},
     {"_LDWeaver_readFasta", (DL_FUNC) &_LDWeaver_readFasta, 2},
     {NULL, NULL, 0}
 };

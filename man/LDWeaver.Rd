@@ -103,18 +103,22 @@ Function to run the LDWeaver pipeline
 dset <- "full_dset"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
-LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path, validate_ref_ann_lengths = F)
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path,
+                   validate_ref_ann_lengths = F)
 
 # Example 2- using a SNP only alignment
 dset <- "snp_dset"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 aln_path <- system.file("extdata", "snp_sample.fa.gz", package = "LDWeaver")
-pos <- as.numeric(readLines(system.file("extdata", "snp_sample.fa.pos", package = "LDWeaver")))
-LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path, aln_has_all_bases = F, pos = pos, gbk_path = gbk_path)
+pos <- as.numeric(readLines(system.file("extdata", "snp_sample.fa.pos",
+                  package = "LDWeaver")))
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path, aln_has_all_bases = F,
+                  pos = pos, gbk_path = gbk_path)
 
 dset <- "full_dset_spam"
 gbk_path <- system.file("extdata", "sample.gbk", package = "LDWeaver")
 aln_path <- system.file("extdata", "sample.aln.gz", package = "LDWeaver")
-LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path, validate_ref_ann_lengths = F, mega_dset = T)
+LDWeaver::LDWeaver(dset = dset,  aln_path = aln_path,  gbk_path = gbk_path,
+                   validate_ref_ann_lengths = F, mega_dset = T)
 }
 }

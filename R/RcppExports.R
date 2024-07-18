@@ -37,6 +37,10 @@
     .Call('_LDWeaver_extractRef', PACKAGE = 'LDWeaver', file)
 }
 
+test_openmp <- function() {
+    invisible(.Call('_LDWeaver_test_openmp', PACKAGE = 'LDWeaver'))
+}
+
 .readFasta <- function(file, pos_len) {
     .Call('_LDWeaver_readFasta', PACKAGE = 'LDWeaver', file, pos_len)
 }
