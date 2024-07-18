@@ -52,20 +52,20 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
 
     }
   } else {
-    snpmat_t = as(snp.dat$snp.matrix_A, 'dgCMatrix')
+    snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
     # shared.snps = MatrixExtra::crossprod((snpmat_t))
     shared.snps = crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_C, 'dgCMatrix')
+    snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_G, 'dgCMatrix')
+    snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_T, 'dgCMatrix')
+    snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
 
-    snpmat_t = as(snp.dat$snp.matrix_N, 'dgCMatrix')
+    snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
 
     hdw = 1/( Matrix::colSums( (snp.dat$nsnp - shared.snps) < thresh) + 1)

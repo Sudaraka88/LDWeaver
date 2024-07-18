@@ -6,4 +6,3 @@
 *.o
 .DS_Store
 *.Rmd
-Makevars

@@ -243,7 +243,8 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   ######## Welcome message ########
   {
     timestamp()
-    cat("\n ***** This is LDWeaver", as.character(packageVersion(pkg = "LDWeaver")), " *****")
+    cat("\n ***** This is LDWeaver", as.character(packageVersion(pkg = "LDWeaver")), " *****\n")
+    test_openmp()
     if(ncores > 1) cat(paste("\n\n Performing GWES analysis on:", dset, " - using", ncores, "cores\n\n"))
     if(ncores == 1) cat(paste("\n\n Performing GWES analysis on:", dset, "\n\n"))
     if(perform_SR_analysis_only) cat("Only short-range analysis requested. \n")
