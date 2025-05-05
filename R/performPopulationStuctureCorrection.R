@@ -2,7 +2,7 @@
 #'
 #' Function to estimate the similarity between sequences based on the Hamming distance
 #'
-#' @importMethodsFrom MatrixExtra crossprod
+#' @importFrom MatrixExtra set_new_matrix_behavior restore_old_matrix_behavior
 #' @importFrom Matrix colSums
 #' @importFrom methods as
 #'
@@ -52,6 +52,7 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
 
     }
   } else {
+    MatrixExtra::set_new_matrix_behavior()
     snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
     # shared.snps = MatrixExtra::crossprod((snpmat_t))
     shared.snps = crossprod((snpmat_t))
@@ -67,6 +68,7 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
 
     snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
     shared.snps = shared.snps + crossprod((snpmat_t))
+    MatrixExtra::restore_old_matrix_behavior()
 
     hdw = 1/( Matrix::colSums( (snp.dat$nsnp - shared.snps) < thresh) + 1)
   }
