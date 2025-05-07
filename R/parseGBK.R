@@ -947,6 +947,7 @@ cheap_unsafe_data.frame = function(..., lst = list(...)) {
 ## File from: https://github.com/gmbecker/genbankr
 #' @importClassesFrom Biostrings XStringSet
 #' @importClassesFrom GenomicRanges GRangesList CompressedGRangesList
+#' @importClassesFrom rtracklayer RTLFile
 setOldClass("NULL")
 setClassUnion("XStringSetOrNULL", c("XStringSet", "NULL"))
 
