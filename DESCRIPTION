@@ -34,6 +34,7 @@ Imports:
          RColorBrewer,
          Rcpp,
          RcppArmadillo,
+         rtracklayer,
          S4Vectors,
          stats,
          utils,
