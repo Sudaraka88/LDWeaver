@@ -207,35 +207,6 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var,
 
   ### mega datasets
   if(mega_dset){ # Using SPAM
-    # if(!requireNamespace("spam") & !requireNamespace("spam64")){
-    #   message("This feature requires spam and spam64 packages.")
-    #   return(invisible())
-    # } else {
-
-    ## Can we make this a lot faster by coercion?
-
-    #   tAfh = spam::tcrossprod(snp.dat$snp.matrix_A[from, ], hsq); pAf = spam::rowSums(tAfh^2)
-    #   tCfh = spam::tcrossprod(snp.dat$snp.matrix_C[from, ], hsq); pCf = spam::rowSums(tCfh^2)
-    #   tGfh = spam::tcrossprod(snp.dat$snp.matrix_G[from, ], hsq); pGf = spam::rowSums(tGfh^2)
-    #   tTfh = spam::tcrossprod(snp.dat$snp.matrix_T[from, ], hsq); pTf = spam::rowSums(tTfh^2)
-    #   tNfh = spam::tcrossprod(snp.dat$snp.matrix_N[from, ], hsq); pNf = spam::rowSums(tNfh^2)
-    #
-    #   if(fromISto){
-    #     tAth = tAfh; pAt = pAf
-    #     tCth = tCfh; pCt = pCf
-    #     tGth = tGfh; pGt = pGf
-    #     tTth = tTfh; pTt = pTf
-    #     tNth = tNfh; pNt = pNf
-    #   } else {
-    #     # to
-    #     tAth = spam::tcrossprod(snp.dat$snp.matrix_A[to, ], hsq); pAt = spam::rowSums(tAth^2)#+rt*0.5
-    #     tCth = spam::tcrossprod(snp.dat$snp.matrix_C[to, ], hsq); pCt = spam::rowSums(tCth^2)#+rt*0.5
-    #     tGth = spam::tcrossprod(snp.dat$snp.matrix_G[to, ], hsq); pGt = spam::rowSums(tGth^2)#+rt*0.5
-    #     tTth = spam::tcrossprod(snp.dat$snp.matrix_T[to, ], hsq); pTt = spam::rowSums(tTth^2)#+rt*0.5
-    #     tNth = spam::tcrossprod(snp.dat$snp.matrix_N[to, ], hsq); pNt = spam::rowSums(tNth^2)#+rt*0.5
-    #   # }
-    #
-    # }
 
     tAf = spam::as.matrix(snp.dat$snp.matrix_A[from, ]); tAfh = tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
     tCf = spam::as.matrix(snp.dat$snp.matrix_C[from, ]); tCfh = tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
@@ -417,40 +388,13 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var,
 # tAfh, tAth, pAf, pAt, rf, rt, rft, uqf[,1], uqt[,1]
 # computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, ncores, mega_dset = F){ # for deletion
 computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, ncores){
-  # if(mega_dset){ # Using SPAM
-  ## I'm skipping this test here for efficiency, this is not an exported function, unlikely for anyone to use it wrongly!
-  # if(!requireNamespace("spam") & !requireNamespace("spam64")){
-  #   message("This feature requires spam and spam64 packages.")
-  #   return(invisible())
-  # } else {
-  # }
-  #   pxy_t = spam::tcrossprod(tX, tY)
-  #   pxy_t = spam::as.matrix(pxy_t) + 0.5# convert to dense mx (This could potentially be a very large matrix for large datasets, reconsider algorithm?)
-  # } else {
   pxy_t = tcrossprod(tX, as(tY, 'RsparseMatrix')) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx
-  # }
-
-  # t0 = Sys.time();
-
   uq_t = tcrossprod(uqX, uqY)
-  # rX = 0.5*rX
-  # rY = 0.5*rY
-  # RXY = t(MatrixExtra::tcrossprod(rX, rY))
   pXrX = as(tcrossprod(as(pX*rX, 'RsparseMatrix'), rep(1,length(pY))), 'matrix')
-  # pYrY = MatrixExtra::t(MatrixExtra::tcrossprod(pY*rY, rep(1,length(pY))))
   pYrY = as(tcrossprod(rep(1,length(pX)), as(pY*rY, 'RsparseMatrix')), 'matrix') # same as above, already transposed
   pxpy_tt = tcrossprod(pX, pY) # + RXY + pXrX + pYrY
-
-
-  # difftime(Sys.time(), t0)
-
-  # t0 = Sys.time();
-  # MI_t = matrix(rep(0, nrow(pxy_t)*ncol(pxy_t)), nrow = nrow(pxy_t))
-  # MI_t = uq_t*pxy_t/den*log(pxy_t/pxpy_t*den)
   .fastHadamard(MI_t, den, uq_t, pxy_t, pxpy_tt, RXY, pXrX, pYrY, ncores)
-  # difftime(Sys.time(), t0)
 
-  # return(MI_t)
 }
 
 mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff){

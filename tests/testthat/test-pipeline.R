@@ -7,7 +7,7 @@
 LDWeaver::LDWeaver(dset = "mega",
                    aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
                    gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
-                   validate_ref_ann_lengths = F, mega_dset = T, save_additional_outputs = T)
+                   validate_ref_ann_lengths = F, mega_dset = T)
 #
 # test_that("Test run on standard sample", {
 #   expect_equal(NULL, )
@@ -16,7 +16,7 @@ LDWeaver::LDWeaver(dset = "mega",
 LDWeaver::LDWeaver(dset = "std",
                    aln_path = system.file("extdata", "sample.aln.gz", package = "LDWeaver"),
                    gbk_path = system.file("extdata", "sample.gbk", package = "LDWeaver"),
-                   validate_ref_ann_lengths = F, save_additional_outputs = T)
+                   validate_ref_ann_lengths = F)
 
 # path_to_folder = "tests/testthat" # This is for local testing
 path_to_folder = getwd()

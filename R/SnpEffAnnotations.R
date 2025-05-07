@@ -345,15 +345,7 @@ add_annotations_to_links = function(links_red, ann, links_annotated_path, links_
 
     pos2_idx[idx] = which(ann$pos %in% links_red$pos2[idx])
   }
-  # print(Sys.time() - t0)
 
-  # t0 = Sys.time()
-  # pos1_idx_ = sapply(links_red$pos1, function(x) which(ann$pos %in% x))
-  # pos2_idx_ = sapply(links_red$pos2, function(x) which(ann$pos %in% x))
-  # print(Sys.time() - t0)
-  #
-  # all(pos1_idx == pos1_idx_)
-  # all(pos2_idx == pos2_idx_)
   if(links_type == "SR"){
     l1_a1_d = data.frame(pos1 = links_red$pos1,
                          pos2 = links_red$pos2,

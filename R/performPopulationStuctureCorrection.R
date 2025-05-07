@@ -28,12 +28,6 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
       return(invisible())
     } else {
 
-      # shared.snps.spam = spam::crossprod(snp.dat$snp.matrix_A)
-      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_C)
-      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_G)
-      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_T)
-      # shared.snps.spam = shared.snps.spam + spam::crossprod(snp.dat$snp.matrix_N)
-
       shared.snps.spam = crossprod(snp.dat$snp.matrix_A)
       shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_C)
       shared.snps.spam = shared.snps.spam + crossprod(snp.dat$snp.matrix_G)
@@ -78,23 +72,6 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
       as(snp.dat$snp.matrix_N, "matrix"),
       snp.dat$snp.matrix_N
     )
-
-    # MatrixExtra::set_new_matrix_behavior()
-    # # snpmat_t = as(snp.dat$snp.matrix_A, 'RsparseMatrix')
-    # # shared.snps = MatrixExtra::crossprod((snpmat_t))
-    #
-    # snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
-    # shared.snps = shared.snps + crossprod((snpmat_t))
-    #
-    # snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
-    # shared.snps = shared.snps + crossprod((snpmat_t))
-    #
-    # snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
-    # shared.snps = shared.snps + crossprod((snpmat_t))
-    #
-    # snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
-    # shared.snps = shared.snps + crossprod((snpmat_t))
-    # MatrixExtra::restore_old_matrix_behavior()
 
     hdw = 1/( Matrix::colSums( (snp.dat$nsnp - shared.snps) < thresh) + 1)
   }

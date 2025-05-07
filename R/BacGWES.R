@@ -483,17 +483,8 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
         cat("Results from previous LR anlayis exist!")
       }
     }
-
-    # # BLK12
-    # cat("\n\n #################### BLOCK 12 #################### \n\n")
-    # LDWeaver::genomewide_LDMap(lr_links_path = lr_save_path, sr_links_path = sr_save_path,
-    #                            plot_title = paste("GW-LD:", dset),
-    #                            plot_save_path = gwLDplt_path, links_from_spydrpick = F)
   }
 
-
-  # BLK13
-  # cat("\n\n########### BLOCK 13 #################### \n\n")
   LDWeaver::cleanup(dset = dset, delete_after_moving = F)
 
   cat(paste("\n\n ** All done in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))
