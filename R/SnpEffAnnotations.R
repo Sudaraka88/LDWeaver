@@ -29,8 +29,7 @@
 perform_snpEff_annotations = function(dset_name, annotation_folder, snpeff_jar, snp.dat, cds_var, links_df, gbk = NULL,
                                       gbk_path = NULL, gff = NULL,  tophits_path = NULL, max_tophits = 250, links_type = "SR"){
 
-  #TODO: Can we bundle snpEff for local run? Conda version can install SnpEff as a dependency, devtools version can have it in inst/extdata
-    #TODO: We don't need both gbk and gbk_path, save gbk_path to the gbk when parsing and read from here (same for gff)
+  # UPDATE: 20250505: github issue: https://github.com/Sudaraka88/LDWeaver/issues/11#issue-2996489972
 
   # only one of gbk or gff can be NULL
   if( (is.null(gbk) & is.null(gff)) | (!is.null(gbk) & !is.null(gff)) ) stop("Provide either one of gbk or gff")
@@ -125,9 +124,11 @@ prep_snpEff = function(dset, genome_name, snpeff_jar, work_dir, gbk_path = NULL,
 
   options(warn = -1)
   if(isWin){
-    jout = shell(paste('java -jar', snpeff_jar), ignore.stderr = T, translate = T)
+    cat("COMMAND :=:=:", paste('java -jar', shQuote(snpeff_jar)), '\n')
+    jout = shell(paste('java -jar', shQuote(snpeff_jar)), ignore.stderr = T, translate = T)
   } else {
-    jout = system(paste('java -jar', snpeff_jar), ignore.stderr = T)
+    cat("COMMAND :=:=:", paste('java -jar', shQuote(snpeff_jar)), '\n')
+    jout = system(paste('java -jar', shQuote(snpeff_jar)), ignore.stderr = T)
   }
 
   options(warn = 0)
@@ -161,18 +162,50 @@ prep_snpEff = function(dset, genome_name, snpeff_jar, work_dir, gbk_path = NULL,
     file.copy(gbk_path, file.path(snpeff_data, dset, "genes.gbk")) # copy the gff annotation file if not null
 
     if(isWin){
-      shell(paste('java -jar', normalizePath(snpeff_jar), 'build -genbank -config', normalizePath(snpeff_config), '-dataDir', "snpeff_data", '-v', dset), translate = T) # Build index for snpEff
+      cat("COMMAND :=:=:", paste('java -jar',
+                                 shQuote(normalizePath(snpeff_jar)), 'build -genbank -config',
+                                 shQuote(normalizePath(snpeff_config)), '-dataDir', "snpeff_data",
+                                 '-v', shQuote(dset)), '\n')
+
+      shell(paste('java -jar',
+                  shQuote(normalizePath(snpeff_jar)), 'build -genbank -config',
+                  shQuote(normalizePath(snpeff_config)), '-dataDir', "snpeff_data",
+                  '-v', shQuote(dset)), translate = T) # Build index for snpEff
     } else {
-      system(paste('java -jar', snpeff_jar, 'build -genbank -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
+      cat("COMMAND :=:=:", paste('java -jar', shQuote(snpeff_jar),
+                                 'build -genbank -config', shQuote(snpeff_config),
+                                 '-dataDir', shQuote(snpeff_data),
+                                 '-v', shQuote(dset)), '\n')
+
+      system(paste('java -jar', shQuote(snpeff_jar),
+                   'build -genbank -config', shQuote(snpeff_config),
+                   '-dataDir', shQuote(snpeff_data),
+                   '-v', shQuote(dset)
+      )) # Build index for snpEff
     }
 
   }
   if(!is.null(gff_path)) {
     file.copy(gff_path, file.path(snpeff_data, dset, "genes.gff")) # copy the gff annotation file if not null
     if(isWin){
-      shell(paste('java -jar', normalizePath(snpeff_jar), 'build -gff3 -noCheckCds -noCheckProtein -config', normalizePath(snpeff_config), '-dataDir', "snpeff_data", '-v', dset)) # Build index for snpEff
+      cat("COMMAND :=:=:", paste('java -jar', shQuote(normalizePath(snpeff_jar)), 'build -gff3 -noCheckCds -noCheckProtein -config',
+                                 shQuote(normalizePath(snpeff_config)), '-dataDir', "snpeff_data",
+                                 '-v', shQuote(dset)), '\n')
+
+      shell(paste('java -jar', shQuote(normalizePath(snpeff_jar)), 'build -gff3 -noCheckCds -noCheckProtein -config',
+                  shQuote(normalizePath(snpeff_config)), '-dataDir', "snpeff_data",
+                  '-v', shQuote(dset))) # Build index for snpEff
     } else {
-      system(paste('java -jar', snpeff_jar, 'build -gff3 -noCheckCds -noCheckProtein -config', snpeff_config, '-dataDir', snpeff_data, '-v', dset)) # Build index for snpEff
+
+      cat("COMMAND :=:=:", paste('java -jar', shQuote(snpeff_jar), 'build -gff3 -noCheckCds -noCheckProtein -config',
+                                 shQuote(snpeff_config),
+                                 '-dataDir', shQuote(snpeff_data),
+                                 '-v', shQuote(dset)), '\n')
+
+      system(paste('java -jar', shQuote(snpeff_jar), 'build -gff3 -noCheckCds -noCheckProtein -config',
+                   shQuote(snpeff_config),
+                   '-dataDir', shQuote(snpeff_data),
+                   '-v', shQuote(dset))) # Build index for snpEff
     }
 
   }
@@ -208,9 +241,28 @@ run_snpeff = function(dset = NULL, genome_name = NULL, snpeff_jar = NULL, work_d
   snpeff_data = file.path(work_dir, "snpEff_data")
 
   if(isWin){
-    shell(paste('java -Xmx16G -jar', normalizePath(snpeff_jar), '-v -dataDir', "snpeff_data", '-config', normalizePath(snpeff_config), dset, vcf_write_path, '>', vcf_annotated_path), translate = T)
+    cat("COMMAND :=:=:", paste('java -Xmx16G -jar', shQuote(normalizePath(snpeff_jar)), '-v -dataDir', "snpeff_data", '-config',
+                               shQuote(normalizePath(snpeff_config)),
+                               shQuote(dset),
+                               shQuote(vcf_write_path), '>', shQuote(vcf_annotated_path)), '\n')
+
+
+    shell(paste('java -Xmx16G -jar', shQuote(normalizePath(snpeff_jar)), '-v -dataDir', "snpeff_data", '-config',
+                shQuote(normalizePath(snpeff_config)),
+                shQuote(dset),
+                shQuote(vcf_write_path), '>', shQuote(vcf_annotated_path)), translate = T)
   } else {
-    system(paste('java -Xmx16G -jar', snpeff_jar, '-v -dataDir', snpeff_data, '-config', snpeff_config, dset, vcf_write_path, '>', vcf_annotated_path))
+    cat("COMMAND :=:=:", paste('java -Xmx16G -jar', shQuote(snpeff_jar), '-v -dataDir',
+                               shQuote(snpeff_data), '-config',
+                               shQuote(snpeff_config),
+                               shQuote(dset),
+                               shQuote(vcf_write_path), '>', shQuote(vcf_annotated_path)), '\n')
+
+    system(paste('java -Xmx16G -jar', shQuote(snpeff_jar), '-v -dataDir',
+                 shQuote(snpeff_data), '-config',
+                 shQuote(snpeff_config),
+                 shQuote(dset),
+                 shQuote(vcf_write_path), '>', shQuote(vcf_annotated_path)))
   }
 
   status = 1

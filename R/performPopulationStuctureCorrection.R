@@ -2,7 +2,7 @@
 #'
 #' Function to estimate the similarity between sequences based on the Hamming distance
 #'
-#' @importFrom MatrixExtra set_new_matrix_behavior restore_old_matrix_behavior
+#' @import MatrixExtra
 #' @importFrom Matrix colSums
 #' @importFrom methods as
 #'
@@ -52,23 +52,49 @@ estimate_Hamming_distance_weights = function(snp.dat, threshold = 0.1, mega_dset
 
     }
   } else {
-    MatrixExtra::set_new_matrix_behavior()
-    snpmat_t = as(snp.dat$snp.matrix_A, 'lgeMatrix')
-    # shared.snps = MatrixExtra::crossprod((snpmat_t))
-    shared.snps = crossprod((snpmat_t))
+    shared.snps = crossprod(
+      as(snp.dat$snp.matrix_A, "matrix"),
+      snp.dat$snp.matrix_A
+    )
 
-    snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
-    shared.snps = shared.snps + crossprod((snpmat_t))
+    shared.snps = shared.snps +
+      crossprod(
+      as(snp.dat$snp.matrix_C, "matrix"),
+      snp.dat$snp.matrix_C
+    )
 
-    snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
-    shared.snps = shared.snps + crossprod((snpmat_t))
+    shared.snps = shared.snps +
+      crossprod(
+      as(snp.dat$snp.matrix_G, "matrix"),
+      snp.dat$snp.matrix_G
+    )
 
-    snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
-    shared.snps = shared.snps + crossprod((snpmat_t))
+    shared.snps = shared.snps + crossprod(
+      as(snp.dat$snp.matrix_T, "matrix"),
+      snp.dat$snp.matrix_T
+    )
 
-    snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
-    shared.snps = shared.snps + crossprod((snpmat_t))
-    MatrixExtra::restore_old_matrix_behavior()
+    shared.snps = shared.snps + crossprod(
+      as(snp.dat$snp.matrix_N, "matrix"),
+      snp.dat$snp.matrix_N
+    )
+
+    # MatrixExtra::set_new_matrix_behavior()
+    # # snpmat_t = as(snp.dat$snp.matrix_A, 'RsparseMatrix')
+    # # shared.snps = MatrixExtra::crossprod((snpmat_t))
+    #
+    # snpmat_t = as(snp.dat$snp.matrix_C, 'lgeMatrix')
+    # shared.snps = shared.snps + crossprod((snpmat_t))
+    #
+    # snpmat_t = as(snp.dat$snp.matrix_G, 'lgeMatrix')
+    # shared.snps = shared.snps + crossprod((snpmat_t))
+    #
+    # snpmat_t = as(snp.dat$snp.matrix_T, 'lgeMatrix')
+    # shared.snps = shared.snps + crossprod((snpmat_t))
+    #
+    # snpmat_t = as(snp.dat$snp.matrix_N, 'lgeMatrix')
+    # shared.snps = shared.snps + crossprod((snpmat_t))
+    # MatrixExtra::restore_old_matrix_behavior()
 
     hdw = 1/( Matrix::colSums( (snp.dat$nsnp - shared.snps) < thresh) + 1)
   }

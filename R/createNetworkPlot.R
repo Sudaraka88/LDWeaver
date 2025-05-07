@@ -4,7 +4,7 @@
 #'
 #' @importFrom plyr . ddply
 #' @importFrom stats quantile
-#' @importFrom igraph graph_from_edgelist set.edge.attribute
+#' @importFrom igraph graph_from_edgelist set_edge_attr
 #' @importFrom ggraph ggraph geom_edge_arc2 scale_edge_colour_discrete geom_node_label
 #' @importFrom ggplot2 theme_void theme ggsave
 #'
@@ -118,8 +118,8 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
   s_weights = (s_weights)/max(s_weights)
 
   g1 = igraph::graph_from_edgelist(matrix(c(p1a_d, p2a_d), ncol = 2))
-  g1 = igraph::set.edge.attribute(g1, name = "weights", value = s_weights)
-  g1 = igraph::set.edge.attribute(g1, name = "Num_Links", value = as.factor(s_labs))
+  g1 = igraph::set_edge_attr(g1, name = "weights", value = s_weights)
+  g1 = igraph::set_edge_attr(g1, name = "Num_Links", value = as.factor(s_labs))
 
   p1 = ggraph::ggraph(g1, layout = "nicely") +
     # ggraph::geom_node_point(size = 0) +

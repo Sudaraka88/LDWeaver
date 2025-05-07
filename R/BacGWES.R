@@ -188,7 +188,6 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
     }
     message("mega_dset is selected. Warning! This mode has a much slower run time. Setting spam.force64=TRUE (see https://cran.r-project.org/web/packages/spam64/spam64.pdf)")
     options(spam.force64 = TRUE)
-
   }
 
 

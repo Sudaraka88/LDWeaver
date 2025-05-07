@@ -5,7 +5,7 @@
 #' compute short-range p-values for each short-range links. If requested, this
 #' function can also run the ARACNE algorithm
 #'
-#' @importMethodsFrom MatrixExtra t
+#' @import MatrixExtra
 #' @importFrom Matrix rowSums
 #' @importFrom fitdistrplus fitdist
 #' @importFrom data.table as.data.table
@@ -54,6 +54,8 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   # sr_dist = 20000; lr_retain_links = 1e6; max_blk_sz = 10000; srp_cutoff = 3
   # Rcpp::sourceCpp("src/computeMI.cpp"); Rcpp::sourceCpp("src/fintersect.cpp")
 
+  ## 20240507: MatrixExtra 0.1.15 only accepts a limited number of signatures for parallel crossprod/tcrossprod see ?MatrixExtra::matmult - Changed all signatures to maintain multicore functionality
+
   t000 = Sys.time()
   # TODO: if no paths are given, we need a way to stop overwriting (use timestamp()?)
   if(is.null(lr_save_path)) lr_save_path = file.path(getwd(), "lr_links.tsv")
@@ -73,7 +75,7 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
 
   # pre-computed parameters
   neff = sum(hdw)
-  hsq = diag(sqrt(hdw)) # For very large datasets this could potentially be a huge matrix! Might have to reconsider this algorithm
+  # hsq = as(diag(sqrt(hdw)), 'RsparseMatrix') # Try making this an RsparseMatrix
   ### mega datasets
   if(mega_dset){ # Using SPAM
     if(!requireNamespace("spam") & !requireNamespace("spam64")){
@@ -82,6 +84,9 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
     } else {
       # hsq = spam::as.spam(hsq)
     }
+    hsq = as(diag(sqrt(hdw)), 'RsparseMatrix')# This is likely not optimal for spam, maintain previous behaviour
+  } else {
+    hsq = as(diag(sqrt(hdw)), 'RsparseMatrix') # Try making this an RsparseMatrix
   }
 
   if(!perform_SR_analysis_only){
@@ -98,12 +103,12 @@ perform_MI_computation = function(snp.dat, hdw, cds_var, ncores, lr_save_path = 
   for(i in 1:nblcks){
     t0 = Sys.time()
     cat(paste("Block", i, "of", nblcks, "..."))
-    from_ = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i]
-    to_ = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i]
+    from = MI_cmp_blks$from_s[i]:MI_cmp_blks$from_e[i]
+    to = MI_cmp_blks$to_s[i]:MI_cmp_blks$to_e[i]
     # cat("**debug** snp_subset =",snp_subset, " lr_links_approx=",lr_links_approx," lr_retain_links=",lr_retain_links, " **debug**\n")
     sr_links = perform_MI_computation_ACGTN(snp.dat = snp.dat, neff = neff, hsq = hsq, cds_var = cds_var,
-                                            lr_save_path = lr_save_path, from = from_, sr_dist = sr_dist,
-                                            lr_retain_links = lr_retain_links, to = to_, ncores = ncores, sr_links = sr_links,
+                                            lr_save_path = lr_save_path, from = from, sr_dist = sr_dist,
+                                            lr_retain_links = lr_retain_links, to = to, ncores = ncores, sr_links = sr_links,
                                             perform_SR_analysis_only = perform_SR_analysis_only, lr_links_approx = lr_links_approx,
                                             mega_dset = mega_dset)
 
@@ -159,7 +164,10 @@ make_blocks = function(nsnp, max_blk_sz = 10000){ # create the blocks (from_s, f
   return(fromtodf)
 }
 
-perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, lr_save_path, ncores, sr_links, sr_dist = 20000, lr_retain_links = lr_retain_links, perform_SR_analysis_only = F, lr_links_approx = NULL, mega_dset = F){
+perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var,
+                                        lr_save_path, ncores, sr_links, sr_dist = 20000,
+                                        lr_retain_links = lr_retain_links, perform_SR_analysis_only = F,
+                                        lr_links_approx = NULL, mega_dset = F){
   # from, to are vectors
 
   # These are static, best passed in here <potential inputs>
@@ -256,11 +264,11 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
     ### MATRIX MODE CODE DO NOT CHANGE BELOW
     # from
     # tAf = as(snp.dat$snp.matrix_A[from, ], 'unpackedMatrix'); tAfh = MatrixExtra::tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2) # crashes in linuxMint
-    tAf = as(snp.dat$snp.matrix_A[from, ], 'lgeMatrix'); tAfh = tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
-    tCf = as(snp.dat$snp.matrix_C[from, ], 'lgeMatrix'); tCfh = tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
-    tGf = as(snp.dat$snp.matrix_G[from, ], 'lgeMatrix'); tGfh = tcrossprod(tGf, hsq); pGf = Matrix::rowSums(tGfh^2)
-    tTf = as(snp.dat$snp.matrix_T[from, ], 'lgeMatrix'); tTfh = tcrossprod(tTf, hsq); pTf = Matrix::rowSums(tTfh^2)
-    tNf = as(snp.dat$snp.matrix_N[from, ], 'lgeMatrix'); tNfh = tcrossprod(tNf, hsq); pNf = Matrix::rowSums(tNfh^2)
+    tAf = as(snp.dat$snp.matrix_A[from, ], 'matrix'); tAfh = tcrossprod(tAf, hsq); pAf = Matrix::rowSums(tAfh^2)
+    tCf = as(snp.dat$snp.matrix_C[from, ], 'matrix'); tCfh = tcrossprod(tCf, hsq); pCf = Matrix::rowSums(tCfh^2)
+    tGf = as(snp.dat$snp.matrix_G[from, ], 'matrix'); tGfh = tcrossprod(tGf, hsq); pGf = Matrix::rowSums(tGfh^2)
+    tTf = as(snp.dat$snp.matrix_T[from, ], 'matrix'); tTfh = tcrossprod(tTf, hsq); pTf = Matrix::rowSums(tTfh^2)
+    tNf = as(snp.dat$snp.matrix_N[from, ], 'matrix'); tNfh = tcrossprod(tNf, hsq); pNf = Matrix::rowSums(tNfh^2)
 
     if(fromISto){
       tAt = tAf; tAth = tAfh; pAt = pAf
@@ -270,11 +278,11 @@ perform_MI_computation_ACGTN = function(snp.dat, from, to, neff, hsq, cds_var, l
       tNt = tNf; tNth = tNfh; pNt = pNf
     } else {
       # to
-      tAt = as(snp.dat$snp.matrix_A[to, ], 'lgeMatrix'); tAth = tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
-      tCt = as(snp.dat$snp.matrix_C[to, ], 'lgeMatrix'); tCth = tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
-      tGt = as(snp.dat$snp.matrix_G[to, ], 'lgeMatrix'); tGth = tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
-      tTt = as(snp.dat$snp.matrix_T[to, ], 'lgeMatrix'); tTth = tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
-      tNt = as(snp.dat$snp.matrix_N[to, ], 'lgeMatrix'); tNth = tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
+      tAt = as(snp.dat$snp.matrix_A[to, ], 'matrix'); tAth = tcrossprod(tAt, hsq); pAt = Matrix::rowSums(tAth^2)#+rt*0.5
+      tCt = as(snp.dat$snp.matrix_C[to, ], 'matrix'); tCth = tcrossprod(tCt, hsq); pCt = Matrix::rowSums(tCth^2)#+rt*0.5
+      tGt = as(snp.dat$snp.matrix_G[to, ], 'matrix'); tGth = tcrossprod(tGt, hsq); pGt = Matrix::rowSums(tGth^2)#+rt*0.5
+      tTt = as(snp.dat$snp.matrix_T[to, ], 'matrix'); tTth = tcrossprod(tTt, hsq); pTt = Matrix::rowSums(tTth^2)#+rt*0.5
+      tNt = as(snp.dat$snp.matrix_N[to, ], 'matrix'); tNth = tcrossprod(tNt, hsq); pNt = Matrix::rowSums(tNth^2)#+rt*0.5
     }
   }
 
@@ -419,7 +427,7 @@ computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, nc
   #   pxy_t = spam::tcrossprod(tX, tY)
   #   pxy_t = spam::as.matrix(pxy_t) + 0.5# convert to dense mx (This could potentially be a very large matrix for large datasets, reconsider algorithm?)
   # } else {
-  pxy_t = tcrossprod(tX, tY) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx
+  pxy_t = tcrossprod(tX, as(tY, 'RsparseMatrix')) + 0.5; pxy_t = as(pxy_t, "matrix") # convert to dense mx
   # }
 
   # t0 = Sys.time();
@@ -428,9 +436,9 @@ computeMI_Sprase = function(MI_t, tX, tY, pX, pY, rX, rY, RXY, uqX, uqY, den, nc
   # rX = 0.5*rX
   # rY = 0.5*rY
   # RXY = t(MatrixExtra::tcrossprod(rX, rY))
-  pXrX = tcrossprod(pX*rX, rep(1,length(pY)))
+  pXrX = as(tcrossprod(as(pX*rX, 'RsparseMatrix'), rep(1,length(pY))), 'matrix')
   # pYrY = MatrixExtra::t(MatrixExtra::tcrossprod(pY*rY, rep(1,length(pY))))
-  pYrY = tcrossprod(rep(1,length(pX)), pY*rY) # same as above, already transposed
+  pYrY = as(tcrossprod(rep(1,length(pX)), as(pY*rY, 'RsparseMatrix')), 'matrix') # same as above, already transposed
   pxpy_tt = tcrossprod(pX, pY) # + RXY + pXrX + pYrY
 
 
@@ -541,3 +549,4 @@ mergeNsort_sr_links = function(cds_var, sr_links, sr_dist, plt_path, srp_cutoff)
   return(list(sr_links_red = sr_links_red, sr_links_ARACNE_check = sr_links_ARACNE_check))
 
 }
+
