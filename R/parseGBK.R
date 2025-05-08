@@ -367,7 +367,7 @@ strip_fieldname = function(lines) gsub("^[[:space:]]*[[:upper:]]*[[:space:]]+", 
 
 readLocus = function(line) {
   ## missing strip fieldname?
-  spl = strsplit(line, "[\t]+", line)[[1]]
+  spl = strsplit(line, "[\t]+")[[1]]
   spl
 }
 
