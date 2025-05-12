@@ -254,7 +254,7 @@ List extractSNPs(std::string file, int n_seq, int n_snp, std::vector<int> POS) {
         m_j_T.push_back(k);
         m_x_T.push_back(4);
         ++ACGTN_table(3, (k-1));
-      } else if((temp_char=='N') || (temp_char=='n')){ // not possible
+      } else { //}if((temp_char=='N') || (temp_char=='n')){ // not possible
         m_i_N.push_back(n+1);
         // m_j.push_back(j);
         m_j_N.push_back(k);
