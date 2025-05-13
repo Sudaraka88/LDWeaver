@@ -85,8 +85,6 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
     lrl = rbind(lrt, lra); rm(lra, lrt); if(!is.null(lrl)) {lrl = lrl[!duplicated(lrl), ]; lrl = cbind(lrl, link = "lr")}
     top_hits = rbind(srl, lrl); rm(srl, lrl)
   }
-  # if(!is.null(lr_tophits_path) & !is.null(lr_annotated_links_path)) stop("Only one of the tophits or annotated links must be provided")
-  # if(!is.null(sr_tophits_path) & !is.null(sr_annotated_links_path)) stop("Only one of the tophits or annotated links must be provided")
 
   # fasta/pos file
   pos = as.numeric(readLines(pos_file_path))
@@ -97,31 +95,6 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
     if(length(md_id_col) != 1) stop("Metadata file must contain an ID column")
   }
 
-  # if(!is.null(lr_tophits_path) | !is.null(lr_annotated_links_path)) {
-  #   if(!is.null(lr_tophits_path)) lr_tophits_path = normalizePath(lr_tophits_path)
-  #   if(!is.null(lr_annotated_links_path)) lr_annotated_links_path = normalizePath(lr_annotated_links_path)
-  #   if(is.null(lr_fasta_path) | is.null(lr_pos_path)) stop("All 3 LR files must be provided to visualise")
-  #   lr_fasta_path = normalizePath(lr_fasta_path)
-  #   lr_pos_path = normalizePath(lr_pos_path)
-  #   lr_vis = T
-  # } else {
-  #   lr_vis = F
-  # }
-  #
-  # if(!is.null(sr_tophits_path) | !is.null(sr_annotated_links_path)) {
-  #   if(!is.null(sr_tophits_path)) sr_tophits_path = normalizePath(sr_tophits_path)
-  #   if(!is.null(sr_annotated_links_path)) sr_annotated_links_path = normalizePath(sr_annotated_links_path)
-  #   if(is.null(sr_fasta_path) | is.null(sr_pos_path)) stop("All 3 SR files must be provided to visualise")
-  #   sr_fasta_path = normalizePath(sr_fasta_path)
-  #   sr_pos_path = normalizePath(sr_pos_path)
-  #   sr_vis = T
-  # } else {
-  #   sr_vis = F
-  # }
-
-  # if(lr_vis & sr_vis) vis_lrsr = T else vis_lrsr = F
-  #
-  # if(lr_vis == F & sr_vis == F) stop("At least one set of link files (LR or SR) must be provided")
 
   # Use from-to positions
   if(!is.null(from)) if(is.null(to)) stop("<to> must also be provided")
@@ -143,82 +116,6 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
   }
 
 
-  # Read the tophits
-  # if(vis_lrsr){ # both must be read
-  #
-  #   ## sr_links
-  #   if(!is.null(sr_tophits_path)){
-  #     sr_tophits = cbind(LDWeaver::read_TopHits(sr_tophits_path), link = "sr") # tophits file
-  #   } else {
-  #     sr_tophits = cbind(LDWeaver::read_AnnotatedLinks(sr_annotated_links_path), link = "sr") # annotated links file
-  #   }
-  #   rm_srp_idx = which(tolower(colnames(sr_tophits)) == "srp")
-  #   if(length(rm_srp_idx) == 1) sr_tophits = sr_tophits[,-rm_srp_idx] else stop("sr_tophits file does not contain the srp column!")
-  #
-  #   ## lr_links
-  #   if(!is.null(lr_tophits_path)){
-  #     top_hits = rbind(sr_tophits,
-  #                      cbind(LDWeaver::read_TopHits(lr_tophits_path), link = "lr"))
-  #   } else {
-  #     top_hits = rbind(sr_tophits,
-  #                      cbind(LDWeaver::read_AnnotatedLinks(lr_annotated_links_path), link = "lr"))
-  #   }
-  #
-  # } else if(lr_vis){
-  #   if(!is.null(lr_tophits_path)){
-  #     top_hits = cbind(LDWeaver::read_TopHits(lr_tophits_path), link = "lr")
-  #   } else {
-  #     top_hits = cbind(LDWeaver::read_AnnotatedLinks(lr_annotated_links_path), link = "lr")
-  #   }
-  #
-  # } else if(sr_vis){
-  #   if(!is.null(sr_tophits_path)){
-  #     top_hits = cbind(LDWeaver::read_TopHits(sr_tophits_path), link = "lr")
-  #   } else {
-  #     top_hits = cbind(LDWeaver::read_AnnotatedLinks(sr_annotated_links_path), link = "lr")
-  #   }
-  # }
-
-  # Read the fasta/pos files
-  # if(vis_lrsr){
-  #   pos_lr = as.numeric(readLines(lr_pos_path))
-  #   pos_sr = as.numeric(readLines(sr_pos_path))
-  #
-  #   fasta_lr = read_fasta(lr_fasta_path, pos_lr, tree$tip.label)
-  #   fasta_sr = read_fasta(sr_fasta_path, pos_sr, tree$tip.label)
-  #
-  #   dup = c()
-  #   for(i in 1:length(pos_lr)) dup[i] = pos_lr[i] %in% pos_sr # duplicated columns in the lr dataset
-  #   if(all(dup)){ # Everything in lr is already in sr
-  #     pos = pos_sr
-  #     fasta = fasta_sr
-  #   } else if(any(dup)){ # some LR values are duplicated
-  #     pos_lr = pos_lr[!dup]
-  #     fasta_lr = fasta_lr[,!dup]
-  #
-  #     pos = c(pos_sr, pos_lr)
-  #     fasta = cbind(fasta_sr, fasta_lr); fasta = fasta[, order(pos)]
-  #     pos = sort(pos)
-  #
-  #     if(! all(as.numeric(colnames(fasta)) == pos) ) stop("Mismatch between fasta and position files")
-  #
-  #   } else { # no duplicates
-  #
-  #     pos = c(pos_sr, pos_lr)
-  #     fasta = cbind(fasta_sr, fasta_lr); fasta = fasta[, order(pos)]
-  #     pos = sort(pos)
-  #
-  #     if(! all(as.numeric(colnames(fasta)) == pos) ) stop("Mismatch between fasta and position files")
-  #
-  #   }
-  # } else if(lr_vis){
-  #   pos = as.numeric(readLines(lr_pos_path))
-  #   fasta = read_fasta(lr_fasta_path, pos, tree$tip.label)
-  # } else if(sr_vis){
-  #   pos = as.numeric(readLines(sr_pos_path))
-  #   fasta = read_fasta(sr_fasta_path, pos, tree$tip.label)
-  # }
-
   # add SNP data from tophits to the plot
   snp_chosen_nums = c()
   if(!is.null(ntop_links)){
@@ -232,16 +129,11 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
     }
   }
 
-
-  # print(snp_chosen_nums)
-
   if(!is.null(from) & !is.null(to)){
     snp_chosen_nums = unique(c(which(top_hits$pos1 >= from & top_hits$pos1 <= to),
                                which(top_hits$pos2 >= from & top_hits$pos2 <= to)))
 
   }
-
-  # print(snp_chosen_nums)
 
   df7 = data.frame()
   if(length(snp_chosen_nums) > 0){
@@ -266,10 +158,7 @@ view_tree = function(tree_path, perform_midpoint_rooting = T, metadata_df = NULL
     } else {
       df7 = data.frame()
     }
-
-
   }
-
 
   # add data from metadata to the plot
   df5 = data.frame()

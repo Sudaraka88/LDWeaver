@@ -6,3 +6,5 @@
 *.o
 .DS_Store
 *.Rmd
+full_dset
+sample

@@ -127,7 +127,10 @@ parseGenBank = function(file, text = readLines(file),  partial = NA,
                         ret.anno = TRUE,
                         ret.seq = TRUE) {
 
-  prime_field_re = "^[[:upper:]]+[[:space:]]+" # changed to local scope
+  prime_field_re = "^[[:upper:]]" #+[[:space:]]+" # bakta ORIGIN has no space
+
+  # remove fuzzy start/end points
+  text <- gsub("[<>]", "", text)
 
   if(!ret.anno && !ret.seq)
     stop("Must return at least one of annotations or sequence.")
@@ -148,10 +151,8 @@ parseGenBank = function(file, text = readLines(file),  partial = NA,
                                         source.only=!ret.anno,
                                         partial = partial)
   seqtype = .seqTypeFromLocus(resthang$LOCUS)
-  resthang$ORIGIN = if(ret.seq)
-    readOrigin(spl[["ORIGIN"]],
-               seqtype = seqtype)
-  else NULL
+
+  if(ret.seq) resthang$ORIGIN = readOrigin(spl[["ORIGIN"]], seqtype = seqtype)
 
   if(ret.anno) {
     resthang2 = mapply(function(field, lines, verbose) {
@@ -367,7 +368,7 @@ strip_fieldname = function(lines) gsub("^[[:space:]]*[[:upper:]]*[[:space:]]+", 
 
 readLocus = function(line) {
   ## missing strip fieldname?
-  spl = strsplit(line, "[\t]+", line)[[1]]
+  spl = strsplit(line, "[\t]+")[[1]]
   spl
 }
 
@@ -622,10 +623,14 @@ fastwriteread = function(txtline) {
 
 
 ##LOCUS       ABD64816                1353 aa            linear   INV 12-MAR-2006
+##LOCUS       HG941718.1           5109767 bp    DNA     linear       25-MAR-2025
 .seqTypeFromLocus = function(locus) {
   gsub("^[[:space:]]*LOCUS[[:space:]]+[^[:space:]]+[[:space:]]+[[:digit:]]+[[:space:]]+([^[:space:]]+).*",
        "\\1",
        locus)
+
+  # sub("^\\s*LOCUS\\s+\\S+\\s+\\d+\\s+bp\\s+(\\S+).*", "\\1", locus)
+
 }
 
 
@@ -955,7 +960,6 @@ setClassUnion("XStringSetOrNULL", c("XStringSet", "NULL"))
 ##'
 ##' @rdname GenBank-classes
 ##' @docType methods
-##' @exportClass GenBankRecord
 setClass("GenBankRecord", slots = list(genes = "GenomicRanges", cds = "GenomicRanges",
                                        exons = "GenomicRanges",
                                        transcripts = "GenomicRanges",
@@ -977,18 +981,15 @@ setClass("GenBankRecord", slots = list(genes = "GenomicRanges", cds = "GenomicRa
 ##'
 ##' @rdname gbkfile
 ##' @docType methods
-##' @exportClass GenBankFile
-setClass("GenBankFile", contains = "RTLFile")
+setClass("GenBankFile", contains = "GFFFile")
 
 ##' @rdname gbkfile
 ##' @docType methods
-##' @exportClass GBKFile
 ##' @aliases GBKFile-class
 setClass("GBKFile", contains = "GenBankFile")
 
 ##' @rdname gbkfile
 ##' @docType methods
-##' @exportClass GBKFile
 ##' @aliases GBFile-class
 setClass("GBFile", contains = "GenBankFile")
 
@@ -997,13 +998,11 @@ setClass("GBFile", contains = "GenBankFile")
 ##' @description A class representing the (versioned) GenBank accession
 ##'
 ##' @rdname GBAccession
-##' @exportClass GBAccession
 setClass("GBAccession", contains="character")
 
 ##' @rdname GBAccession
 ##' @param id A versioned GenBank Accession id
 ##' @return a \code{GBAccession} object.
-##' @export
 GBAccession = function(id) {
   new("GBAccession", id)
 }

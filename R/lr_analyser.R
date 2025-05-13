@@ -47,10 +47,6 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
   if(SnpEff_Annotate == T) {
     if( (is.null(gbk_path) & is.null(gff3_path)) | (!is.null(gbk_path) & !is.null(gff3_path)) ) stop("Either gbk_path or gff3_path must be provided. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F") # only one of gbk or gff can be NULL
     if(!is.null(gff3_path) & is.null(ref_fasta_path)) stop("Reference fasta file must be provided for gff3 annoations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F") # only one of gbk or gff can be NULL
-    # if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
-    # if(!file.exists(snpeff_jar_path)) stop(paste("<SnpEff.jar> not found at:", snpeff_jar_path, "please check the path provided"))
-    # if(is.null(snpeff_jar_path)) stop("You must specify <snpeff_jar_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
-    # if(is.null(gbk_path)) stop("You must specify <gbk_path> for annotations. To run without annotations, re-run analyse_long_range_links() with SnpEff_Annotate = F")
     if(is.null(snp.dat)) stop("You must provide snp.dat to perform annotations.")
     if(is.null(cds_var)) stop("You must specify cds_var to perform for annotations.")
   }

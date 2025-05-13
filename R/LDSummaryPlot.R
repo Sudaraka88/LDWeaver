@@ -2,7 +2,6 @@
 #'
 #' Function to generate the bird's-eye view of the genomewide LD structure (measured as weighted-MI)
 #'
-#' @importMethodsFrom MatrixExtra crossprod
 #' @importFrom Matrix sparseMatrix t
 #' @importFrom grDevices colorRampPalette png
 #' @importFrom heatmap3 heatmap3
