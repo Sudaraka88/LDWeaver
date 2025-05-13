@@ -20,7 +20,7 @@
 #' @param hdw_threshold Hamming distance similarity threshold (default = 0.1, i.e. 10\%) - lower values will force stricter population structure control at the cost of masking real signal
 #' @param perform_SR_analysis_only specify whether to only perform LDWeaver (short-range link) analysis. (default = FALSE) will analyse all links (i.e., LDWeaver + SpydrPick)
 #' @param SnpEff_Annotate specify whether to perform annotations using SnpEff (default = TRUE)
-#' @param sr_dist links shorter than <sr_dist> apart are considered 'short range' (default = 20000), range 1000 - 25000 bp
+#' @param sr_dist links shorter than <sr_dist> apart are considered 'short range' (default = 20000), range (1000 - 100000) bp
 #' @param lr_retain_links specify the maximum number of long-range MI links to retain (default = 1000000) - in each block, only a top subset of links will be saved such approximately this many links will be retained
 #' @param max_tophits specify the maximum number of short range links to save as <sr_tophits.tsv>. Note: all short-range links will be annotated (and saved separately),
 #' but only the top <max_tophits> will be used for visualisation (default = 250), range 50 - 1000
@@ -139,9 +139,10 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   } else ncores = 1  # multicore not requested
 
   # parameters
-  if(sr_dist < 1000 | sr_dist > 25000) {
-    warning(paste("Unable to use the provided value for <sr_dist>, using", 20000))
-    sr_dist = 20000
+  if(sr_dist < 1000 | sr_dist > 100000) {
+    tmp = get_sr_threshold(sr_dist)
+    warning(paste("Unable to use the provided value for <sr_dist>:", sr_dist, ", instead using", tmp, "\n"))
+    sr_dist = tmp
   }
 
   if(lr_retain_links <= 1e3 | lr_retain_links >= 1e10) {

@@ -458,3 +458,10 @@ generate_Links_SNPS_fasta = function(snp.dat, aln_path, pos_path, lr_tophits_pat
 
 
 }
+
+#' get_sr_threshold
+#'
+#'
+get_sr_threshold = function(x, lower = 1001, upper = 99999) {
+  pmax(lower, pmin(upper, x))
+}
