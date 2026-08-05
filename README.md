@@ -11,7 +11,7 @@
 <!-- badges: start -->
 
 [![R](https://github.com/Sudaraka88/LDWeaver/workflows/R-CMD-check-hard/badge.svg)](https://github.com/Sudaraka88/LDWeaver/actions)
-[![DOI](https://zenodo.org/badge/590009521.svg)](https://zenodo.org/badge/latestdoi/590009521)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15393225.svg)](https://doi.org/10.5281/zenodo.15393225)
 [![LICESNSE](https://anaconda.org/bioconda/r-ldweaver/badges/license.svg)](https://spdx.org/licenses/GPL-3.0-or-later.html)
 <!-- badges: end -->
 
