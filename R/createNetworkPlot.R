@@ -48,8 +48,8 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 
   while (c50){
 
-    p1a = unname(sapply(tophits$pos1_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
-    p2a = unname(sapply(tophits$pos2_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
+    p1a = .network_plot_label(tophits$pos1_ann[1:avail_links], tophits$links[1:avail_links], 1, separator)
+    p2a = .network_plot_label(tophits$pos2_ann[1:avail_links], tophits$links[1:avail_links], 2, separator)
 
 
     # if(links_type == "SR"){
@@ -141,6 +141,15 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
 
+}
+
+.network_plot_label = function(annotations, links, pos_idx, separator = ":"){
+  labels = unname(sapply(annotations, function(x) unlist(strsplit(x, separator))[1]))
+  intergenic = vapply(strsplit(links, "X", fixed = TRUE), function(x) {
+    length(x) >= pos_idx && identical(x[pos_idx], "ig")
+  }, logical(1))
+  labels[intergenic] = paste0(labels[intergenic], "_ig")
+  labels
 }
 
 
