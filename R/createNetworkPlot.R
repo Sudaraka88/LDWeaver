@@ -16,8 +16,9 @@
 #' @param plot_w specify plot width in pixels (default = 6000)
 #' @param plot_h specify plot height in pixels (default = 4000)
 #' @param min_links_to_include specify the minimum number of links required to retain the node in the plot (default = 2)
+#' @param include_intergenic logical; when FALSE (default) intergenic links are excluded; when TRUE all links including intergenic are used
 #'
-#' @return Network plots (ggplot object)
+#' @return Network plots (ggplot object), or NULL if no qualifying links exist
 #'
 #' @examples
 #' \dontrun{
@@ -26,7 +27,8 @@
 #'
 #' @export
 create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separator = ":",
-                          max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000,  min_links_to_include = 2){ #,links_type = "SR",
+                          max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000,  min_links_to_include = 2,
+                          include_intergenic = FALSE){ #,links_type = "SR",
   # ){
   cat("Preparing Network Plot ... ")
   Num_Links = name = weights = NULL # avoid ggplot NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
@@ -34,6 +36,16 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
   t0 = Sys.time()
 
   if(is.null(plot_title)) plot_title = ""
+
+  # When intergenic links are excluded, filter the input to genic-only rows
+  if(!include_intergenic){
+    is_ig = grepl("ig", tophits$links)
+    tophits = tophits[!is_ig, ]
+    if(nrow(tophits) == 0){
+      message("No genic-only links available; skipping non-intergenic network plot.")
+      return(invisible(NULL))
+    }
+  }
 
   # Let's ensure 50 nodes are present here
   c50 = T
