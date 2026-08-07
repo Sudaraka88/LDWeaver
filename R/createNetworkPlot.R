@@ -16,8 +16,9 @@
 #' @param plot_w specify plot width in pixels (default = 6000)
 #' @param plot_h specify plot height in pixels (default = 4000)
 #' @param min_links_to_include specify the minimum number of links required to retain the node in the plot (default = 2)
+#' @param include_intergenic logical; when FALSE (default) intergenic links are excluded; when TRUE all links including intergenic are used
 #'
-#' @return Network plots (ggplot object)
+#' @return Network plots (ggplot object), or NULL if no qualifying links exist
 #'
 #' @examples
 #' \dontrun{
@@ -26,7 +27,8 @@
 #'
 #' @export
 create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separator = ":",
-                          max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000,  min_links_to_include = 2){ #,links_type = "SR",
+                          max_plot_nodes = NULL, plot_w = 6000, plot_h = 4000,  min_links_to_include = 2,
+                          include_intergenic = FALSE){ #,links_type = "SR",
   # ){
   cat("Preparing Network Plot ... ")
   Num_Links = name = weights = NULL # avoid ggplot NSE issue (https://www.r-bloggers.com/2019/08/no-visible-binding-for-global-variable/)
@@ -34,6 +36,16 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
   t0 = Sys.time()
 
   if(is.null(plot_title)) plot_title = ""
+
+  # When intergenic links are excluded, filter the input to genic-only rows
+  if(!include_intergenic){
+    is_ig = grepl("ig", tophits$links)
+    tophits = tophits[!is_ig, ]
+    if(nrow(tophits) == 0){
+      message("No genic-only links available; skipping non-intergenic network plot.")
+      return(invisible(NULL))
+    }
+  }
 
   # Let's ensure 50 nodes are present here
   c50 = T
@@ -48,8 +60,8 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 
   while (c50){
 
-    p1a = unname(sapply(tophits$pos1_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
-    p2a = unname(sapply(tophits$pos2_ann[1:avail_links], function(x) unlist(strsplit(x, separator))[1]))
+    p1a = .network_plot_label(tophits$pos1_ann[1:avail_links], tophits$links[1:avail_links], 1, separator)
+    p2a = .network_plot_label(tophits$pos2_ann[1:avail_links], tophits$links[1:avail_links], 2, separator)
 
 
     # if(links_type == "SR"){
@@ -141,6 +153,15 @@ create_network = function(tophits, netplot_path = NULL, plot_title = NULL, separ
 
   cat(paste("Done in", round(difftime(Sys.time(), t0, units = "secs"), 2), "s"))
 
+}
+
+.network_plot_label = function(annotations, links, pos_idx, separator = ":"){
+  labels = unname(sapply(annotations, function(x) unlist(strsplit(x, separator))[1]))
+  intergenic = vapply(strsplit(links, "X", fixed = TRUE), function(x) {
+    length(x) >= pos_idx && identical(x[pos_idx], "ig")
+  }, logical(1))
+  labels[intergenic] = paste0(labels[intergenic], "_ig")
+  labels
 }
 
 

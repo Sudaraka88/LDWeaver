@@ -178,7 +178,9 @@ analyse_long_range_links = function(dset, lr_links_path, sr_links_path, are_lrli
     cat("\n")
 
     netplot_path = file.path(dset, "lr_network_plot.png")
-    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in long-range tophits for", dset))
+    netplot_ig_path = file.path(dset, "lr_network_ig_plot.png")
+    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in long-range tophits for", dset), include_intergenic = FALSE)
+    LDWeaver::create_network(tophits = tophits, netplot_path = netplot_ig_path, plot_title = paste("Networks in long-range tophits (incl. intergenic) for", dset), include_intergenic = TRUE)
 
   }
   cat(paste("\nDone in", round(difftime(Sys.time(), t_global, units = "mins"), 3), "m ** \n"))

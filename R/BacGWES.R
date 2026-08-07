@@ -462,9 +462,11 @@ LDWeaver = function(dset, aln_path, aln_has_all_bases = T, pos = NULL, gbk_path 
   # Additional paths if annotations are requested
   # NetworkPlot
   netplot_path = file.path(dset, "SR_network_plot.png")
+  netplot_ig_path = file.path(dset, "SR_network_ig_plot.png")
 
   cat("\n\n #################### BLOCK 11 #################### \n\n")
-  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in short-range tophits for", dset))
+  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_path, plot_title = paste("Networks in short-range tophits for", dset), include_intergenic = FALSE)
+  LDWeaver::create_network(tophits = tophits, netplot_path = netplot_ig_path, plot_title = paste("Networks in short-range tophits (incl. intergenic) for", dset), include_intergenic = TRUE)
 
   if(!perform_SR_analysis_only){
     # BLK11
